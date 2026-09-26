@@ -1,0 +1,52 @@
+{
+  "version": "1.0.0",
+  "minecraft_version": "1.21.1",
+  "loader": {
+    "type": "neoforge",
+    "version": "21.1.65"
+  },
+  "mods": [
+    {
+      "name": "sodium-neoforge-1.21.1.jar",
+      "url": "https://enlace-directo-de-descarga.com/sodium-neoforge-1.21.1.jar",
+      "sha1": "0000000000000000000000000000000000000",
+      "environment": "client_only"
+    },
+    {
+      "name": "iris-neoforge-1.21.1.jar",
+      "url": "https://enlace-directo-de-descarga.com/iris-neoforge-1.21.1.jar",
+      "sha1": "0000000000000000000000000000000000000",
+      "environment": "client_only"
+    },
+    {
+      "name": "chunky-server-optimizer.jar",
+      "url": "https://enlace-directo-de-descarga.com/chunky-server-optimizer.jar",
+      "sha1": "0000000000000000000000000000000000000",
+      "environment": "server_only"
+    },
+    {
+      "name": "alexsmobs-1.21.1.jar",
+      "url": "https://enlace-directo-de-descarga.com/alexsmobs-1.21.1.jar",
+      "sha1": "0000000000000000000000000000000000000",
+      "environment": "both"
+    },
+    {
+      "name": "create-neoforge-1.21.1.jar",
+      "url": "https://enlace-directo-de-descarga.com/create-neoforge-1.21.1.jar",
+      "sha1": "0000000000000000000000000000000000000",
+      "environment": "both"
+    }
+  ],
+  "configs": [
+    {
+      "path": "create.toml",
+      "url": "https://enlace-directo-de-descarga.com/configs/create.toml",
+      "sha1": "0000000000000000000000000000000000000"
+    },
+    {
+      "path": "alexsmobs/alexsmobs-common.toml",
+      "url": "https://enlace-directo-de-descarga.com/configs/alexsmobs-common.toml",
+      "sha1": "0000000000000000000000000000000000000"
+    }
+  ]
+}

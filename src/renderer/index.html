@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <title>Vortex Launcher</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="app">
+    <header class="app-header">
+      <h1>Vortex Launcher</h1>
+      <span id="status-badge" class="badge">Inactivo</span>
+    </header>
+
+    <main class="app-main">
+      <section class="auth-panel">
+        <label>
+          <input type="radio" name="auth-mode" value="offline" checked />
+          Offline
+        </label>
+        <label>
+          <input type="radio" name="auth-mode" value="online" />
+          Microsoft
+        </label>
+        <input id="username-input" type="text" placeholder="Nombre de usuario" />
+      </section>
+
+      <section class="progress-panel">
+        <p id="status-message">Listo para jugar.</p>
+        <div class="progress-bar">
+          <div id="progress-fill" class="progress-fill"></div>
+        </div>
+      </section>
+
+      <section class="log-panel">
+        <pre id="log-output"></pre>
+      </section>
+    </main>
+
+    <footer class="app-footer">
+      <button id="play-button">Jugar</button>
+    </footer>
+  </div>
+
+  <script src="renderer.js"></script>
+</body>
+</html>

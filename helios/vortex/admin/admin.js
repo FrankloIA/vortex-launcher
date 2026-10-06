@@ -32,7 +32,7 @@ async function checkLibraryUpdates(contentCategory = category, force = false) {
     return results
 }
 function canEdit() { return !!current() && !current().published && selected === state.workspace?.activeId }
-function cancellableDraft() {const active=state?.drafts.find(d=>d.id===state.workspace?.activeId);return active && !active.published && current()?.version===active.version ? active : null}
+function cancellableDraft() {const active=state?.drafts.find(d=>d.id===state.workspace?.activeId);return active && !active.published ? active : null}
 function requireEditable() { if(canEdit()) return true; get('lockedDialog').showModal(); return false }
 function switchPanel(next) {
     if(next === 'add' && !requireEditable()) return
@@ -180,7 +180,7 @@ for(let i=0;i<localStorage.length;i++) { const key=localStorage.key(i); if(key.s
 window.addEventListener('beforeunload', event => { if(pendingSaves.size) { event.preventDefault(); event.returnValue = '' } })
 async function action(callback) {
     actionActive=true
-    const buttons = [...document.querySelectorAll('button')]; buttons.forEach(b => { b.disabled = true })
+    const buttons = [...document.querySelectorAll('button')].filter(b=>b.id!=='cancelDraft'); buttons.forEach(b => { b.disabled = true })
     try { await flushAutosave(); await callback() } catch(error) { message(error.message) }
     finally {actionActive=false; buttons.forEach(b => { b.disabled = false }); render(); switchPanel(panel) }
 }
@@ -206,7 +206,7 @@ function render() {
     get('workingStatus').textContent = (draft?.status === 'stable' ? 'Publicada' : draft?.status === 'test' ? 'En prueba' : 'Sin publicar')
     get('workingStatus').dataset.status = draft?.status || 'draft'
     get('draftNotice').hidden = !canEdit() || draft.status === 'test'
-    get('cancelDraft').disabled = !cancellableDraft()
+    get('cancelDraft').disabled = false
     get('notes').disabled = !canEdit()
     get('saveNotes').disabled = !canEdit()
     get('publish').disabled = !canEdit()
@@ -359,7 +359,13 @@ const deleteVersion=document.createElement('button');deleteVersion.textContent='
 cancelButtons.append(keepVersion,deleteVersion);cancelDialog.append(cancelTitle,cancelDescription,cancelButtons);document.body.append(cancelDialog)
 let cancelTarget
 keepVersion.onclick=()=>cancelDialog.close()
-get('cancelDraft').onclick=()=>{cancelTarget=cancellableDraft();if(!cancelTarget)return;cancelDescription.textContent='Se eliminará la versión '+cancelTarget.version+' y sus cambios de trabajo de la lista. Volverás a Crear';cancelDialog.showModal()}
+get('cancelDraft').onclick=()=>{
+    cancelTarget=cancellableDraft()
+    cancelTitle.textContent=cancelTarget?'¿Eliminar esta versión?':'Cancelar esta versión'
+    cancelDescription.textContent=cancelTarget?'Se eliminará la versión '+cancelTarget.version+' y sus cambios de trabajo de la lista. Volverás a Crear':'No hay una versión de trabajo pendiente para cancelar'
+    deleteVersion.hidden=!cancelTarget;keepVersion.textContent=cancelTarget?'No, conservar':'Cerrar'
+    cancelDialog.showModal()
+}
 deleteVersion.onclick=()=>{const draft=cancelTarget;cancelDialog.close();action(()=>discardCurrentDraft(draft))}
 get('cancelVersion').onclick = () => get('versionDialog').close()
 const loaderNames = {neoforge:'NeoForge',forge:'Forge',fabric:'Fabric',quilt:'Quilt'}

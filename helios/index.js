@@ -14,6 +14,10 @@ const { AZURE_CLIENT_ID, MSFT_OPCODE, MSFT_REPLY_TYPE, MSFT_ERROR, SHELL_OPCODE 
 const LangLoader                        = require('./app/assets/js/langloader')
 
 // Datos propios: el desarrollo queda dentro de esta copia del proyecto.
+if(process.argv.includes('--vortex-test')) {
+    process.env.VORTEX_DATA_DIRECTORY = path.join(__dirname,'.runtime/testing')
+    process.env.VORTEX_TEST_MODE = '1'
+}
 const vortexRoot = process.env.VORTEX_DATA_DIRECTORY || (app.isPackaged
     ? path.join(app.getPath('appData'), 'Vortex Launcher', '.runtime')
     : path.join(__dirname, '.runtime'))
@@ -284,6 +288,10 @@ function createWindow() {
     Object.entries(data).forEach(([key, val]) => ejse.data(key, val))
 
     win.loadURL(pathToFileURL(path.join(__dirname, 'app', 'app.ejs')).toString())
+    if(process.env.VORTEX_TEST_MODE === '1') win.webContents.on('did-finish-load',()=>{
+        win.setTitle('VORTEX LAUNCHER · PRUEBAS')
+        win.webContents.executeJavaScript("document.getElementById('frameTitleText').textContent='VORTEX LAUNCHER · PRUEBAS'")
+    })
 
     /*win.once('ready-to-show', () => {
         win.show()

@@ -20,6 +20,10 @@ if(publishedTest && fs.existsSync(testChannel)) {
     publishedTest.name = 'Vortex — pruebas · ' + channel.version
     publishedTest.description = 'Publicación firmada del panel · instancia aislada · ' + channel.version
 }
+if(process.env.VORTEX_TEST_MODE === '1') {
+    catalog.servers = catalog.servers.filter(server => server.id === 'vortex-published-test')
+    for(const server of catalog.servers) server.mainServer = true
+}
 fs.writeJsonSync(path.join(ConfigManager.getLauncherDirectory(), 'distribution_dev.json'), catalog, { spaces: 2 })
 
 const api = new DistributionAPI(

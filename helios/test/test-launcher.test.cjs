@@ -1,0 +1,20 @@
+const {test}=require('node:test')
+const assert=require('node:assert/strict')
+const fs=require('node:fs'),os=require('node:os'),path=require('node:path')
+const {prepareTestLauncher}=require('../vortex/test-launcher.cjs')
+test('El launcher de pruebas aísla los datos y conserva únicamente la cuenta Mystwer',()=>{
+    const root=fs.mkdtempSync(path.join(os.tmpdir(),'vortex-test-launcher-'))
+    try {
+        fs.mkdirSync(path.join(root,'launcher'))
+        const original=JSON.stringify({authenticationDatabase:{a:{displayName:'Mystwer'},b:{displayName:'Otro'}},selectedAccount:'b',settings:{launcher:{dataDirectory:'normal'}}})
+        const source=path.join(root,'launcher/config.json');fs.writeFileSync(source,original)
+        const result=prepareTestLauncher(root), config=JSON.parse(fs.readFileSync(path.join(result.root,'launcher/config.json')))
+        assert.equal(fs.readFileSync(source,'utf8'),original)
+        assert.deepEqual(Object.keys(config.authenticationDatabase),['a'])
+        assert.equal(config.selectedAccount,'a');assert.equal(config.selectedServer,'vortex-published-test')
+        assert.equal(config.settings.launcher.dataDirectory,path.join(root,'testing/data'))
+        assert.equal(result.instances,path.join(root,'testing/data/instances'))
+        fs.writeFileSync(source,JSON.stringify({authenticationDatabase:{b:{displayName:'Otro'}}}))
+        assert.throws(()=>prepareTestLauncher(root),/Mystwer/)
+    } finally {fs.rmSync(root,{recursive:true,force:true})}
+})

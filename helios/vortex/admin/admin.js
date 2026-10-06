@@ -52,7 +52,7 @@ const testVersionButton = document.createElement('button'); testVersionButton.te
 get('publish').after(testVersionButton)
 testVersionButton.onclick = () => action(async () => {
     const result = await api('test/prepare', { id: selected })
-    message(`Prueba ${result.version} preparada con ${result.mods} mods. Se ha abierto Vortex Launcher: comprueba el perfil «Vortex — publicación de pruebas» y pulsa Jugar.`)
+    message(`Launcher exclusivo de pruebas abierto con ${result.account} · Versión ${result.version} · ${result.mods} mods. Pulsa Jugar para probar el cliente.`)
 })
 for(const button of document.querySelectorAll('[data-provider]')) button.onclick = () => {
     get('provider').value = button.dataset.provider; get('onlineResults').replaceChildren()
@@ -62,7 +62,12 @@ for(const button of document.querySelectorAll('[data-provider]')) button.onclick
     message('')
 }
 get('addLocal').onclick = () => { if(requireEditable()) { get('upload').accept = extensions[get('localCategory').value]; get('upload').click() } }
-const message = text => { get('message').textContent = text }
+let messageTimer
+const message = text => {
+    clearTimeout(messageTimer)
+    get('message').textContent = text
+    if(text) messageTimer = setTimeout(() => { get('message').textContent = '' }, 6000)
+}
 const current = () => state?.drafts.find(d => d.id === selected)
 function onlineRow(title, description, callback, label, item) {
     const row = document.createElement('article'); row.className = 'fileRow'
@@ -169,7 +174,7 @@ function render() {
     if(draft) localStorage.setItem('vortexWorkingDraft', selected)
     get('workingStatus').textContent = (draft?.status === 'stable' ? 'Publicada' : draft?.status === 'test' ? 'En prueba' : 'Sin publicar')
     get('workingStatus').dataset.status = draft?.status || 'draft'
-    get('draftNotice').hidden = !canEdit() || draft.status === 'test' || createdThisSession.has(draft.id)
+    get('draftNotice').hidden = !canEdit() || draft.status === 'test'
     get('cancelDraft').disabled = !draft || draft.published
     get('notes').disabled = !canEdit()
     get('saveNotes').disabled = !canEdit()
@@ -409,5 +414,6 @@ get('formatJson').onclick = () => {
 }
 get('notes').oninput = () => queueAutosave('notes', selected, get('notes').value)
 get('saveNotes').onclick = () => action(async () => { await api('notes', { id: selected, revision: current().revision, notes: get('notes').value }); await refresh(); message('Notas guardadas') })
-get('publish').onclick = () => action(async () => { const draft = current(); if(!confirm(`¿Publicar la versión ${draft.version} en pruebas?`)) return; await api('publish', { id: draft.id, revision: draft.revision }); await refresh(); message('Versión publicada en el canal de pruebas') })
+get('closePublishSuccess').onclick = () => get('publishSuccess').close()
+get('publish').onclick = () => action(async () => { const draft = current(); if(!confirm(`¿Publicar la versión ${draft.version} en pruebas?`)) return; const result=await api('publish', { id: draft.id, revision: draft.revision }); await refresh(); get('publishSuccessText').textContent='La versión ' + result.published + ' se publicó correctamente en pruebas. Puedes abrir el launcher exclusivo con Probar versión';get('publishSuccess').showModal();message('Versión publicada en el canal de pruebas') })
 action(async () => { await refresh() })

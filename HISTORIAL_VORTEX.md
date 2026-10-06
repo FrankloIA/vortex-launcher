@@ -2,11 +2,50 @@
 
 Este documento conserva los cambios desde la primera versión. No contiene credenciales ni archivos binarios. Git conserva el código y su autoría; los manifiestos registran rutas y hashes de mods, resourcepacks, shaders, configuraciones y cualquier otro archivo del pack.
 
+## Estado vigente y entrega entre agentes — 2026-10-07
+
+Este resumen prevalece sobre decisiones anteriores sustituidas. Instrucciones obligatorias: AGENTS.md y CLAUDE.md. Contexto para Claude: PROMPT_CLAUDE_VORTEX.md. Coordinación de proyectos propios: docs/MODS_EN_DESARROLLO.md. No se garantiza acceso a los chats privados del otro agente; los hechos faltantes deben quedar registrados como pendientes.
+
+### Estado comprobado
+
+- Launcher Windows: 1.0.2. Panel local: http://127.0.0.1:43117, sin contraseña. Fuente en helios; runtime local separado e ignorado.
+- Pack seleccionado como trabajo activo: 1.0.2, borrador editable recuperado. Última consulta: revisión 7, 726 archivos. La revisión cambia al incorporar notas de nuevos commits; consultar el panel antes de mutar.
+- Inventario: 199 mods, 26 resourcepacks, 4 shaderpacks, 487 config, 1 defaultconfigs, 5 customnpcs, 2 bivrik, options.txt y servers.dat. Las rutas y hashes completos están en las instantáneas posteriores de este documento.
+- 1.0.1 sigue disponible como publicación en pruebas. No considerar ninguna de estas publicaciones oficial por su número. El historial de Crear solo admite oficiales.
+- Cancelar siempre está habilitado y se refiere a la versión seleccionada. El caso seleccionar 1.0.1 mientras 1.0.2 está activa se verificó sin modificar los datos reales: se conserva 1.0.2. Las oficiales no se cancelan.
+- La 1.0.2 se recuperó de la última instantánea firmada de prueba después de una eliminación accidental. Se verificaron los 726 blobs. Las notas posteriores de código se reconstruyen desde Git; no afirmar recuperación de cambios sin publicar que no se archivaron. Desde c16d1e8 también se guardan borradores completos al cancelar.
+- Catálogos automáticos Modrinth/CurseForge con buscador, páginas, compatibilidad y exclusión de proyectos conocidos. Verificados contra ambas API y en la interfaz. No se ocultan con certeza proyectos aún no identificados.
+
+### Servidor: hechos observados y límites
+
+En el navegador autenticado se revisó el servidor Vortex en https://gamedash.astrolnodes.net/server/d2c7637e. Dirección del juego ly06.astrolnodes.net:25622; online al observarlo. Startup declara Minecraft 1.21.1, Java 21, Arclight con NeoForge. El número exacto de NeoForge del servidor no se verificó (21.1.250 es la referencia del cliente). SFTP disponible en ly06.astrolnodes.net:2022; consola, archivos, backups y controles de encendido visibles. No se alteró producción ni se cambió ninguna credencial. No se encontró una opción API en las pantallas revisadas: acceso API estable pendiente de confirmar. No guardar sesiones del navegador como credenciales del administrador.
+
+Acordado con el usuario pero todavía sin implementar: selector Launcher (cliente)/Servidor en Biblioteca con las mismas funciones, pestaña Servidor con cuadro de cambios, contenidos/configuraciones separados, versión coordinada, despliegue con backups y recuperación, prueba de conexión y compatibilidad real con Arclight. Cada mod requiere doble revisión: catálogo/documentación y archivo/código/dependencias. Si hay contradicción o evidencia insuficiente, Pendiente de verificar y prueba aislada antes de distribuir. Incluye mods propios. No convertir datos desconocidos en Ambos automáticamente.
+
+### Coordinación con Claude y próxima acción
+
+El usuario solicita que ChatGPT y Claude mantengan este historial en cada tarea y hagan entregas continuas entre sí, incluidos mods en desarrollo. Se crearon AGENTS.md, CLAUDE.md, PROMPT_CLAUDE_VORTEX.md y docs/MODS_EN_DESARROLLO.md. No hay nombres, carpetas o repositorios confirmados de los mods que está creando Claude; completar sus fichas antes de asignar o modificar uno. No atribuir ningún archivo concreto a Claude sin pruebas.
+
+Siguiente paso del sistema servidor: confirmar la interfaz API admitida y el inventario actual sin alterar producción; después desarrollar el modelo y las pruebas de cliente/servidor. No requiere publicar la 1.0.2 actual como oficial. Mantener las protecciones de Jarvis.
+
+Al cerrar cada tarea registrar aquí: fecha/agente, motivo, archivos o mods afectados, revisión y estado del pack, comprobaciones/resultados, limitaciones, pendientes y siguiente paso; actualizar registro de mods aplicable y hacer commit firmado de ambos. Git y documentos son la fuente de continuidad compartida.
+
+### Código posterior a la primera recopilación del historial
+
+- 3d59a0b Conservar inventarios y cambios antes de retirar publicaciones antiguas para limitar el almacenamiento de GitHub
+- 1a74943 Respetar la pestaña elegida al renovar el estado para no interrumpir la creación de versiones
+- 8c8e830 Permitir descubrir contenido compatible sin buscar nombres y evitar ofrecer proyectos ya instalados
+- 67242ef Retirar la versión cancelada y su prueba de la selección después de confirmar para evitar entradas residuales
+- 0f7343f Evitar versiones duplicadas en el selector para conservar visible el borrador con los últimos cambios
+- d6fe6dc Mantener accesible la cancelación del trabajo activo al consultar otras versiones
+- c16d1e8 Conservar borradores cancelados completos para recuperar trabajo eliminado por error
+- e653eff Cancelar únicamente la versión seleccionada para no eliminar por error otro trabajo activo
+
 ## Reglas vigentes
 
 - Los archivos modificados por Jarvis conservan sus bytes exactos y no reciben actualizaciones de los catálogos. Las imágenes y metadatos originales no autorizan sustituirlos.
 - Cada cambio de contenido se registra automáticamente en las notas. Los inventarios completos siguientes permiten comparar adiciones, retiradas y modificaciones por ruta y SHA-256. No se atribuyen modificaciones antiguas sin pruebas.
-- La base fue 1.0.1; actualmente se prepara 1.0.2 en pruebas. Una prueba no equivale a publicación oficial. Se retiraron las versiones de preparación 1.0.3 y 1.0.4 sin descartar los archivos de la base.
+- La base fue 1.0.1; actualmente se prepara 1.0.2 como borrador recuperado para volver a probar. Una prueba no equivale a publicación oficial. Se retiraron las versiones de preparación 1.0.3 y 1.0.4 sin descartar los archivos de la base.
 - El historial de Crear muestra únicamente las tres últimas publicaciones oficiales. Solo Publicada bloquea la edición; En pruebas permite corregir y volver a probar.
 - Tras publicar oficialmente se archivan notas e inventarios antes de retirar de GitHub las publicaciones oficiales conocidas anteriores a esas tres. Se conservan el canal estable, el instalador más reciente y los tags/commits de Git. Publicaciones desconocidas y borradores remotos no se eliminan automáticamente. La limpieza fallida se vuelve a intentar en la siguiente publicación.
 - Este archivo debe incluirse en el commit al terminar cualquier trabajo compartido. La publicación actualiza automáticamente sus inventarios. No editar salidas de compilación ni copiar backups sobre el código.

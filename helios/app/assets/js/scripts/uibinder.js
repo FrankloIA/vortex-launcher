@@ -39,6 +39,14 @@ let currentView
  * fades in.
  */
 function switchView(current, next, currentFadeTime = 500, nextFadeTime = 500, onCurrentFade = () => {}, onNextFade = () => {}){
+    if((next === VIEWS.landing || next === VIEWS.settings) && !Object.keys(ConfigManager.getAuthAccounts()).length){
+        loginOptionsCancelEnabled(false)
+        loginOptionsViewOnLoginSuccess = VIEWS.landing
+        loginOptionsViewOnLoginCancel = VIEWS.loginOptions
+        next = VIEWS.loginOptions
+        onCurrentFade = () => {}
+        onNextFade = () => {}
+    }
     currentView = next
     $(`${current}`).fadeOut(currentFadeTime, async () => {
         await onCurrentFade()
@@ -55,6 +63,17 @@ function switchView(current, next, currentFadeTime = 500, nextFadeTime = 500, on
  */
 function getCurrentView(){
     return currentView
+}
+
+function requireAccountSession(){
+    if(Object.keys(ConfigManager.getAuthAccounts()).length) return false
+    loginOptionsCancelEnabled(false)
+    loginOptionsViewOnLoginSuccess = VIEWS.landing
+    loginOptionsViewOnLoginCancel = VIEWS.loginOptions
+    updateSelectedAccount(null)
+    for(const view of [VIEWS.landing, VIEWS.settings]) $(view).stop(true, false).hide()
+    switchView(getCurrentView(), VIEWS.loginOptions)
+    return true
 }
 
 async function showMainUI(data){

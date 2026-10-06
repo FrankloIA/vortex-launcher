@@ -499,18 +499,13 @@ function processLogOut(val, isLastAccount){
         })
     } else {
         AuthManager.removeMojangAccount(uuid).then(() => {
-            if(!isLastAccount && uuid === prevSelAcc.uuid){
+            if(Object.keys(ConfigManager.getAuthAccounts()).length && uuid === prevSelAcc?.uuid){
                 const selAcc = ConfigManager.getSelectedAccount()
                 refreshAuthAccountSelected(selAcc.uuid)
                 updateSelectedAccount(selAcc)
                 validateSelectedAccount()
             }
-            if(isLastAccount) {
-                loginOptionsCancelEnabled(false)
-                loginOptionsViewOnLoginSuccess = VIEWS.settings
-                loginOptionsViewOnLoginCancel = VIEWS.loginOptions
-                switchView(getCurrentView(), VIEWS.loginOptions)
-            }
+            requireAccountSession()
         })
         $(parent).fadeOut(250, () => {
             parent.remove()
@@ -550,25 +545,20 @@ ipcRenderer.on(MSFT_OPCODE.REPLY_LOGOUT, (_, ...arguments_) => {
         
         AuthManager.removeMicrosoftAccount(uuid)
             .then(() => {
-                if(!isLastAccount && uuid === prevSelAcc.uuid){
+                if(Object.keys(ConfigManager.getAuthAccounts()).length && uuid === prevSelAcc?.uuid){
                     const selAcc = ConfigManager.getSelectedAccount()
                     refreshAuthAccountSelected(selAcc.uuid)
                     updateSelectedAccount(selAcc)
                     validateSelectedAccount()
                 }
-                if(isLastAccount) {
-                    loginOptionsCancelEnabled(false)
-                    loginOptionsViewOnLoginSuccess = VIEWS.settings
-                    loginOptionsViewOnLoginCancel = VIEWS.loginOptions
-                    switchView(getCurrentView(), VIEWS.loginOptions)
-                }
+                requireAccountSession()
                 if(msAccDomElementCache) {
                     msAccDomElementCache.remove()
                     msAccDomElementCache = null
                 }
             })
             .finally(() => {
-                if(!isLastAccount) {
+                if(!requireAccountSession()) {
                     switchView(getCurrentView(), VIEWS.settings, 500, 500)
                 }
             })

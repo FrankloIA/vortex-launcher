@@ -36,6 +36,14 @@ Implementados el selector Launcher (cliente)/Servidor en Biblioteca, pestaña Se
 - No se añadieron, quitaron ni modificaron mods, resourcepacks o configs reales del pack/servidor. No se reinició, escribió ni publicó producción. Falta probar el despliegue real y una partida de la versión elegida. No certificar compatibilidad completa solo por bytecode o running.
 - Los datos de servidor, tokens, claves y archivos descargados permanecen en runtime ignorado. El README y archivos de proveedor ajenos se conservan fuera de este commit. El registro de repositorios de mods de Claude no cambió porque no se editaron sus proyectos.
 
+### Entrega ChatGPT — 2026-10-07: migración automática de dirección
+
+- El usuario comunicó migración de IP a las 11:00 hora española y pidió dirección automática y actualización del perfil Vortex en servers.dat. Autorizó consulta desde GitHub Actions y guardado cifrado del token del hosting; no se presume permiso sobre otras claves.
+- Se añadió workflow programado cada cinco minutos y ejecución manual, publicador de dirección firmada, clave pública independiente del pack y resolución en el launcher con caché firmada. La dirección se usa para estado y autoconexión; antes de iniciar Minecraft se actualiza Vortex en servers.dat sin borrar otros servidores, iconos ni datos adicionales.
+- Fuente: .github/workflows/server-address.yml; helios/tools/publish-server-address.cjs; vortex/server-address.json, server-address.cjs, servers-dat.cjs; launcher-server-status, landing y processbuilder. Pruebas server-address.test.cjs y documentación de integración. No se modificaron mods, resourcepacks ni configuraciones de producción.
+- Las pruebas de migración NBT, conservación, archivos corruptos y firmas inválidas pasaron junto con las 13 de hosting y las tres de arranque NeoForge. Se conserva 1.0.2, sin publicación oficial del pack. GitHub puede retrasar el intervalo programado; una partida ya abierta requiere reinicio del cliente para releer servers.dat.
+- Los launchers anteriores necesitan recibir esta compilación mediante publicación oficial. No afirmar que ya la tienen por haber subido el código. Consulta docs/stage-3/server-integration.md para secretos, endpoint y continuidad.
+
 ### Coordinación con Claude y próxima acción
 
 El usuario solicita que ChatGPT y Claude mantengan este historial en cada tarea y hagan entregas continuas entre sí, incluidos mods en desarrollo. Se crearon AGENTS.md, CLAUDE.md, PROMPT_CLAUDE_VORTEX.md y docs/MODS_EN_DESARROLLO.md. No hay nombres, carpetas o repositorios confirmados de los mods que está creando Claude; completar sus fichas antes de asignar o modificar uno. No atribuir ningún archivo concreto a Claude sin pruebas.

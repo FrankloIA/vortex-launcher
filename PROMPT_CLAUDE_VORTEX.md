@@ -46,6 +46,8 @@ Después de publicar, se registra el inventario y se limpian releases oficiales 
 
 ## Integración del servidor: implementada y comprobada por API
 
+La dirección también es dinámica: workflow raíz server-address.yml consulta la asignación predeterminada y publica solo dirección/puerto en un registro firmado de la release vortex-server-address. El launcher verifica una clave pública exclusiva, conserva caché firmada y actualiza servers.dat de la instancia antes de arrancar, preservando iconos y servidores ajenos. La clave del pack no cambia. Lee la sección Dirección dinámica en docs/stage-3/server-integration.md y verifica el último run de Actions; GitHub no garantiza puntualidad exacta. Los clientes anteriores requieren la compilación nueva mediante publicación oficial.
+
 El usuario quiere un selector **Launcher (cliente) / Servidor** en Biblioteca con las mismas funciones; una pestaña **Servidor** con cuadro de cambios; versiones coordinadas, dependencias, configuraciones separadas, pruebas de conexión cliente/servidor, backups y despliegue con recuperación.
 
 Cada mod debe tener doble revisión: catálogo/documentación y análisis del archivo (metadatos, código y dependencias), incluidos los propios. Solo cliente se distribuye al cliente; ambos a ambos; solo servidor al servidor. Clasificación incierta queda Pendiente de verificar y requiere prueba antes de distribución. Las declaraciones opcional/unknown del catálogo no se pueden convertir sin criterio en ambos. No basta buscar un texto CLIENT/SERVER ni usar el lado de una dependencia como si definiera el mod entero.

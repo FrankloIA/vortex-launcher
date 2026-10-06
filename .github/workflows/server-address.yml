@@ -1,0 +1,25 @@
+name: Sincronizar dirección de Vortex
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '2-59/5 * * * *'
+permissions:
+  contents: write
+concurrency:
+  group: vortex-server-address
+  cancel-in-progress: false
+jobs:
+  address:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Consultar hosting y publicar dirección firmada
+        run: node helios/tools/publish-server-address.cjs
+        env:
+          GH_TOKEN: ${{ github.token }}
+          VORTEX_PTERODACTYL_API_TOKEN: ${{ secrets.VORTEX_PTERODACTYL_API_TOKEN }}
+          VORTEX_ADDRESS_SIGNING_KEY: ${{ secrets.VORTEX_ADDRESS_SIGNING_KEY }}

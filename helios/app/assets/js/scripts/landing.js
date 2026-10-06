@@ -289,8 +289,10 @@ const refreshServerStatus = async () => {
         const key = serv.hostname + ':' + serv.port
         if(!serverStatusRequests.has(key)){
             serverStatusRequests.set(key, (async () => {
-                try { return await getServerStatus(767, serv.hostname, serv.port) }
-                catch { return await getServerStatus(767, serv.hostname, serv.port) }
+                const addressSync=require('../vortex/server-address.cjs')
+                const address=addressSync.isVortex(serv)?await addressSync.resolveAddress({cacheFile:path.join(ConfigManager.getDataDirectory(),'.vortex-server-address.json')}):{hostname:serv.hostname,port:serv.port}
+                try { return await getServerStatus(767, address.hostname, address.port) }
+                catch { return await getServerStatus(767, address.hostname, address.port) }
             })().finally(() => serverStatusRequests.delete(key)))
         }
         const status = await serverStatusRequests.get(key)
@@ -629,6 +631,13 @@ async function dlAsync(login = true) {
         const authUser = ConfigManager.getSelectedAccount()
         loggerLaunchSuite.info(`Sending selected account (${authUser.displayName}) to ProcessBuilder.`)
         let pb = new ProcessBuilder(serv, versionData, modLoaderData, authUser, remote.app.getVersion())
+        const addressSync=require('../vortex/server-address.cjs')
+        if(addressSync.isVortex(serv)) {
+            const cacheFile=path.join(ConfigManager.getDataDirectory(),'.vortex-server-address.json')
+            const address=await addressSync.resolveAddress({cacheFile,force:true})
+            pb.vortexAddress=address
+            require('../vortex/servers-dat.cjs').updateServersDat(pb.gameDir,address)
+        }
         setLaunchDetails(Lang.queryJS('landing.dlAsync.launchingGame'))
 
         // const SERVER_JOINED_REGEX = /\[.+\]: \[CHAT\] [a-zA-Z0-9_]{1,16} joined the game/

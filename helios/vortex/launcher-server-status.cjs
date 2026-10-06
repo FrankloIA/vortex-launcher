@@ -1,5 +1,6 @@
 const {getServerStatus}=require('./server-status.cjs')
 async function launcherServerStatus(protocol,hostname,port,{fetcher=fetch,ping=getServerStatus}={}) {
+    if(hostname==='ly06.astrolnodes.net' && Number(port)===25622){const address=await require('./server-address.cjs').resolveAddress({fetcher});hostname=address.hostname;port=address.port}
     // Solo se recibe un resumen público desde el panel local. Ninguna clave llega al launcher.
     try {
         const response=await fetcher('http://127.0.0.1:43117/api/server/status',{signal:AbortSignal.timeout(1200)})

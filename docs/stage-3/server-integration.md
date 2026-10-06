@@ -1,5 +1,15 @@
 # Integración AstrolNodes y estado del launcher
 
+## Dirección dinámica (2026-10-07)
+
+El usuario autorizó guardar la clave del hosting como secreto de GitHub Actions para consultar la asignación predeterminada incluso con su PC apagado. El workflow raíz `.github/workflows/server-address.yml` consulta cada cinco minutos y permite ejecución manual. GitHub puede retrasar las ejecuciones programadas; no es tiempo real garantizado.
+
+`tools/publish-server-address.cjs` publica únicamente dirección/puerto e identificador en `vortex-server-address/address.json`, con firma Ed25519 exclusiva de direcciones, independiente de la clave del pack. El cliente verifica la clave pública incluida en `server-address.json`, conserva una copia firmada para fallos de red y usa la dirección tanto para estado como para conexión. No se genera una nueva versión oficial del pack por cambiar la IP.
+
+Antes de arrancar Minecraft, `servers-dat.cjs` actualiza la entrada Vortex de la instancia seleccionada, conserva otras entradas, iconos y etiquetas NBT desconocidas, soporta compresión gzip y crea una copia local de seguridad. Un archivo corrupto no se sobrescribe. El `servers.dat` firmado del pack no se altera; la dirección es una adaptación de la instancia instalada. Minecraft ya abierto necesita cerrarse y volver a arrancarse para cargar el cambio.
+
+Los clientes anteriores a esta compilación necesitan recibir el ejecutable actualizado mediante el flujo oficial habitual. La subida del código no equivale a distribuir ese ejecutable. Los secretos nunca están en el launcher ni en el registro público.
+
 Entrega ChatGPT, 2026-10-07. Fuente: `helios`; el runtime es privado e ignorado por Git. No se modificaron mods, mundos ni archivos de producción para verificar la conexión.
 
 ## Conexión y uso

@@ -346,12 +346,12 @@ class ProcessBuilder {
         if(this.config.getAutoConnect() && this.server.rawServer.autoconnect){
             if(mcVersionAtLeast('1.20', this.server.rawServer.minecraftVersion)){
                 args.push('--quickPlayMultiplayer')
-                args.push(`${this.server.hostname}:${this.server.port}`)
+                args.push(`${this.vortexAddress?.hostname || this.server.hostname}:${this.vortexAddress?.port || this.server.port}`)
             } else {
                 args.push('--server')
-                args.push(this.server.hostname)
+                args.push(this.vortexAddress?.hostname || this.server.hostname)
                 args.push('--port')
-                args.push(this.server.port)
+                args.push(this.vortexAddress?.port || this.server.port)
             }
         }
     }

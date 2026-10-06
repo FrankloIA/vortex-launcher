@@ -1,0 +1,6 @@
+{
+  "serverId": "d2c7637e",
+  "url": "https://github.com/FrankloIA/vortex-launcher/releases/download/vortex-server-address/address.json",
+  "publicKey": "-----BEGIN PUBLIC KEY-----\nMCowBQYDK2VwAyEAElGJtDi88SRD1/h5ypyiaJ8h97Yd/ueyPlAbiKxFeSQ=\n-----END PUBLIC KEY-----\n",
+  "fallback": {"hostname": "ly06.astrolnodes.net", "port": 25622}
+}

@@ -15,6 +15,8 @@ app.whenReady().then(async () => {
         const result = await window.webContents.executeJavaScript(`(() => {
             const ids = ['vortexSettings','vortexHome','launch_button','server_selection_button','avatarOverlay'];
             for(const id of ids) if(!document.getElementById(id)) throw Error('Control ausente: '+id);
+            if(!document.getElementById('vortexServerStatus').contains(document.getElementById('player_count'))) throw Error('Estado del servidor sin conectar');
+            if(document.getElementById('vortexServerStatus').textContent.trim()==='null') throw Error('Estado nulo visible');
             if(document.querySelectorAll('.vortexNav button').length!==2 || document.querySelector('.vortexCards')) throw Error('Navegación sin simplificar');
             if(document.querySelectorAll('#launch_button').length!==1) throw Error('Control duplicado');
             document.getElementById('main').style.display='block';document.getElementById('landingContainer').style.display='block';document.getElementById('loadingContainer').style.display='none';

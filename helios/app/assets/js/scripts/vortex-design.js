@@ -9,13 +9,17 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     showHead()
     new MutationObserver(showHead).observe(avatar, { attributes: true, attributeFilter: ['style'] })
-    byId('vortexServerStatus').append(byId('server_status'))
+    byId('vortexServerStatus').append(byId('server_status_wrapper'))
     byId('vortexLaunchSlot').append(byId('launch_content'))
     byId('vortexProgress').append(byId('launch_details'))
     byId('launch_button').textContent = '▶  JUGAR'
-    const status = byId('server_status')
-    const normalizeStatus = () => { if(!status.textContent.trim() || status.textContent.trim() === 'null') status.textContent = 'Estado no disponible' }
-    normalizeStatus(); new MutationObserver(normalizeStatus).observe(status, { childList: true, characterData: true, subtree: true })
+    const status = byId('player_count')
+    const normalizeStatus = () => {
+        const value = status.textContent.trim()
+        if(!value || /^(null|undefined)$/i.test(value)) status.textContent = 'Estado no disponible'
+    }
+    normalizeStatus()
+    new MutationObserver(normalizeStatus).observe(status, { childList: true, characterData: true, subtree: true })
     byId('vortexSettings').onclick = () => byId('settingsMediaButton').click()
     byId('vortexHome').onclick = () => { if(byId('newsContainer').style.top === '0px') byId('newsButton').click() }
 })

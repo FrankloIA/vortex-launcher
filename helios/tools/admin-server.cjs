@@ -76,8 +76,8 @@ function startAdmin({ root = path.resolve(__dirname, '../.runtime/pack-admin'), 
                     const releases=store.releases()
                     drafts.push(...releases.slice(0,4).map(r=>({...r,id:'release:'+r.version,published:true,readOnly:true})))
                     for(const draft of drafts) {
-                        draft.published = store.isPublished(draft)
-                        draft.status = channels.stable?.version === draft.version ? 'stable' : draft.published ? 'test' : 'draft'
+                        draft.published = store.isOfficial(draft)
+                        draft.status = store.isOfficial(draft) ? 'stable' : store.isPublished(draft) ? 'test' : 'draft'
                         for(const file of draft.files) {
                             const cached=metadata.get(file);file.source ||= cached?.source
                             file.display = cached?.display || protection.display(file) || libraryMetadata.get(String(file.source?.projectId) + ':' + file.source?.fileId) || [...libraryMetadata.values()].find(item=>item.filename?.toLowerCase()===file.path.split('/').at(-1).toLowerCase())
@@ -138,7 +138,7 @@ function startAdmin({ root = path.resolve(__dirname, '../.runtime/pack-admin'), 
                     case '/api/providers/search': result = await providers.search(body.provider, String(body.query || '').slice(0,200), body.category,targetFor(body.id)); break
                     case '/api/providers/install': {
                         const draft = store.getDraft(body.id)
-                        if(store.isPublished(draft)) throw Error('Para añadir o modificar debes crear una nueva versión')
+                        if(store.isOfficial(draft)) throw Error('Para añadir o modificar debes crear una nueva versión')
                         protection.assertCatalogReplacement(draft,body.replacePath,body.replacePath,body.projectId)
                         if(draft.revision !== body.revision) throw Error('Recarga el borrador')
                         if(body.replacePath && !draft.files.some(f => {const source=f.source || metadata.get(f)?.source;return f.path === body.replacePath && f.path.startsWith(body.category + '/') && source?.provider === body.provider && String(source.projectId) === String(body.projectId)})) throw Error('La actualización no corresponde al archivo seleccionado')

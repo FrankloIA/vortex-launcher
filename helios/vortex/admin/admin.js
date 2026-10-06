@@ -167,9 +167,9 @@ async function refresh() {
 function render() {
     const draft = current()
     if(draft) localStorage.setItem('vortexWorkingDraft', selected)
-    get('workingStatus').textContent = (draft?.status === 'stable' ? 'Publicada' : draft?.published ? 'Publicada en pruebas' : 'Sin publicar')
+    get('workingStatus').textContent = (draft?.status === 'stable' ? 'Publicada' : draft?.status === 'test' ? 'En prueba' : 'Sin publicar')
     get('workingStatus').dataset.status = draft?.status || 'draft'
-    get('draftNotice').hidden = !canEdit() || createdThisSession.has(draft.id)
+    get('draftNotice').hidden = !canEdit() || draft.status === 'test' || createdThisSession.has(draft.id)
     get('cancelDraft').disabled = !draft || draft.published
     get('notes').disabled = !canEdit()
     get('saveNotes').disabled = !canEdit()

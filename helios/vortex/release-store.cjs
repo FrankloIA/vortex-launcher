@@ -60,7 +60,7 @@ class ReleaseStore {
         if(this.workspace().activeId !== name) throw Error('No hay una versión activa para cancelar')
         const draft=this.getDraft(name)
         if(draft.revision!==revision) throw Error('Recarga la versión antes de cancelarla')
-        if(this.isPublished(draft)) throw Error('La publicación se conserva; crea otra versión')
+        if(this.isOfficial(draft)) throw Error('La publicación se conserva; crea otra versión')
         fs.unlinkSync(this.draftFile(name));this.setWorkspace({activeId:null});return {cancelled:name}
     }
     restore(version) {
@@ -85,7 +85,7 @@ class ReleaseStore {
     edit(name, revision, change) {
         const draft = this.getDraft(name)
         if(draft.revision !== revision) throw Error('Conflicto: recarga el borrador')
-        if(this.isPublished(draft)) throw Error('Para añadir o modificar debes crear una nueva versión')
+        if(this.isOfficial(draft)) throw Error('Para añadir o modificar debes crear una nueva versión')
         change(draft); validate(draft); draft.revision++; save(this.draftFile(name), draft); return draft
     }
     add(name, revision, source, target, policy, replacePath, origin = 'local') {
@@ -105,6 +105,7 @@ class ReleaseStore {
         return this.edit(name, revision, d => { d.files = d.files.filter(f => f.path.toLowerCase() !== target.toLowerCase() && f.path !== replacePath); d.files.push(candidate) })
     }
     remove(name, revision, target) { return this.edit(name, revision, d => { d.files = d.files.filter(f => f.path !== target) }) }
+    isOfficial(draft) { return json(path.join(this.root,'channels/stable.json'))?.version === draft.version }
     isPublished(draft) { return fs.existsSync(path.join(this.root, 'releases', versionName(draft.version) + '.json')) }
     createNext(mode, sourceId) {
         if(this.workspace().activeId) throw Error('Continúa, publica o cancela la versión actual antes de crear otra')
@@ -137,7 +138,10 @@ class ReleaseStore {
         if(!draft.files.length) throw Error('No se publica un pack vacío')
         if(Object.keys(draft.editorDrafts || {}).length) throw Error('Hay configuraciones pendientes: abre el editor y guarda los cambios antes de publicar')
         const releaseFile = path.join(this.root, 'releases', versionName(draft.version) + '.json')
-        if(fs.existsSync(releaseFile)) throw Error('La versión es inmutable; usa una nueva versión')
+        if(fs.existsSync(releaseFile)) {
+            if(this.isOfficial(draft)) throw Error('La versión oficial es inmutable; usa una nueva versión')
+            const archive=path.join(this.root,'release-history',draft.version+'-'+Date.now()+'.json');fs.mkdirSync(path.dirname(archive),{recursive:true});fs.copyFileSync(releaseFile,archive)
+        }
         for(const file of draft.files) {
             const data = fs.readFileSync(path.join(this.root, 'blobs', file.sha256))
             if(data.length !== file.size || hash(data) !== file.sha256) throw Error('Blob corrupto')
@@ -153,7 +157,7 @@ class ReleaseStore {
         const envelope = { payload, signature: crypto.sign(null, Buffer.from(payload), fs.readFileSync(keyFile)).toString('base64') }
         save(releaseFile, envelope)
         save(path.join(this.root, 'channels', channel + '.json'), { version: manifest.version, releaseSha256: hash(Buffer.from(JSON.stringify(envelope, null, 2))) })
-        if(this.workspace().activeId === name) this.setWorkspace({activeId:null})
+
         return envelope
     }
 }

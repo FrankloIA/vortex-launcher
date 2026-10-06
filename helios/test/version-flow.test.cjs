@@ -5,6 +5,16 @@ const os = require('node:os')
 const path = require('node:path')
 const { ReleaseStore } = require('../vortex/release-store.cjs')
 
+test('En prueba conserva la edición y permite publicar otra revisión de la misma versión', () => {
+    const root=fs.mkdtempSync(path.join(os.tmpdir(),'vortex-test-edit-')), store=new ReleaseStore(root)
+    store.create('trial','1.0.1','test');const input=path.join(root,'fixture');fs.writeFileSync(input,'{}')
+    store.add('trial',0,input,'config/example.json','seed');store.setWorkspace({activeId:'trial',draftRecoveryApplied:true})
+    store.publish('trial',1);assert.equal(store.workspace().activeId,'trial')
+    store.edit('trial',1,d=>{d.notes='Corrección en pruebas'})
+    const release=store.publish('trial',2);assert.equal(JSON.parse(release.payload).notes,'Corrección en pruebas')
+    assert.equal(fs.readdirSync(path.join(root,'release-history')).length,1)
+})
+
 test('Crear copia la publicación, incrementa cada diez parches y bloquea su edición', () => {
     const root = fs.mkdtempSync(path.join(os.tmpdir(), 'vortex-version-flow-'))
     const store = new ReleaseStore(root)
@@ -13,6 +23,7 @@ test('Crear copia la publicación, incrementa cada diez parches y bloquea su edi
     fs.writeFileSync(source, '{}')
     store.add('original', 0, source, 'config/example.json', 'seed')
     store.publish('original', 1)
+    fs.writeFileSync(path.join(root,'channels/stable.json'),JSON.stringify({version:'1.0.9'}))
     assert.throws(() => store.edit('original', 1, d => { d.notes = 'cambio' }), /crear una nueva versión/)
     const next = store.createNext('new', 'original')
     assert.equal(next.version, '1.1.0')

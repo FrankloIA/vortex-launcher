@@ -24,7 +24,7 @@ function atomic(file, data) {
 const json = (file, fallback) => fs.existsSync(file) ? JSON.parse(fs.readFileSync(file, 'utf8')) : fallback
 const save = (file, value) => atomic(file, JSON.stringify(value, null, 2))
 function validate(manifest) {
-    if(manifest.schema !== 1 || manifest.minecraft !== '1.21.1' || manifest.neoforge !== '21.1.250' || !Array.isArray(manifest.files) || manifest.files.length > 10000) throw Error('Catálogo incompatible')
+    if(manifest.schema !== 1 || !/^\d+\.\d+(\.\d+)?$/.test(manifest.minecraft) || !['neoforge','forge','fabric','quilt'].includes(manifest.loader || 'neoforge') || !Array.isArray(manifest.files) || manifest.files.length > 10000) throw Error('Catálogo incompatible')
     versionName(manifest.version)
     const names = new Set()
     for(const file of manifest.files) {
@@ -43,6 +43,32 @@ class ReleaseStore {
     constructor(root) { this.root = path.resolve(root); fs.mkdirSync(this.root, { recursive: true }) }
     draftFile(name) { return path.join(this.root, 'drafts', id(name) + '.json') }
     getDraft(name) { const d = json(this.draftFile(name)); if(!d) throw Error('Borrador inexistente'); return d }
+    workspace() { return json(path.join(this.root,'workspace.json'),{activeId:null,target:{minecraft:'1.21.1',loader:'neoforge'}}) }
+    setWorkspace(change) { const workspace={...this.workspace(),...change};save(path.join(this.root,'workspace.json'),workspace);return workspace }
+    releases() {
+        const folder=path.join(this.root,'releases')
+        return fs.existsSync(folder) ? fs.readdirSync(folder).filter(n=>n.endsWith('.json')).map(n=>JSON.parse(json(path.join(folder,n)).payload)).sort((a,b)=>b.publishedAt.localeCompare(a.publishedAt)) : []
+    }
+    cancel(name,revision) {
+        if(this.workspace().activeId !== name) throw Error('No hay una versión activa para cancelar')
+        const draft=this.getDraft(name)
+        if(draft.revision!==revision) throw Error('Recarga la versión antes de cancelarla')
+        if(this.isPublished(draft)) throw Error('La publicación se conserva; crea otra versión')
+        fs.unlinkSync(this.draftFile(name));this.setWorkspace({activeId:null});return {cancelled:name}
+    }
+    restore(version) {
+        const manifest=this.releases().find(r=>r.version===version)
+        if(!manifest) throw Error('Versión del historial inexistente')
+        const name='pack-'+crypto.randomUUID(), releases=this.releases()
+        const target=this.workspace().target
+        let draftVersion=manifest.version.replace(/ fixed$/, '')+'-restored'
+        let suffix=1
+        while(this.isPublished({version:draftVersion}) || (fs.existsSync(path.join(this.root,'drafts')) && fs.readdirSync(path.join(this.root,'drafts')).filter(n=>n.endsWith('.json')).some(n=>json(path.join(this.root,'drafts',n)).version===draftVersion))) draftVersion=manifest.version.replace(/ fixed$/, '')+'-restored-'+suffix++
+        const draft={...manifest,version:draftVersion,revision:0,notes:'Restauración completa de '+version,restoredFrom:version}
+        delete draft.publishedAt;delete draft.editorDrafts
+        save(this.draftFile(name),draft);this.setWorkspace({activeId:name,target:{minecraft:draft.minecraft,loader:draft.loader || 'neoforge'}})
+        return {id:name,version:draftVersion,restoredFrom:version}
+    }
     create(name, version, author) {
         const target = this.draftFile(name)
         if(fs.existsSync(target)) throw Error('El borrador ya existe')
@@ -55,10 +81,17 @@ class ReleaseStore {
         if(this.isPublished(draft)) throw Error('Para añadir o modificar debes crear una nueva versión')
         change(draft); validate(draft); draft.revision++; save(this.draftFile(name), draft); return draft
     }
-    add(name, revision, source, target, policy, replacePath) {
+    add(name, revision, source, target, policy, replacePath, origin = 'local') {
         const data = fs.readFileSync(source)
         const sha256 = hash(data)
         const candidate = { path: target, sha256, size: data.length, policy }
+        const draft=this.getDraft(name), protection=new (require('./jarvis-protection.cjs').JarvisProtection)(this.root)
+        if(origin==='catalog') protection.assertCatalogReplacement(draft,target,replacePath)
+        const old=draft.files.find(f=>f.path===replacePath || f.path.toLowerCase()===target.toLowerCase())
+        if(origin==='local' && old && old.sha256!==sha256 && /^(mods|resourcepacks|shaderpacks)\//.test(target)) {
+            candidate.customization=protection.mark(candidate,protection.upstream(old))
+            candidate.upstream=protection.upstream(old)
+        }
         validate({ ...this.getDraft(name), files: [candidate] })
         const blob = path.join(this.root, 'blobs', sha256)
         if(!fs.existsSync(blob)) atomic(blob, data)
@@ -67,6 +100,7 @@ class ReleaseStore {
     remove(name, revision, target) { return this.edit(name, revision, d => { d.files = d.files.filter(f => f.path !== target) }) }
     isPublished(draft) { return fs.existsSync(path.join(this.root, 'releases', versionName(draft.version) + '.json')) }
     createNext(mode, sourceId) {
+        if(this.workspace().activeId) throw Error('Continúa, publica o cancela la versión actual antes de crear otra')
         if(!['fix', 'new'].includes(mode)) throw Error('Tipo de versión inválido')
         const channel = json(path.join(this.root, 'channels', 'stable.json')) || json(path.join(this.root, 'channels', 'test.json'))
         const source = channel ? JSON.parse(json(path.join(this.root, 'releases', versionName(channel.version) + '.json')).payload) : sourceId ? this.getDraft(sourceId) : null
@@ -81,8 +115,12 @@ class ReleaseStore {
         const exists = this.isPublished({version}) || (fs.existsSync(directory) && fs.readdirSync(directory).filter(n => n.endsWith('.json')).some(n => json(path.join(directory,n)).version === version))
         if(exists) throw Error('Ya existe la versión ' + version + '; selecciona su borrador para continuar')
         const name = 'pack-' + crypto.randomUUID()
-        const draft = { schema:1, version, minecraft:'1.21.1', neoforge:'21.1.250', revision:0, author:'administrador local', notes:'', files:structuredClone(source?.files || []) }
+        const target=this.workspace().target
+        const sameTarget=!source || (source.minecraft===target.minecraft && (source.loader || 'neoforge')===target.loader)
+        if(mode==='fix' && !sameTarget) throw Error('Un Fix debe usar la misma versión de Minecraft y loader que la publicación')
+        const draft = { schema:1, version, minecraft:target.minecraft, loader:target.loader, neoforge:'21.1.250', revision:0, author:'administrador local', notes:'', files:structuredClone(sameTarget ? source?.files || [] : []) }
         validate(draft); save(this.draftFile(name), draft)
+        this.setWorkspace({activeId:name})
         return {id:name, version}
     }
     publish(name, revision, channel = 'test') {
@@ -108,6 +146,7 @@ class ReleaseStore {
         const envelope = { payload, signature: crypto.sign(null, Buffer.from(payload), fs.readFileSync(keyFile)).toString('base64') }
         save(releaseFile, envelope)
         save(path.join(this.root, 'channels', channel + '.json'), { version: manifest.version, releaseSha256: hash(Buffer.from(JSON.stringify(envelope, null, 2))) })
+        if(this.workspace().activeId === name) this.setWorkspace({activeId:null})
         return envelope
     }
 }

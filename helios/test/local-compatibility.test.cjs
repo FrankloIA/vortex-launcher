@@ -1,0 +1,17 @@
+const {test}=require('node:test'),assert=require('node:assert/strict'),Zip=require('adm-zip')
+const {checkLocal,matches}=require('../vortex/local-compatibility.cjs')
+const {fingerprint}=require('../vortex/content-metadata.cjs')
+test('Los archivos locales exigen Minecraft y loader compatibles',()=>{
+    const zip=new Zip();zip.addFile('META-INF/neoforge.mods.toml',Buffer.from('[[dependencies.example]]\nmodId="minecraft"\nversionRange="[1.21.1,1.22)"'))
+    const bytes=zip.toBuffer()
+    checkLocal(bytes,'mods',{minecraft:'1.21.1',loader:'neoforge'})
+    assert.throws(()=>checkLocal(bytes,'mods',{minecraft:'1.20.1',loader:'neoforge'}),/compatibilidad/)
+    assert.throws(()=>checkLocal(bytes,'mods',{minecraft:'1.21.1',loader:'fabric'}),/compatibilidad/)
+    assert(matches('1.21.1','[1.21.1]'))
+    assert(!matches('1.21.1','[1.21.2,)'))
+})
+test('La huella de CurseForge ignora únicamente sus cuatro espacios y saltos de línea',()=>{
+    assert.equal(fingerprint(Buffer.from('hello world\n')),fingerprint(Buffer.from('helloworld')))
+    assert.equal(fingerprint(Buffer.from('hello\t\rworld')),fingerprint(Buffer.from('helloworld')))
+    assert.notEqual(fingerprint(Buffer.from('helloworld')),fingerprint(Buffer.from('helloworld!')))
+})

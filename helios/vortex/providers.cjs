@@ -4,43 +4,43 @@ const crypto = require('crypto')
 class Providers {
     constructor(root) { this.keyFile = path.join(root, 'curseforge-key.txt') }
     key() { return process.env.VORTEX_CURSEFORGE_KEY || (fs.existsSync(this.keyFile) ? fs.readFileSync(this.keyFile, 'utf8').trim() : '') }
-    async request(provider, route) {
+    async request(provider, route, body) {
         if(!['modrinth', 'curseforge'].includes(provider)) throw Error('Proveedor inválido')
         const headers = { 'User-Agent': 'VortexLauncher/1.0', Accept: 'application/json' }
         if(provider === 'curseforge') { if(!this.key()) throw Error('Configura una clave API de CurseForge'); headers['x-api-key'] = this.key() }
-        const response = await fetch((provider === 'modrinth' ? 'https://api.modrinth.com/v2/' : 'https://api.curseforge.com/v1/') + route, { headers, signal: AbortSignal.timeout(20000) })
+        const response = await fetch((provider === 'modrinth' ? 'https://api.modrinth.com/v2/' : 'https://api.curseforge.com/v1/') + route, { headers:body ? {...headers,'Content-Type':'application/json'} : headers, method:body ? 'POST' : 'GET', body:body ? JSON.stringify(body) : undefined, signal: AbortSignal.timeout(20000) })
         if(!response.ok) throw Error(`${provider}: HTTP ${response.status}`)
         return response.json()
     }
-    async search(provider, query, category) {
+    async search(provider, query, category, target = {minecraft:'1.21.1',loader:'neoforge'}) {
         const type = { mods: 'mod', resourcepacks: 'resourcepack', shaderpacks: 'shader' }[category]
         if(!type) throw Error('Selecciona mods, resourcepacks o shaders')
         if(provider === 'modrinth') {
-            const facets = [['project_type:' + type], ['versions:1.21.1']]
-            if(category === 'mods') facets.push(['categories:neoforge'])
+            const facets = [['project_type:' + type], ['versions:' + target.minecraft]]
+            if(category === 'mods') facets.push(['categories:' + target.loader])
             const data = await this.request(provider, 'search?' + new URLSearchParams({ query, facets: JSON.stringify(facets), limit: 20 }))
             return data.hits.map(p => ({ projectId: p.project_id, title: p.title, author: p.author, description: p.description, icon: p.icon_url, categories: p.categories, downloads: p.downloads, updated: p.date_modified, environment: [p.client_side !== 'unsupported' ? 'Cliente' : '', p.server_side !== 'unsupported' ? 'Servidor' : ''].filter(Boolean).join(' y ') }))
         }
-        const params = { gameId: 432, classId: { mods: 6, resourcepacks: 12, shaderpacks: 6552 }[category], gameVersion: '1.21.1', searchFilter: query, pageSize: 20 }
-        if(category === 'mods') params.modLoaderType = 6
+        const params = { gameId: 432, classId: { mods: 6, resourcepacks: 12, shaderpacks: 6552 }[category], gameVersion: target.minecraft, searchFilter: query, pageSize: 20 }
+        if(category === 'mods') params.modLoaderType = {forge:1,fabric:4,quilt:5,neoforge:6}[target.loader]
         const data = await this.request(provider, 'mods/search?' + new URLSearchParams(params))
         return data.data.map(p => ({ projectId: p.id, title: p.name, author: p.authors.map(a => a.name).join(', '), description: p.summary, icon: p.logo?.thumbnailUrl, categories: p.categories.map(c => c.name), downloads: p.downloadCount, updated: p.dateModified }))
     }
-    async latest(provider, projectId, category) {
+    async latest(provider, projectId, category, target = {minecraft:'1.21.1',loader:'neoforge'}) {
         const project = encodeURIComponent(String(projectId))
         if(provider === 'modrinth') {
-            const params = { game_versions: JSON.stringify(['1.21.1']) }
-            if(category === 'mods') params.loaders = JSON.stringify(['neoforge'])
+            const params = { game_versions: JSON.stringify([target.minecraft]) }
+            if(category === 'mods') params.loaders = JSON.stringify([target.loader])
             const versions = await this.request(provider, `project/${project}/version?` + new URLSearchParams(params))
             const v = versions.filter(v => v.version_type === 'release').sort((a,b) => b.date_published.localeCompare(a.date_published))[0]
             if(!v) throw Error('No hay versión estable compatible')
             const f = v.files.find(f => f.primary) || v.files[0]
             return { provider, projectId, fileId: v.id, filename: f.filename, url: f.url, hashes: f.hashes, size: f.size, dependencies: v.dependencies.filter(d => d.dependency_type === 'required'), version: v.version_number }
         }
-        const params = { gameVersion: '1.21.1', pageSize: 50 }
-        if(category === 'mods') params.modLoaderType = 6
+        const params = { gameVersion: target.minecraft, pageSize: 50 }
+        if(category === 'mods') params.modLoaderType = {forge:1,fabric:4,quilt:5,neoforge:6}[target.loader]
         const data = await this.request(provider, `mods/${project}/files?` + new URLSearchParams(params))
-        const f = data.data.filter(f => f.releaseType === 1 && f.gameVersions.includes('1.21.1') && (category !== 'mods' || f.gameVersions.includes('NeoForge'))).sort((a,b) => b.fileDate.localeCompare(a.fileDate))[0]
+        const f = data.data.filter(f => f.releaseType === 1 && f.gameVersions.includes(target.minecraft) && (category !== 'mods' || f.gameVersions.includes({neoforge:'NeoForge',forge:'Forge',fabric:'Fabric',quilt:'Quilt'}[target.loader]))).sort((a,b) => b.fileDate.localeCompare(a.fileDate))[0]
         if(!f) throw Error('No hay versión estable compatible')
         return { provider, projectId, fileId: f.id, filename: f.fileName, url: f.downloadUrl, hashes: Object.fromEntries(f.hashes.filter(h => [1,2].includes(h.algo)).map(h => [h.algo === 1 ? 'sha1' : 'md5', h.value])), size: f.fileLength, dependencies: f.dependencies.filter(d => d.relationType === 3), version: f.displayName }
     }

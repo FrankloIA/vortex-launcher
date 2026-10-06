@@ -4,6 +4,8 @@ const extensions = { mods: '.jar', resourcepacks: '.zip', shaderpacks: '.zip', c
 let state, selected, category = 'mods', replacePath, editing, folder = '', originalText = ''
 let panel = 'library'
 const availableUpdates = new Map()
+const createdThisSession = new Set()
+let targetEditing = false, identifying = false
 async function checkLibraryUpdates(contentCategory = category) {
     if(!current()) throw Error('Selecciona un borrador')
     const draftId = selected
@@ -13,16 +15,17 @@ async function checkLibraryUpdates(contentCategory = category) {
     for(const item of results) if(!item.error) availableUpdates.set(draftId + ':' + item.path, item)
     if(selected === draftId) render()
     const errors = results.filter(item => item.error)
-    message(`${results.length - errors.length} actualizaciones disponibles.${errors.length ? ' No se pudieron consultar ' + errors.length + ' archivos; CurseForge necesita su clave API.' : ''}`)
+    message(`${results.length - errors.length} actualizaciones disponibles.${errors.length ? ' No se pudieron consultar ' + errors.length + ' archivos. Revisa los errores de cada archivo.' : ''}`)
     return results
 }
-function canEdit() { return !!current() && !current().published }
+function canEdit() { return !!current() && !current().published && selected === state.workspace?.activeId }
 function requireEditable() { if(canEdit()) return true; get('lockedDialog').showModal(); return false }
 function switchPanel(next) {
     if(next === 'add' && !requireEditable()) return
     panel = next; get('library').hidden = next !== 'library' || !current(); get('onlineContent').hidden = next !== 'add'
     get('publishContent').hidden = next !== 'publish'
     get('createContent').hidden = next !== 'create'
+    get('renameVersion').hidden = next !== 'publish' || !canEdit()
     get('createTab').setAttribute('aria-pressed', String(next === 'create'))
     get('publishTab').setAttribute('aria-pressed', String(next === 'publish'))
     get('libraryTab').setAttribute('aria-pressed', String(next === 'library')); get('addTab').setAttribute('aria-pressed', String(next === 'add'))
@@ -42,9 +45,12 @@ testVersionButton.onclick = () => action(async () => {
 })
 for(const button of document.querySelectorAll('[data-provider]')) button.onclick = () => {
     get('provider').value = button.dataset.provider; get('onlineResults').replaceChildren()
+    get('remoteControls').hidden = button.dataset.provider === 'local'
+    get('localContent').hidden = button.dataset.provider !== 'local'
     for(const tab of document.querySelectorAll('[data-provider]')) tab.setAttribute('aria-pressed', String(tab === button))
     message('')
 }
+get('addLocal').onclick = () => { if(requireEditable()) { get('upload').accept = extensions[get('localCategory').value]; get('upload').click() } }
 const message = text => { get('message').textContent = text }
 const current = () => state?.drafts.find(d => d.id === selected)
 function onlineRow(title, description, callback, label, item) {
@@ -62,7 +68,7 @@ function onlineRow(title, description, callback, label, item) {
     if(item) {
         const footer = document.createElement('div'); footer.className = 'catalogMeta'
         const tags = document.createElement('span'); tags.textContent = (item.categories || []).slice(0,5).join(' · ')
-        const stats = document.createElement('span'); stats.textContent = [Number.isFinite(item.downloads) ? new Intl.NumberFormat('es',{notation:'compact'}).format(item.downloads) + ' descargas' : '', item.updated ? new Date(item.updated).toLocaleDateString('es') : '', item.environment || '', 'Minecraft 1.21.1', get('onlineCategory').value === 'mods' ? 'NeoForge' : ''].filter(Boolean).join(' · ')
+        const stats = document.createElement('span'); stats.textContent = [Number.isFinite(item.downloads) ? new Intl.NumberFormat('es',{notation:'compact'}).format(item.downloads) + ' descargas' : '', item.updated ? new Date(item.updated).toLocaleDateString('es') : '', item.environment || '', 'Minecraft ' + current().minecraft, get('onlineCategory').value === 'mods' ? current().loader || 'neoforge' : ''].filter(Boolean).join(' · ')
         footer.append(tags, stats); info.append(footer)
     }
     if(callback) { const button = document.createElement('button'); button.textContent = label; button.onclick = () => action(callback); row.append(button) }
@@ -71,7 +77,7 @@ function onlineRow(title, description, callback, label, item) {
 get('onlineSearch').onclick = () => action(async () => {
     if(!current()) throw Error('Selecciona un borrador')
     const provider = get('provider').value, contentCategory = get('onlineCategory').value
-    const results = await api('providers/search', { provider, category: contentCategory, query: get('onlineQuery').value })
+    const results = await api('providers/search', { id:selected, provider, category: contentCategory, query: get('onlineQuery').value })
     get('onlineResults').replaceChildren()
     for(const item of results) {
         const installed = current().files.some(f => f.source?.provider === provider && String(f.source.projectId) === String(item.projectId))
@@ -85,7 +91,7 @@ get('onlineSearch').onclick = () => action(async () => {
 get('onlineUpdates').onclick = () => action(async () => {
     if(!current()) throw Error('Selecciona un borrador')
     message('Consultando versiones; puede tardar unos minutos…')
-    const contentCategory = category, draftId = selected
+    const contentCategory = get('onlineCategory').value, draftId = selected
     const results = await checkLibraryUpdates(contentCategory)
     get('onlineResults').replaceChildren()
     for(const item of results) onlineRow(item.path, item.error || 'Versión disponible: ' + item.version, item.error ? null : async () => {
@@ -113,7 +119,7 @@ function flushAutosave() {
         for(const [key,item] of [...pendingSaves]) {
             const draft = state?.drafts.find(d => d.id === item.id)
             if(!state) continue
-            if(!draft || draft.published) { pendingSaves.delete(key); localStorage.removeItem('vortexAutosave:' + key); continue }
+            if(!draft || draft.published || item.id !== state.workspace?.activeId) { pendingSaves.delete(key); localStorage.removeItem('vortexAutosave:' + key); continue }
             const result = await api(item.kind === 'notes' ? 'notes' : 'config/autosave', item.kind === 'notes' ? {id:item.id,revision:draft.revision,notes:item.text} : {id:item.id,revision:draft.revision,path:item.path,text:item.text})
             Object.assign(draft,result)
             if(pendingSaves.get(key) === item) { pendingSaves.delete(key); localStorage.removeItem('vortexAutosave:' + key) }
@@ -133,9 +139,8 @@ async function action(callback) {
 }
 async function refresh() {
     state = await api('state')
-    if(!selected) selected = localStorage.getItem('vortexWorkingDraft')
-    if(!current()) selected = state.drafts.at(-1)?.id
-    get('login').hidden = true; get('workspace').hidden = false
+    if(!current() || (selected === localStorage.getItem('vortexWorkingDraft') && !state.workspace.activeId)) selected = state.workspace.activeId || state.drafts.find(d => d.readOnly)?.id || state.drafts.find(d => !d.readOnly)?.id
+    get('workspace').hidden = false
 
     get('draftSelect').replaceChildren()
     for(const draft of state.drafts) { const option = document.createElement('option'); option.value = draft.id; option.textContent = draft.version; get('draftSelect').append(option) }
@@ -143,19 +148,21 @@ async function refresh() {
     render()
     if(pendingSaves.size) { await flushAutosave(); render() }
     if(panel === 'add' && !canEdit()) panel = 'library'
+    renderTargetAndHistory()
+    if(current() && !identifying) { identifying = true; api('providers/identify',{id:selected}).then(result => { if(result.identified) refresh() }).catch(error => message('Identificación de contenido: ' + error.message)).finally(() => { identifying = false }) }
     switchPanel(panel)
 }
 function render() {
     const draft = current()
     if(draft) localStorage.setItem('vortexWorkingDraft', selected)
-    get('workingStatus').textContent = 'Estatus: ' + (draft?.status === 'stable' ? 'Publicada' : 'Sin publicar')
+    get('workingStatus').textContent = (draft?.status === 'stable' ? 'Publicada' : 'Sin publicar')
     get('workingStatus').dataset.status = draft?.status || 'draft'
-    get('draftNotice').hidden = !draft || draft.published
+    get('draftNotice').hidden = !canEdit() || createdThisSession.has(draft.id)
     get('cancelDraft').disabled = !draft || draft.published
     get('notes').disabled = !canEdit()
     get('saveNotes').disabled = !canEdit()
     get('publish').disabled = !canEdit()
-    get('addButton').hidden = !canEdit()
+
     get('emptyPack').hidden = !!draft; get('library').hidden = !draft
     if(!draft) return
     get('revision').textContent = `${draft.files.length} archivos · Guardado`
@@ -165,9 +172,9 @@ function render() {
         button.textContent = `${names[key]} (${draft.files.filter(f => f.path.startsWith(key + '/')).length})`
         button.setAttribute('aria-pressed', String(key === category))
     }
-    get('addButton').textContent = '+ Añadir ' + names[category].toLowerCase()
-    get('upload').accept = extensions[category]; get('replacement').accept = extensions[category]
-    get('categoryHint').textContent = category === 'config' ? 'Añade archivos de configuración o edita los que ya están guardados. Los ajustes existentes se conservan.' : 'Selecciona archivos descargados compatibles con Minecraft 1.21.1 y NeoForge. Puedes añadir varios a la vez.'
+
+    get('upload').accept = extensions[get('localCategory').value]; get('replacement').accept = extensions[category]
+    get('categoryHint').textContent = !canEdit() ? 'Biblioteca de solo lectura. Crea una versión para modificar su contenido.' : category === 'config' ? 'Edita las configuraciones con colores de sintaxis y guardado automático del borrador.' : 'Puedes sustituir, actualizar o quitar contenido de esta versión'
     const query = get('search').value.toLowerCase()
     const providerFilter = get('libraryProvider').value
     const categoryFiles = draft.files.filter(f => f.path.startsWith(category + '/') && (providerFilter === 'all' || (f.source?.provider || 'unlinked') === providerFilter))
@@ -197,29 +204,34 @@ function render() {
         const row = document.createElement('article'); row.className = 'fileRow'
         const icon = document.createElement('span'); icon.className = 'fileIcon'; icon.textContent = category === 'mods' ? 'MOD' : category === 'config' ? 'CFG' : 'ZIP'
         if(category !== 'config') {
-            const img = document.createElement('img'); img.src = '/api/icon/' + file.sha256; img.alt = ''; img.loading = 'lazy'; img.onerror = () => img.remove(); icon.append(img)
+            const img = document.createElement('img'); img.src = file.display?.icon || '/api/icon/' + file.sha256; img.alt = ''; img.loading = 'lazy'; img.onerror = () => { img.onerror = null; img.src = '/vortex-logo.png' }; icon.append(img)
         }
         const info = document.createElement('div'); info.className = 'fileInfo'
         const title = document.createElement('h3'); title.textContent = file.display?.title || file.source?.title || file.path.split('/').at(-1)
         const providerName = { modrinth: 'Modrinth', curseforge: 'CurseForge' }[file.source?.provider] || 'Sin proveedor asociado'
         const detail = document.createElement('p'); detail.textContent = `${category === 'config' ? file.path + ' · ' : ''}${(file.size / 1048576).toFixed(2)} MiB · ${providerName} · ${file.policy === 'seed' ? 'Conservar ajustes existentes' : 'Incluido en el pack'}`
         info.append(title, detail)
+        if(file.protection?.protected) { const badge=document.createElement('p');badge.className='jarvisBadge';badge.textContent=file.protection.reason;info.append(badge) }
         if(category !== 'config') {
             const filename = document.createElement('p'); filename.className = 'libraryFilename'; filename.textContent = file.path.split('/').at(-1)
             const author = document.createElement('span'); author.className = 'libraryAuthor'; author.textContent = file.display?.author ? 'Por ' + file.display.author : ''
             title.append(author); info.append(filename)
         }
         const actions = document.createElement('div'); actions.className = 'fileActions'
-        const button = (text, callback) => { const b = document.createElement('button'); b.className = 'secondary'; b.textContent = text; b.onclick = () => { if(requireEditable()) callback() }; actions.append(b) }
+        const button = (text, callback) => { const b = document.createElement('button'); b.className = 'secondary'; b.textContent = text; b.onclick = () => { if(requireEditable()) callback() }; if(canEdit()) actions.append(b) }
         if(category === 'config') button('Editar', () => action(async () => {
             const result = await api('config/read', { id: draft.id, path: file.path }); editing = { id: draft.id, revision: draft.revision, path: file.path }
             get('configTitle').textContent = file.path; originalText = result.savedText ?? result.text; get('configText').value = result.text
             get('configSearch').value = ''; get('editorMessage').textContent = ''
             get('formatJson').hidden = !file.path.endsWith('.json'); get('configDialog').showModal(); updateEditor(); get('configText').focus()
         }))
+        if(category !== 'config' && !file.protection?.jarvis) button('Marcar como Jarvis', () => action(async () => {
+            if(!confirm('¿Confirmas que este archivo contiene modificaciones de Jarvis? Los catálogos no podrán sustituirlo.')) return
+            await api('library/mark-jarvis',{id:draft.id,revision:current().revision,path:file.path});await refresh();message('Modificaciones de Jarvis protegidas')
+        }))
         button('Sustituir', () => { replacePath = file.path; get('replacement').click() })
         const update = availableUpdates.get(draft.id + ':' + file.path)
-        if(update) {
+        if(update && canEdit() && !file.protection?.protected) {
             button('Actualizar', () => action(async () => {
                 await api('providers/install', { id: draft.id, revision: current().revision, provider: update.source.provider, projectId: update.source.projectId, category, replacePath: file.path })
                 availableUpdates.delete(draft.id + ':' + file.path)
@@ -237,7 +249,7 @@ function render() {
 }
 async function upload(files, oldPath) {
     if(!requireEditable()) return
-    const draftId = selected, uploadCategory = category
+    const draftId = selected, uploadCategory = oldPath ? category : get('localCategory').value
     for(const file of files) {
         if(file.size > 64 * 1048576) throw Error('El archivo supera 64 MiB: ' + file.name)
         const base64 = await new Promise((resolve, reject) => { const reader = new FileReader(); reader.onload = () => resolve(reader.result.split(',')[1]); reader.onerror = reject; reader.readAsDataURL(file) })
@@ -246,7 +258,6 @@ async function upload(files, oldPath) {
     }
     message(oldPath ? 'Archivo sustituido. La versión anterior se ha retirado del borrador.' : `${files.length} archivo(s) añadido(s) al pack`)
 }
-get('loginForm').onsubmit = event => { event.preventDefault(); action(async () => { await api('login', { password: get('password').value }); get('password').value = ''; await refresh(); message('Biblioteca lista para editar') }) }
 get('draftSelect').onchange = () => { selected = get('draftSelect').value; folder = ''; render(); switchPanel('library') }
 for(const button of document.querySelectorAll('[data-category]')) button.onclick = () => { category = button.dataset.category; get('search').value = ''; render() }
 get('search').oninput = render
@@ -257,46 +268,69 @@ for(const [value, text] of [['all', 'Todos los proveedores'], ['modrinth', 'Modr
 }
 providerLabel.append(providerSelect); get('search').closest('label').after(providerLabel)
 providerSelect.onchange = () => { folder = ''; render() }
-get('addButton').onclick = () => { if(requireEditable()) get('upload').click() }
+
 const checkUpdatesButton = document.createElement('button')
 checkUpdatesButton.id = 'libraryUpdates'; checkUpdatesButton.className = 'secondary'; checkUpdatesButton.textContent = 'Buscar actualizaciones'
 checkUpdatesButton.onclick = () => action(() => checkLibraryUpdates())
-get('addButton').before(checkUpdatesButton)
+get('search').closest('.toolbar').append(checkUpdatesButton)
 get('upload').onchange = () => { const files = [...get('upload').files]; if(files.length) action(() => upload(files)); get('upload').value = '' }
 get('replacement').onchange = () => { const files = [...get('replacement').files]; if(files.length) action(() => upload(files, replacePath)); get('replacement').value = '' }
 get('firstDraft').onclick = () => switchPanel('create')
-const renameDraftButton = document.createElement('button')
-renameDraftButton.className = 'secondary'; renameDraftButton.textContent = 'Cambiar nombre'
-get('publishContent').append(renameDraftButton)
-renameDraftButton.onclick = () => action(async () => {
-    const draft = current()
-    if(!draft) throw Error('Selecciona un borrador')
+get('renameVersion').onclick = () => action(async () => {
     if(!requireEditable()) return
-    const name = prompt('Nuevo nombre de versión (letras, números, puntos y guiones):', draft.version)
-    if(name === null || name.trim() === draft.version) return
-    await api('library/rename', { id: draft.id, revision: draft.revision, version: name.trim() })
-    await refresh(); message('Nombre del borrador actualizado. Las publicaciones anteriores se conservan.')
+    const draft=current(), name=prompt('Nuevo número de versión:',draft.version)
+    if(name===null || name.trim()===draft.version) return
+    await api('library/rename',{id:draft.id,revision:draft.revision,version:name.trim()});await refresh();message('Versión actualizada')
 })
-const deleteDraftButton = document.createElement('button')
-deleteDraftButton.id = 'deleteDraft'; deleteDraftButton.className = 'secondary'; deleteDraftButton.textContent = 'Eliminar borrador'
-get('publishContent').append(deleteDraftButton)
 async function discardCurrentDraft(cancel = false){
     const draft = current()
     if(!draft) throw Error('Selecciona un borrador para cancelarlo')
-    const verb = cancel ? 'Cancelar' : 'Eliminar'
+    const verb = 'Cancelar esta versión'
     if(!requireEditable()) return
     if(!confirm(verb + ' el borrador ' + draft.version + '? Se perderán sus cambios sin publicar. Las versiones publicadas se conservan.')) return
-    await api('library/delete', { id: draft.id, revision: draft.revision })
+    await api('library/cancel', { id: draft.id, revision: draft.revision })
     for(const key of [...availableUpdates.keys()]) if(key.startsWith(draft.id + ':')) availableUpdates.delete(key)
-    selected = undefined; editing = undefined; folder = ''
+    selected = undefined; editing = undefined; folder = ''; panel = 'create'; localStorage.removeItem('vortexWorkingDraft')
     await refresh()
     message(cancel ? 'Borrador cancelado. Las versiones publicadas se conservan.' : 'Borrador eliminado. Las versiones publicadas se conservan.')
 }
-deleteDraftButton.onclick = () => action(() => discardCurrentDraft())
 get('cancelDraft').onclick = () => action(() => discardCurrentDraft(true))
 get('cancelVersion').onclick = () => get('versionDialog').close()
+const loaderNames = {neoforge:'NeoForge',forge:'Forge',fabric:'Fabric',quilt:'Quilt'}
+function renderTargetAndHistory() {
+    const target=state.workspace.target
+    const viewTarget=current() ? {minecraft:current().minecraft,loader:current().loader || 'neoforge'} : target
+    get('targetBadge').textContent='Minecraft ' + viewTarget.minecraft + ' · ' + loaderNames[viewTarget.loader]
+    get('compatibilityHint').textContent='Versiones estables para Minecraft ' + viewTarget.minecraft + '. Los mods se filtran por ' + loaderNames[viewTarget.loader]
+    if(!targetEditing) { get('targetMinecraft').value=target.minecraft;get('targetLoader').value=target.loader }
+    get('targetMinecraft').disabled=!targetEditing;get('targetLoader').disabled=!targetEditing
+    get('saveTarget').hidden=!targetEditing;get('modifyTarget').hidden=targetEditing
+    get('modifyTarget').disabled=!!state.workspace.activeId
+    get('targetMessage').textContent='Destino guardado: Minecraft ' + target.minecraft + ' · ' + loaderNames[target.loader]
+    get('versionHistory').replaceChildren()
+    for(const release of state.history) {
+        const row=document.createElement('article');row.className='historyRow'
+        const info=document.createElement('div'), title=document.createElement('h4'), detail=document.createElement('p')
+        title.textContent='Versión ' + release.version;detail.textContent=release.files + ' archivos · Minecraft ' + release.minecraft + ' · ' + loaderNames[release.loader] + ' · ' + new Date(release.publishedAt).toLocaleDateString('es')
+        const notes=document.createElement('p');notes.textContent=release.notes || 'Contenido completo conservado'
+        info.append(title,detail,notes)
+        const button=document.createElement('button');button.textContent='Recuperar esta versión'
+        button.onclick=()=>action(async()=>{
+            if(!confirm('¿Recuperar todo el contenido de ' + release.version + '? Se creará una versión de restauración para revisar y publicar.')) return
+            const result=await api('library/restore',{version:release.version});selected=result.id;createdThisSession.add(result.id);panel='library';await refresh();message('Contenido de ' + release.version + ' recuperado; revisa y publica la restauración')
+        });row.append(info,button);get('versionHistory').append(row)
+    }
+    if(!state.history.length) get('versionHistory').textContent='Las versiones anteriores aparecerán aquí después de publicar nuevas versiones'
+    get('pendingDrafts').replaceChildren()
+    if(state.workspace.activeId) {
+        const hint=document.createElement('p');hint.textContent='Tienes una versión sin finalizar. Puedes continuar o cancelarla desde Publicar';const resume=document.createElement('button');resume.textContent='Continuar versión';resume.onclick=()=>{selected=state.workspace.activeId;render();switchPanel('library')};get('pendingDrafts').append(hint,resume)
+    }
+}
+get('modifyTarget').onclick=()=>{targetEditing=true;renderTargetAndHistory()}
+get('saveTarget').onclick=()=>action(async()=>{await api('target/save',{minecraft:get('targetMinecraft').value,loader:get('targetLoader').value});targetEditing=false;await refresh();message('Minecraft y mod loader guardados para las siguientes versiones')})
+api('targets').then(data=>{for(const version of data.versions){if([...get('targetMinecraft').options].some(o=>o.value===version))continue;const option=document.createElement('option');option.value=version;option.textContent=version;get('targetMinecraft').append(option)}if(state)renderTargetAndHistory()}).catch(()=>{})
 async function createVersion(mode) {
-    const result = await api('library/start', { mode, source:selected }); selected = result.id
+    const result = await api('library/start', { mode, source:selected }); selected = result.id; createdThisSession.add(result.id)
     get('versionDialog').close(); panel = 'add'; await refresh(); message('Borrador ' + result.version + ' creado y guardado')
 }
 get('createFix').onclick = () => action(() => createVersion('fix'))
@@ -357,4 +391,4 @@ get('formatJson').onclick = () => {
 get('notes').oninput = () => queueAutosave('notes', selected, get('notes').value)
 get('saveNotes').onclick = () => action(async () => { await api('notes', { id: selected, revision: current().revision, notes: get('notes').value }); await refresh(); message('Notas guardadas') })
 get('publish').onclick = () => action(async () => { const draft = current(); if(!confirm(`¿Publicar la versión ${draft.version} en pruebas?`)) return; await api('publish', { id: draft.id, revision: draft.revision }); await refresh(); message('Versión publicada en el canal de pruebas') })
-action(async () => { try { await refresh() } catch { message('Inicia sesión para abrir tu biblioteca') } })
+action(async () => { await refresh() })

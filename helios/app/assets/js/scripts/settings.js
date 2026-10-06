@@ -468,31 +468,9 @@ function bindAuthAccountSelect(){
  * be updated accordingly.
  */
 function bindAuthAccountLogOut(){
-    Array.from(document.getElementsByClassName('settingsAuthAccountLogOut')).map((val) => {
-        val.onclick = (e) => {
-            let isLastAccount = false
-            if(Object.keys(ConfigManager.getAuthAccounts()).length === 1){
-                isLastAccount = true
-                setOverlayContent(
-                    Lang.queryJS('settings.authAccountLogout.lastAccountWarningTitle'),
-                    Lang.queryJS('settings.authAccountLogout.lastAccountWarningMessage'),
-                    Lang.queryJS('settings.authAccountLogout.confirmButton'),
-                    Lang.queryJS('settings.authAccountLogout.cancelButton')
-                )
-                setOverlayHandler(() => {
-                    processLogOut(val, isLastAccount)
-                    toggleOverlay(false)
-                })
-                setDismissHandler(() => {
-                    toggleOverlay(false)
-                })
-                toggleOverlay(true, true)
-            } else {
-                processLogOut(val, isLastAccount)
-            }
-            
-        }
-    })
+    for(const button of document.getElementsByClassName('settingsAuthAccountLogOut')){
+        button.onclick = () => processLogOut(button, Object.keys(ConfigManager.getAuthAccounts()).length === 1)
+    }
 }
 
 let msAccDomElementCache

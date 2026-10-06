@@ -66,6 +66,11 @@ function startAdmin({ root = path.resolve(__dirname, '../.runtime/pack-admin'), 
                 if(req.method !== 'POST') return reply(404, { error: 'Ruta no encontrada' })
                 let result
                 switch(req.url) {
+                    case '/api/test/prepare': {
+                        const version = store.getDraft(body.id).version
+                        result = require('../vortex/test-release.cjs').prepareTestRelease(path.resolve(__dirname, '../.runtime/data/instances'), version)
+                        break
+                    }
                     case '/api/providers/search': result = await providers.search(body.provider, String(body.query || '').slice(0,200), body.category); break
                     case '/api/providers/install': {
                         const draft = store.getDraft(body.id)

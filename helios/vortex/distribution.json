@@ -1,0 +1,79 @@
+{
+  "version": "1.0.0-stage2",
+  "rss": "",
+  "servers": [
+    {
+      "id": "vortex-neoforge-minimal",
+      "name": "Vortex — prueba NeoForge",
+      "description": "Minecraft 1.21.1 · NeoForge 21.1.250 · instancia mínima aislada",
+      "icon": "",
+      "version": "1.0.0-stage2",
+      "address": "ly06.astrolnodes.net:25622",
+      "minecraftVersion": "1.21.1",
+      "javaOptions": {
+        "supported": "21.x",
+        "suggestedMajor": 21,
+        "ram": {
+          "recommended": 4096,
+          "minimum": 2048
+        }
+      },
+      "mainServer": true,
+      "autoconnect": false,
+      "vortexLoader": {
+        "type": "neoforge",
+        "version": "21.1.250"
+      },
+      "modules": []
+    },
+    {
+      "id": "vortex-pack-test",
+      "name": "Vortex — pack completo (prueba local)",
+      "description": "200 mods · copia aislada · shaders desactivados",
+      "icon": "",
+      "version": "1.0.0-stage2",
+      "address": "ly06.astrolnodes.net:25622",
+      "minecraftVersion": "1.21.1",
+      "javaOptions": {
+        "supported": "21.x",
+        "suggestedMajor": 21,
+        "ram": {
+          "recommended": 8192,
+          "minimum": 2048
+        }
+      },
+      "mainServer": false,
+      "autoconnect": false,
+      "vortexLoader": {
+        "type": "neoforge",
+        "version": "21.1.250"
+      },
+      "modules": [],
+      "vortexPackSnapshot": "663365b30de4923b2eccb0a030838a4ddb595ce8887e54bb8821616015c5692f"
+    },
+    {
+      "id": "vortex-published-test",
+      "name": "Vortex — publicación de pruebas",
+      "description": "Publicación firmada del panel · instancia aislada",
+      "icon": "",
+      "version": "1.0.3-fixed",
+      "address": "ly06.astrolnodes.net:25622",
+      "minecraftVersion": "1.21.1",
+      "javaOptions": {
+        "supported": "21.x",
+        "suggestedMajor": 21,
+        "ram": {
+          "recommended": 8192,
+          "minimum": 2048
+        }
+      },
+      "mainServer": false,
+      "autoconnect": false,
+      "vortexLoader": {
+        "type": "neoforge",
+        "version": "21.1.250"
+      },
+      "modules": []
+    }
+  ]
+}

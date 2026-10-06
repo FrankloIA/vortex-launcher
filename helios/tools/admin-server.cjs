@@ -7,6 +7,14 @@ const { Providers } = require('../vortex/providers.cjs')
 function startAdmin({ root = path.resolve(__dirname, '../.runtime/pack-admin'), port = 43117, password } = {}) {
     const store = new ReleaseStore(root)
     const providers = new Providers(root)
+    const Zip = require('adm-zip')
+    const libraryMetadata = new Map()
+    const instances = path.join(process.env.USERPROFILE, 'curseforge/minecraft/Instances')
+    if(fs.existsSync(instances)) for(const folder of fs.readdirSync(instances)) {
+        const metadata = path.join(instances, folder, 'minecraftinstance.json')
+        if(!fs.existsSync(metadata)) continue
+        try { for(const addon of JSON.parse(fs.readFileSync(metadata)).installedAddons || []) libraryMetadata.set(String(addon.addonID) + ':' + addon.installedFile?.id, { title: addon.name, author: (addon.authors || []).map(a => a.name).join(', '), icon: addon.attachment?.thumbnailUrl || addon.logo?.thumbnailUrl, version: addon.installedFile?.displayName || addon.installedFile?.fileName }) } catch {}
+    }
     const credentialsFile = path.join(root, 'admin-password.txt')
     // El panel local abre directamente; las pruebas pueden pedir autenticación explícita.
     const requirePassword = typeof password === 'string' && password.length > 0
@@ -38,10 +46,21 @@ function startAdmin({ root = path.resolve(__dirname, '../.runtime/pack-admin'), 
             if(req.url.startsWith('/api/')) {
                 const session = req.headers.cookie?.match(/(?:^|;\s*)vortex_admin=([a-f0-9]{64})(?:;|$)/)?.[1]
                 if(requirePassword && (sessions.get(session) || 0) < Date.now()) return reply(401, { error: 'Inicia sesión para administrar' })
+                if(req.method === 'GET' && /^\/api\/icon\/[a-f0-9]{64}$/.test(req.url)) {
+                    try {
+                        const zip = new Zip(fs.readFileSync(path.join(root, 'blobs', req.url.split('/').at(-1))))
+                        const meta = zip.getEntries().find(e => /^(META-INF\/(neoforge\.)?mods\.toml|pack\.mcmeta)$/.test(e.entryName))
+                        const logo = meta?.getData().toString().match(/logoFile\s*=\s*"([^"]+)"/)?.[1] || 'pack.png'
+                        const entry = zip.getEntry(logo)
+                        if(!entry || !/\.png$/i.test(logo) || entry.header.size > 2 * 1048576) return reply(404, { error: 'Sin imagen' })
+                        res.writeHead(200, { 'Content-Type': 'image/png' }); return res.end(entry.getData())
+                    } catch { return reply(404, { error: 'Sin imagen' }) }
+                }
                 if(req.url === '/api/state' && req.method === 'GET') {
                     const directory = path.join(root, 'drafts')
                     const drafts = fs.existsSync(directory) ? fs.readdirSync(directory).filter(n => n.endsWith('.json')).map(n => ({ id: n.slice(0, -5), ...store.getDraft(n.slice(0, -5)) })) : []
                     const channels = Object.fromEntries(['test', 'stable'].map(channel => { const file = path.join(root, 'channels', channel + '.json'); return [channel, fs.existsSync(file) ? JSON.parse(fs.readFileSync(file)) : null] }))
+                    for(const draft of drafts) for(const file of draft.files) file.display = libraryMetadata.get(String(file.source?.projectId) + ':' + file.source?.fileId)
                     return reply(200, { drafts, channels })
                 }
                 if(req.method !== 'POST') return reply(404, { error: 'Ruta no encontrada' })

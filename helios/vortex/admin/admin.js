@@ -112,7 +112,7 @@ function render() {
             button.onclick = () => { folder = name; render() }; get('folders').append(button)
         }
     }
-    const files = categoryFiles.filter(f => f.path.toLowerCase().includes(query) && (category !== 'config' || !folder || f.path.slice(0, f.path.lastIndexOf('/')) === folder)).sort((a, b) => a.path.localeCompare(b.path))
+    const files = categoryFiles.filter(f => (f.path + ' ' + (f.display?.title || '')).toLowerCase().includes(query) && (category !== 'config' || !folder || f.path.slice(0, f.path.lastIndexOf('/')) === folder)).sort((a, b) => (a.display?.title || a.path).localeCompare(b.display?.title || b.path))
     get('content').replaceChildren()
     if(!files.length) {
         const empty = document.createElement('div'); empty.className = 'empty'
@@ -123,10 +123,18 @@ function render() {
     for(const file of files) {
         const row = document.createElement('article'); row.className = 'fileRow'
         const icon = document.createElement('span'); icon.className = 'fileIcon'; icon.textContent = category === 'mods' ? 'MOD' : category === 'config' ? 'CFG' : 'ZIP'
+        if(category !== 'config') {
+            const img = document.createElement('img'); img.src = '/api/icon/' + file.sha256; img.alt = ''; img.loading = 'lazy'; img.onerror = () => img.remove(); icon.append(img)
+        }
         const info = document.createElement('div'); info.className = 'fileInfo'
-        const title = document.createElement('h3'); title.textContent = file.path.split('/').at(-1)
+        const title = document.createElement('h3'); title.textContent = file.display?.title || file.source?.title || file.path.split('/').at(-1)
         const detail = document.createElement('p'); detail.textContent = `${category === 'config' ? file.path + ' · ' : ''}${(file.size / 1048576).toFixed(2)} MiB · ${file.policy === 'seed' ? 'Conservar ajustes existentes' : 'Incluido en el pack'}`
         info.append(title, detail)
+        if(category !== 'config') {
+            const filename = document.createElement('p'); filename.className = 'libraryFilename'; filename.textContent = file.path.split('/').at(-1)
+            const author = document.createElement('span'); author.className = 'libraryAuthor'; author.textContent = file.display?.author ? 'Por ' + file.display.author : ''
+            title.append(author); info.append(filename)
+        }
         const actions = document.createElement('div'); actions.className = 'fileActions'
         const button = (text, callback) => { const b = document.createElement('button'); b.className = 'secondary'; b.textContent = text; b.onclick = callback; actions.append(b) }
         if(category === 'config') button('Editar', () => action(async () => {

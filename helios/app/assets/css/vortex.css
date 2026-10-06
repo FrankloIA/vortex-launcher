@@ -18,3 +18,43 @@ body[bkid]{background:#0c0e14!important;font-family:'Segoe UI',sans-serif}#main{
 #settingsShaderpackButton{display:none}#settingsTabShaders #settingsShadersContainer{margin-top:24px}
 
 #settingsDropinModsContainer{display:none!important}
+/* Ajustes comparte el escenario de Inicio y conserva los controles originales. */
+#main{background:url('../images/vortex-night.png') right center/cover!important}
+#settingsContainer{position:absolute;left:220px;right:20px;top:30%;bottom:20px;height:auto;display:flex;flex-direction:column;padding:26px 28px 76px;box-sizing:border-box;border:1px solid #9a59de;border-radius:22px;background:rgba(13,15,24,.76);backdrop-filter:blur(12px);box-shadow:0 18px 70px #0007;z-index:4;animation:vortexSettingsRise .4s ease-out}
+#settingsContainer:before{display:none}
+#settingsContainerLeft{width:100%;height:auto;padding:0;flex:none}
+#settingsNavContainer{height:auto}
+#settingsNavHeader{justify-content:flex-start;height:auto;margin-bottom:48px}
+#settingsNavHeaderText{font:700 36px 'Segoe UI',sans-serif}
+.vortexSettingsSubtitle{position:absolute;top:66px;left:28px;margin:0;color:#c9c9dd;font-size:16px}
+#settingsNavItemsContainer{height:auto;display:block}
+#settingsNavItemsContent{height:auto;flex-direction:row;gap:4px;border:1px solid #68607d65;border-radius:15px;padding:4px;overflow-x:auto;background:#11121d65;position:static}
+.settingsNavItem{flex:1;white-space:nowrap;padding:12px 10px;margin:0;border-radius:11px;color:#c8c6d7;font:14px 'Segoe UI',sans-serif;display:flex;align-items:center;justify-content:center;gap:9px}
+.settingsNavItem[selected]{background:linear-gradient(120deg,#8730d4,#6522d6);box-shadow:inset 0 0 0 1px #b15aff;color:white}
+.settingsNavItem svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.7;flex:none}
+.settingsNavSpacer,.settingsNavDivider{display:none}
+#settingsNavContentBottom{top:auto;bottom:18px;right:22px}
+#settingsNavDone{background:linear-gradient(110deg,#a44bff,#6026ff);border-radius:12px;min-width:150px;text-align:center;padding:14px 30px;font-size:17px;font-weight:600;margin:0}
+#settingsContainerRight{width:100%;height:auto;flex:1;min-height:0;margin-top:22px;overflow:hidden}
+.settingsTab{box-sizing:border-box;padding:0 6px 8px 0}
+.settingsTab>*{max-width:100%}.settingsTab>*:first-child{margin-top:0}.settingsTab>*:last-child{margin-bottom:8px}
+.settingsTabHeaderText{font:600 23px 'Segoe UI',sans-serif}.settingsTabHeaderDesc{font-size:13px;color:#c1bccc;margin-top:5px}
+.settingsAuthAccountTypeContainer{margin:14px 0;padding:18px;border:1px solid #71658180;border-radius:15px;background:#10121a70}
+.settingsAuthAccountTypeHeader{border:0;padding:0 0 12px;margin:0}.settingsAuthAccountTypeHeaderLeft{gap:12px;font-size:17px;font-weight:600}
+.settingsAuthAccount{border:0;background:transparent;padding:12px 0;margin:0;align-items:center}
+.settingsAuthAccountImage{width:64px;height:64px;object-fit:contain;image-rendering:pixelated;border-radius:10px}
+.settingsAuthAccountRight{flex:1;margin-left:20px;align-items:center;flex-direction:row;justify-content:space-between;gap:15px}
+.settingsAuthAccountDetails{flex:1}.settingsAuthAccountDetailPane:first-child .settingsAuthAccountDetailValue{font-size:23px;font-weight:600}.settingsAuthAccountDetailPane:nth-child(2){display:none}
+.settingsAuthAccountActions{flex-direction:row;align-items:center;gap:15px}.settingsAuthAccountSelect[selected]{color:#40de82;background:#15432970;border:1px solid #35b55f80;border-radius:8px;padding:8px 12px}
+.settingsAuthAccountLogOut{opacity:1;border:1px solid #716581;border-radius:9px;padding:10px 18px;background:#20212a80;color:white}
+.settingsAddAuthAccount{border:1px solid #a44bff;border-radius:8px;color:#c68aff;padding:9px 14px;background:#7330b21a}
+.settingsCurrentAccounts:empty:after{content:'Sin cuentas añadidas';display:block;color:#bcb7cd;font-size:14px;padding:8px 0}
+.vortexNav button:first-child{border:0;padding-left:24px;background:none;border-radius:0;color:#bfc0ce}.vortexNav button.is-active{background:#a35fff20;border-left:4px solid #b476ff;padding-left:20px;border-radius:0 12px 12px 0;color:white}
+@keyframes vortexSettingsRise{from{transform:translateY(45px);opacity:0}to{transform:translateY(0);opacity:1}}
+@media(max-width:1100px){#settingsContainer{left:185px;padding-left:18px;padding-right:18px}.settingsNavItem{font-size:12px;padding:10px 8px;gap:5px}.settingsNavItem svg{width:16px;height:16px}}
+@media(max-height:700px){#settingsContainer{top:15%;padding-top:18px}#settingsNavHeader{margin-bottom:38px}#settingsNavHeaderText{font-size:29px}.vortexSettingsSubtitle{top:53px}#settingsContainerRight{margin-top:14px}}
+@media(prefers-reduced-motion:reduce){#settingsContainer{animation:none}}
+.settingsAuthAccountTypeContainer{width:100%;box-sizing:border-box}.settingsCurrentAccounts{min-height:24px}
+.settingsCurrentAccounts:empty{height:auto}.settingsCurrentAccounts:empty:after{content:'Sin cuentas añadidas'}
+#settingsTabAccount .settingsTabHeaderText{font-size:0}#settingsTabAccount .settingsTabHeaderText:after{content:'Tus cuentas';font-size:23px}
+.settingsCurrentAccounts{margin-bottom:0}.settingsAuthAccountLeft{padding:0}.settingsAuthAccountDetails{margin-left:0}.settingsAuthAccountDetails>*:not(:last-child){margin-bottom:0}

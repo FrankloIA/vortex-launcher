@@ -1,6 +1,31 @@
 document.addEventListener('DOMContentLoaded', () => {
     const byId = id => document.getElementById(id)
     byId('vortexAccount').append(byId('user_content'))
+    const sidebar = document.querySelector('.vortexSide')
+    byId('main').append(sidebar)
+    const syncSidebar = () => {
+        const settings = getComputedStyle(byId('settingsContainer')).display !== 'none'
+        const home = getComputedStyle(byId('landingContainer')).display !== 'none'
+        sidebar.style.display = settings || home ? 'flex' : 'none'
+        byId('vortexHome').classList.toggle('is-active', !settings)
+        byId('vortexSettings').classList.toggle('is-active', settings)
+    }
+    for(const id of ['settingsContainer','landingContainer']) new MutationObserver(syncSidebar).observe(byId(id), {attributes:true,attributeFilter:['style']})
+    syncSidebar()
+    const icons = {
+        Account:'<circle cx="12" cy="7" r="4"/><path d="M4 22v-3a8 8 0 0 1 16 0v3"/>',
+        Minecraft:'<path d="m12 2 9 5v10l-9 5-9-5V7zM3 7l9 5 9-5M12 12v10"/>',
+        Mods:'<path d="M3 3h6a3 3 0 1 1 6 0h6v6a3 3 0 1 0 0 6v6h-6a3 3 0 1 0-6 0H3v-6a3 3 0 1 1 0-6z"/>',
+        Shaders:'<circle cx="12" cy="12" r="4"/><path d="M12 1v3m0 16v3M1 12h3m16 0h3M4 4l2 2m12 12 2 2M4 20l2-2M18 6l2-2"/>',
+        Java:'<path d="M5 10h12v7a4 4 0 0 1-4 4H9a4 4 0 0 1-4-4zM17 11h2a3 3 0 0 1 0 6h-2M10 8c-4-4 5-3 1-7"/>',
+        Launcher:'<rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 8h18"/>',
+        About:'<circle cx="12" cy="12" r="10"/><path d="M12 11v6m0-11v2"/>',
+        Update:'<path d="M21 4v6h-6M3 20v-6h6M20 9a8 8 0 0 0-14-4M4 15a8 8 0 0 0 14 4"/>'
+    }
+    for(const button of document.querySelectorAll('.settingsNavItem')) {
+        const icon = icons[button.getAttribute('rSc').replace('settingsTab','')]
+        button.insertAdjacentHTML('afterbegin', '<svg viewBox="0 0 24 24" aria-hidden="true">'+icon+'</svg>')
+    }
     const avatar = byId('avatarContainer')
     const showHead = () => {
         const current = avatar.style.backgroundImage
@@ -79,5 +104,5 @@ document.addEventListener('DOMContentLoaded', () => {
     normalizeStatus()
     new MutationObserver(normalizeStatus).observe(status, { childList: true, characterData: true, subtree: true })
     byId('vortexSettings').onclick = () => byId('settingsMediaButton').click()
-    byId('vortexHome').onclick = () => { if(byId('newsContainer').style.top === '0px') byId('newsButton').click() }
+    byId('vortexHome').onclick = () => { if(getComputedStyle(byId('settingsContainer')).display !== 'none') { byId('settingsNavDone').click(); return } if(byId('newsContainer').style.top === '0px') byId('newsButton').click() }
 })

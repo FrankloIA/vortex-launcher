@@ -343,8 +343,15 @@ const msftLoginLogger = LoggerUtil.getLogger('Microsoft Login')
 const msftLogoutLogger = LoggerUtil.getLogger('Microsoft Logout')
 
 // Bind the add mojang account button.
+document.getElementById('settingsAddMicrosoftAccount').onclick = () => {
+    if(Object.values(ConfigManager.getAuthAccounts()).some(account => account.type === 'microsoft')) return
+    switchView(getCurrentView(), VIEWS.waiting, 500, 500, () => {
+        ipcRenderer.send(MSFT_OPCODE.OPEN_LOGIN, VIEWS.settings, VIEWS.settings)
+    })
+}
+
 document.getElementById('settingsAddMojangAccount').onclick = (e) => {
-    if(Object.keys(ConfigManager.getAuthAccounts()).length) return
+    if(Object.values(ConfigManager.getAuthAccounts()).some(account => account.type === 'mojang')) return
     switchView(getCurrentView(), VIEWS.login, 500, 500, () => {
         loginViewOnCancel = VIEWS.settings
         loginViewOnSuccess = VIEWS.settings
@@ -599,8 +606,10 @@ const settingsCurrentMojangAccounts = document.getElementById('settingsCurrentMo
 function populateAuthAccounts(){
     const authAccounts = ConfigManager.getAuthAccounts()
     const authKeys = Object.keys(authAccounts)
-    document.getElementById('settingsAddMojangAccount').disabled = authKeys.length > 0
-    document.getElementById('vortexSingleAccountHint').hidden = authKeys.length === 0
+    const hasMojang = Object.values(authAccounts).some(account => account.type === 'mojang')
+    const hasMicrosoft = Object.values(authAccounts).some(account => account.type === 'microsoft')
+    document.getElementById('settingsAddMojangAccount').parentElement.hidden = hasMojang
+    document.getElementById('vortexMicrosoftAdd').hidden = hasMicrosoft
     if(authKeys.length === 0){
         return
     }
@@ -655,6 +664,15 @@ function prepareAccountsTab() {
     populateAuthAccounts()
     bindAuthAccountSelect()
     bindAuthAccountLogOut()
+    for(const card of document.querySelectorAll('.settingsAuthAccount')){
+        const details = card.querySelector('.settingsAuthAccountDetails')
+        details.tabIndex = 0
+        details.setAttribute('role','button')
+        details.setAttribute('aria-label','Usar esta cuenta para jugar')
+        const select = () => card.querySelector('.settingsAuthAccountSelect').click()
+        details.onclick = select
+        details.onkeydown = event => { if(event.key === 'Enter' || event.key === ' '){ event.preventDefault(); select() } }
+    }
 }
 
 /**

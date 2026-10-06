@@ -175,12 +175,15 @@ exports.load = function(){
         exports.save()
     }
     const accounts = Object.keys(config.authenticationDatabase)
-    if(accounts.length > 1){
-        const keep = config.authenticationDatabase[config.selectedAccount] ? config.selectedAccount : accounts[0]
-        config.authenticationDatabase = {[keep]:config.authenticationDatabase[keep]}
-        config.selectedAccount = keep
-        exports.save()
+    const keptTypes = new Set()
+    const ordered = [config.selectedAccount, ...accounts].filter((key,index,all) => key && all.indexOf(key) === index)
+    for(const key of ordered){
+        const account = config.authenticationDatabase[key]
+        if(!account) continue
+        if(keptTypes.has(account.type)) delete config.authenticationDatabase[key]
+        else keptTypes.add(account.type)
     }
+    exports.save()
     logger.info('Successfully Loaded')
 }
 
@@ -368,7 +371,7 @@ exports.updateMojangAuthAccount = function(uuid, accessToken){
  * @returns {Object} The authenticated account object created by this action.
  */
 exports.addMojangAuthAccount = function(uuid, accessToken, username, displayName){
-    if(Object.keys(config.authenticationDatabase).some(key => key !== uuid)) throw Error('Cierra sesión antes de añadir otra cuenta.')
+    if(Object.keys(config.authenticationDatabase).some(key => key !== uuid && config.authenticationDatabase[key].type === 'mojang')) throw Error('Cierra sesión en Mojang antes de añadir otra cuenta de Mojang.')
     config.selectedAccount = uuid
     config.authenticationDatabase[uuid] = {
         type: 'mojang',
@@ -415,7 +418,7 @@ exports.updateMicrosoftAuthAccount = function(uuid, accessToken, msAccessToken, 
  * @returns {Object} The authenticated account object created by this action.
  */
 exports.addMicrosoftAuthAccount = function(uuid, accessToken, name, mcExpires, msAccessToken, msRefreshToken, msExpires) {
-    if(Object.keys(config.authenticationDatabase).some(key => key !== uuid)) throw Error('Cierra sesión antes de añadir otra cuenta.')
+    if(Object.keys(config.authenticationDatabase).some(key => key !== uuid && config.authenticationDatabase[key].type === 'microsoft')) throw Error('Cierra sesión en Microsoft antes de añadir otra cuenta de Microsoft.')
     config.selectedAccount = uuid
     config.authenticationDatabase[uuid] = {
         type: 'microsoft',

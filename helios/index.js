@@ -237,6 +237,15 @@ ipcMain.on(MSFT_OPCODE.OPEN_LOGOUT, (ipcEvent, uuid, isLastAccount) => {
 // be closed automatically when the JavaScript object is garbage collected.
 let win
 
+// Una sola ventana por directorio de datos; Probar recarga el perfil escrito por el panel.
+if(!app.requestSingleInstanceLock()) app.quit()
+app.on('second-instance', (_event, argv) => {
+    if(!win) return
+    if(argv.includes('--vortex-test')) win.webContents.reload()
+    if(win.isMinimized()) win.restore()
+    win.show(); win.focus()
+})
+
 function createWindow() {
 
     win = new BrowserWindow({

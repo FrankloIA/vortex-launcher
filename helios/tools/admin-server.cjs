@@ -88,8 +88,8 @@ function startAdmin({ root = path.resolve(__dirname, '../.runtime/pack-admin'), 
                             config.selectedServer = 'vortex-published-test'
                             fs.writeFileSync(configFile, JSON.stringify(config, null, 4))
                         }
-                        const launcher = require('child_process').spawn(path.resolve(__dirname, '../node_modules/electron/dist/electron.exe'), [path.resolve(__dirname, '..')], { cwd: path.resolve(__dirname, '..'), detached: true, stdio: 'ignore', windowsHide: false })
-                        launcher.on('error', error => console.error('No se pudo abrir el launcher:', error.message))
+                        const launcher = require('child_process').spawn(path.resolve(__dirname, '../node_modules/electron/dist/electron.exe'), [path.resolve(__dirname, '..'), '--vortex-test'], { cwd: path.resolve(__dirname, '..'), detached: true, stdio: 'ignore', windowsHide: false })
+                        await new Promise((resolve, reject) => { launcher.once('spawn', resolve); launcher.once('error', reject) })
                         launcher.unref()
                         result.launcherOpened = true
                         break

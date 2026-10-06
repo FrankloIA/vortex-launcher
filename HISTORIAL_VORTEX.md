@@ -32,6 +32,23 @@ Siguiente paso del sistema servidor: confirmar la interfaz API admitida y el inv
 
 Al cerrar cada tarea registrar aquí: fecha/agente, motivo, archivos o mods afectados, revisión y estado del pack, comprobaciones/resultados, limitaciones, pendientes y siguiente paso; actualizar registro de mods aplicable y hacer commit firmado de ambos. Git y documentos son la fuente de continuidad compartida.
 
+### Entrega de Claude — 2026-10-07: incorporación y registro de mods
+
+- **Qué cambió y por qué:** Claude se incorporó al proyecto y completó `docs/MODS_EN_DESARROLLO.md` con sus proyectos reales, para que ChatGPT pueda continuarlos leyendo Git y este historial. Sustituye la fila «Pendiente de identificar» del registro anterior.
+- **Qué leyó:** `AGENTS.md`, `CLAUDE.md`, `PROMPT_CLAUDE_VORTEX.md`, `docs/MODS_EN_DESARROLLO.md` y `docs/stage-3/official-workflow.md` completos. De `HISTORIAL_VORTEX.md` leyó el estado vigente, las reglas y las secciones de funciones, y solo cabeceras y muestras de los inventarios de los packs 1.0.1 y 1.0.2 (listas largas de rutas y SHA-256); no los revisó entero.
+- **Acceso:** `gh` autenticado como `FrankloIA` con permiso `ADMIN` sobre `FrankloIA/vortex-launcher` (público). Se trabajó en la copia existente `D:\Vortex Launcher`, rama `main`, partiendo de `c8d32ec`. Los cambios sin commit de otros agentes (`README.md` modificado, `docs/PROGRESS.md`, `docs/stage-1`, `docs/stage-2`, `helios/...`) **no se tocaron ni se incluyen en este commit**.
+- **Archivos afectados:** `docs/MODS_EN_DESARROLLO.md` y este historial. No se modificó código del launcher, el panel, el pack ni ningún mod. No se publicó nada ni se tocó el servidor de producción.
+- **Contenido del registro:** 6 plugins de servidor, 4 mods NeoForge propios y 6 modificaciones Jarvis de mods de terceros, con carpeta, destino, estado, artefacto local, SHA-256 y pruebas. Ver el propio documento.
+- **Comprobaciones:** los SHA-256 se calcularon sobre los archivos de `D:\Vortex Server\downloads\`; los de ParCool, Enhanced AI, Majrusz y The Sift coinciden con los registrados antes en las notas de Claude.
+- **Limitaciones:**
+  - Ninguno de esos proyectos está en Git: `D:\Vortex Server` no es un repositorio. Las columnas rama/commit dicen «sin Git».
+  - Los hashes son de copias locales, **no se compararon con los archivos desplegados** en el servidor ni en el cliente del usuario.
+  - Las fuentes `.java` de MobNames y VortexAdmin no están en disco (solo jars y un decompilado de VortexAdmin). No se localizó la fuente de VortexAetherOnly.
+  - La v1.3.0 de VortexWorldTime que corre en el servidor no es de Claude.
+  - Casi todo está verificado a nivel de compilación, bytecode y arranque, no en una partida con jugadores.
+  - Faltan fichas de Chat Heads, My Picture Frame, Citadel, GeckoBetterFPS, Forgematica, `w2w2` y EssentialPatcher.
+- **Pendientes y siguiente paso para ChatGPT:** (1) el usuario debe decidir cómo versionar los mods propios (un repositorio por mod o uno común) antes de importar nada al pack; (2) comparar hashes locales con los desplegados; (3) antes de que el sistema servidor clasifique cliente/servidor, usar la columna «Destino» del registro como punto de partida, no como verdad definitiva: sigue necesitando la doble revisión; (4) el detalle operativo del servidor y de las reglas de despliegue está en `D:\Vortex Server\CLAUDE.md` (no está en este repositorio).
+
 ### Código posterior a la primera recopilación del historial
 
 - 3d59a0b Conservar inventarios y cambios antes de retirar publicaciones antiguas para limitar el almacenamiento de GitHub

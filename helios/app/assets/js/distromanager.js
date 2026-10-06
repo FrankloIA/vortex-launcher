@@ -23,6 +23,11 @@ if(publishedTest && fs.existsSync(testChannel)) {
 if(process.env.VORTEX_TEST_MODE === '1') {
     catalog.servers = catalog.servers.filter(server => server.id === 'vortex-published-test')
     for(const server of catalog.servers) server.mainServer = true
+} else if(publishedTest) {
+    const official={...structuredClone(publishedTest),id:'vortex-official',name:'Vortex',description:'Versión oficial · actualizaciones firmadas',version:'1.0.1',mainServer:true}
+    for(const server of catalog.servers) server.mainServer=false
+    catalog.servers.unshift(official)
+    if(require('@electron/remote').app.isPackaged) catalog.servers=[official]
 }
 fs.writeJsonSync(path.join(ConfigManager.getLauncherDirectory(), 'distribution_dev.json'), catalog, { spaces: 2 })
 

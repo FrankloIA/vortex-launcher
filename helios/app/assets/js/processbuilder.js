@@ -89,6 +89,11 @@ class ProcessBuilder {
             windowsHide: true,
             detached: this.config.getLaunchDetached()
         })
+        if(process.env.VORTEX_TEST_RUN) {
+            try {
+                require('../../../vortex/test-process.cjs').monitorTestProcess(child,require('../../../vortex/test-gate.cjs').currentGate(),process.env.VORTEX_TEST_RUN,{instance:this.gameDir,account:this.authUser.displayName})
+            } catch(error) {child.kill();throw error}
+        }
 
         if(this.config.getLaunchDetached()){
             child.unref()

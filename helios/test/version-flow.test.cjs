@@ -11,7 +11,7 @@ test('En prueba conserva la edición y permite publicar otra revisión de la mis
     store.add('trial',0,input,'config/example.json','seed');store.setWorkspace({activeId:'trial',draftRecoveryApplied:true})
     store.publish('trial',1);assert.equal(store.workspace().activeId,'trial')
     store.edit('trial',1,d=>{d.notes='Corrección en pruebas'})
-    const release=store.publish('trial',2);assert.equal(JSON.parse(release.payload).notes,'Corrección en pruebas')
+    const release=store.publish('trial',2);assert.match(JSON.parse(release.payload).notes,/Corrección en pruebas/);assert.match(JSON.parse(release.payload).notes,/Añadido: config\/example.json/)
     assert.equal(fs.readdirSync(path.join(root,'release-history')).length,1)
 })
 

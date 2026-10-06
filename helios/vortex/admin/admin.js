@@ -3,6 +3,7 @@ const names = { mods: 'Mods', resourcepacks: 'Resourcepacks', shaderpacks: 'Shad
 const extensions = { mods: '.jar', resourcepacks: '.zip', shaderpacks: '.zip', config: '.json,.toml,.properties,.txt,.cfg,.yaml,.yml,.conf,.ini' }
 let state, selected, category = 'mods', replacePath, editing, folder = '', originalText = ''
 let panel = 'library'
+let actionActive=false
 const availableUpdates = new Map()
 const createdThisSession = new Set()
 let targetEditing = false, identifying = false
@@ -52,6 +53,7 @@ const testVersionButton = document.createElement('button'); testVersionButton.te
 get('publish').after(testVersionButton)
 testVersionButton.onclick = () => action(async () => {
     const result = await api('test/prepare', { id: selected })
+    await refresh()
     message(`Launcher exclusivo de pruebas abierto con ${result.account} · Versión ${result.version} · ${result.mods} mods. Pulsa Jugar para probar el cliente.`)
 })
 for(const button of document.querySelectorAll('[data-provider]')) button.onclick = () => {
@@ -149,9 +151,10 @@ function flushAutosave() {
 for(let i=0;i<localStorage.length;i++) { const key=localStorage.key(i); if(key.startsWith('vortexAutosave:')) { try { const item=JSON.parse(localStorage.getItem(key)); pendingSaves.set(key.slice(15),item) } catch {} } }
 window.addEventListener('beforeunload', event => { if(pendingSaves.size) { event.preventDefault(); event.returnValue = '' } })
 async function action(callback) {
+    actionActive=true
     const buttons = [...document.querySelectorAll('button')]; buttons.forEach(b => { b.disabled = true })
     try { await flushAutosave(); await callback() } catch(error) { message(error.message) }
-    finally { buttons.forEach(b => { b.disabled = false }); render(); switchPanel(panel) }
+    finally {actionActive=false; buttons.forEach(b => { b.disabled = false }); render(); switchPanel(panel) }
 }
 async function refresh() {
     state = await api('state')
@@ -179,6 +182,12 @@ function render() {
     get('notes').disabled = !canEdit()
     get('saveNotes').disabled = !canEdit()
     get('publish').disabled = !canEdit()
+    get('publishOfficial').disabled = !canEdit() || !draft?.testResult?.eligible || !state.githubReady || state.publishing
+    get('approveTest').hidden = !canEdit() || draft?.testResult?.status !== 'awaitingApproval' || !draft.testResult.launcherClosedNormally
+    get('rejectTest').hidden = !canEdit() || !['prepared','running','awaitingApproval','passed'].includes(draft?.testResult?.status)
+    const statuses={untested:'Debes publicar y probar esta versión',prepared:'Prueba abierta con Mystwer · Pulsa Jugar en el launcher de pruebas',running:'Prueba en curso · Juega al menos un minuto y cierra el cliente normalmente',awaitingApproval:draft?.testResult?.launcherClosedNormally ? 'El cliente y el launcher cerraron sin fallos detectados · Confirma cómo fue la partida' : 'El cliente cerró correctamente · Cierra también el launcher de pruebas para confirmar el resultado',passed:'Prueba aprobada · Lista para publicar oficialmente',failed:'Prueba fallida · Corrige los problemas y vuelve a probar',outdated:'La versión cambió · Publica y prueba los últimos cambios'}
+    get('testStatus').textContent=state.publishing ? 'Publicando oficialmente en GitHub…' : (statuses[draft?.testResult?.status] || statuses.untested)+(draft?.testResult?.reason ? ' · '+draft.testResult.reason : '')+(!state.githubReady ? ' · GitHub no está conectado para publicar' : '')
+    get('automaticNotes').textContent=(draft?.automaticNotes || []).map(n=>'- '+n.text).join('\n') || 'Los cambios se registrarán aquí automáticamente'
 
     get('emptyPack').hidden = !!draft; get('library').hidden = !draft
     if(!draft) return
@@ -415,5 +424,21 @@ get('formatJson').onclick = () => {
 get('notes').oninput = () => queueAutosave('notes', selected, get('notes').value)
 get('saveNotes').onclick = () => action(async () => { await api('notes', { id: selected, revision: current().revision, notes: get('notes').value }); await refresh(); message('Notas guardadas') })
 get('closePublishSuccess').onclick = () => get('publishSuccess').close()
-get('publish').onclick = () => action(async () => { const draft = current(); if(!confirm(`¿Publicar la versión ${draft.version} en pruebas?`)) return; const result=await api('publish', { id: draft.id, revision: draft.revision }); await refresh(); get('publishSuccessText').textContent='La versión ' + result.published + ' se publicó correctamente en pruebas. Puedes abrir el launcher exclusivo con Probar versión';get('publishSuccess').showModal();message('Versión publicada en el canal de pruebas') })
+get('approveTest').onclick=()=>action(async()=>{
+    if(!confirm('¿Has probado la partida y no encontraste problemas? Esto permite publicar para todos los jugadores.')) return
+    await api('test/approve',{id:selected,runId:current().testResult.id});await refresh()
+})
+get('rejectTest').onclick=()=>action(async()=>{await api('test/reject',{id:selected,runId:current().testResult.id});await refresh()})
+get('publishOfficial').onclick=()=>action(async()=>{
+    if(!confirm('¿Publicar oficialmente la versión '+current().version+' para todos los jugadores? La versión quedará bloqueada.')) return
+    get('testStatus').textContent='Publicando oficialmente en GitHub…'
+    const result=await api('publish/official',{id:selected,revision:current().revision});await refresh()
+    get('publishSuccess').querySelector('h2').textContent='Versión publicada oficialmente'
+    get('publishSuccessText').textContent='Vortex '+result.published+' se publicó en GitHub. Los jugadores con el nuevo launcher recibirán esta actualización';get('publishSuccess').showModal()
+})
+get('publish').onclick = () => action(async () => { const draft = current(); if(!confirm(`¿Publicar la versión ${draft.version} en pruebas?`)) return; const result=await api('publish', { id: draft.id, revision: draft.revision }); await refresh(); get('publishSuccess').querySelector('h2').textContent='Versión de pruebas publicada';get('publishSuccessText').textContent='La versión ' + result.published + ' se publicó correctamente en pruebas. Puedes abrir el launcher exclusivo con Probar versión';get('publishSuccess').showModal();message('Versión publicada en el canal de pruebas') })
+setInterval(async()=>{
+    if(!state || actionActive || !current()) return
+    try {const result=await api('test/status');if(result.id===selected) current().testResult=result.testResult;state.githubReady=result.githubReady;state.publishing=result.publishing;render()} catch {}
+},5000)
 action(async () => { await refresh() })

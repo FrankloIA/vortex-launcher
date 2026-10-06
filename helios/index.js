@@ -17,7 +17,19 @@ const LangLoader                        = require('./app/assets/js/langloader')
 if(process.argv.includes('--vortex-test')) {
     process.env.VORTEX_DATA_DIRECTORY = path.join(__dirname,'.runtime/testing')
     process.env.VORTEX_TEST_MODE = '1'
+    process.env.VORTEX_TEST_RUN = process.argv.find(arg=>arg.startsWith('--vortex-test-run='))?.split('=')[1] || ''
 }
+function failActiveTest(reason,normalClose=false) {
+    if(!process.env.VORTEX_TEST_RUN) return
+    try {
+        const gate=require('./vortex/test-gate.cjs').currentGate(), run=gate.read(process.env.VORTEX_TEST_RUN)
+        if(normalClose) gate.launcherClosed(run.id)
+        else if(['prepared','running','awaitingApproval','passed'].includes(run.status)) gate.fail(run.id,reason)
+    } catch {}
+}
+process.on('uncaughtExceptionMonitor',()=>failActiveTest('El launcher falló durante la prueba'))
+app.on('before-quit',()=>failActiveTest('El launcher se cerró antes de completar la prueba',true))
+app.on('render-process-gone',()=>failActiveTest('La interfaz del launcher falló durante la prueba'))
 const vortexRoot = process.env.VORTEX_DATA_DIRECTORY || (app.isPackaged
     ? path.join(app.getPath('appData'), 'Vortex Launcher', '.runtime')
     : path.join(__dirname, '.runtime'))
@@ -258,7 +270,12 @@ let win
 if(!app.requestSingleInstanceLock()) app.quit()
 app.on('second-instance', (_event, argv) => {
     if(!win) return
-    if(argv.includes('--vortex-test')) { LangLoader.setupLanguage(); win.webContents.reload() }
+    if(argv.includes('--vortex-test')) {
+        failActiveTest('La prueba anterior fue sustituida por una nueva')
+        process.env.VORTEX_TEST_RUN=argv.find(arg=>arg.startsWith('--vortex-test-run='))?.split('=')[1] || ''
+        LangLoader.setupLanguage()
+        win.webContents.executeJavaScript('process.env.VORTEX_TEST_RUN='+JSON.stringify(process.env.VORTEX_TEST_RUN)).then(()=>win.webContents.reload())
+    }
     if(win.isMinimized()) win.restore()
     win.show(); win.focus()
 })
@@ -280,6 +297,7 @@ function createWindow() {
         backgroundColor: '#171614'
     })
     remoteMain.enable(win.webContents)
+    win.on('unresponsive',()=>failActiveTest('El launcher dejó de responder durante la prueba'))
 
     const data = {
         bkid: Math.floor((Math.random() * fs.readdirSync(path.join(__dirname, 'app', 'assets', 'images', 'backgrounds')).length)),

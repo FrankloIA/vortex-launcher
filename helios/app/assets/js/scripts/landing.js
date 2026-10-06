@@ -99,6 +99,27 @@ function setLaunchEnabled(val){
 }
 
 // Bind launch button
+let packUpdatePrompted
+async function checkOfficialPackUpdate() {
+    if(process.env.VORTEX_TEST_MODE==='1' || proc) return
+    const release=await require('./assets/js/../../../vortex/official-release.cjs').checkOfficialRelease(ConfigManager.getInstanceDirectory())
+    if(!release) return
+    ConfigManager.setSelectedServer('vortex-official');ConfigManager.save()
+    const server=(await DistroAPI.getDistribution()).getServerById('vortex-official');server.rawServer.version=release.version;updateSelectedServer(server)
+    if(!release.pending || packUpdatePrompted===release.releaseSha256) return
+    packUpdatePrompted=release.releaseSha256
+    setOverlayContent('Nueva versión de Vortex','La versión '+release.version+' del pack está disponible','Actualizar','Más tarde')
+    setOverlayHandler(async()=>{
+        toggleOverlay(false);toggleLaunchArea(true)
+        try {
+            await require('./assets/js/../../../vortex/official-release.cjs').prepareOfficialRelease(ConfigManager.getInstanceDirectory(),event=>{setLaunchDetails(event.message);setLaunchPercentage(event.percent)})
+            setOverlayContent('Vortex actualizado','La versión '+release.version+' está lista para jugar','Ok');setOverlayHandler(()=>toggleOverlay(false));toggleOverlay(true)
+        } catch(error) {showLaunchFailure('No se pudo actualizar Vortex',error.message);packUpdatePrompted=null}
+        finally {toggleLaunchArea(false)}
+    })
+    setDismissHandler(()=>toggleOverlay(false));toggleOverlay(true,true)
+}
+setInterval(()=>checkOfficialPackUpdate().catch(error=>loggerLanding.warn('Actualización del pack',error.message)),600000)
 document.getElementById('launch_button').addEventListener('click', async e => {
     loggerLanding.info('Launching game..')
     try {
@@ -290,6 +311,9 @@ let serverStatusListener = setInterval(() => refreshServerStatus(true), 30000)
  * @param {string} desc The overlay description.
  */
 function showLaunchFailure(title, desc){
+    if(process.env.VORTEX_TEST_RUN) {
+        try {require('./assets/js/../../../vortex/test-gate.cjs').currentGate().fail(process.env.VORTEX_TEST_RUN,'La preparación o el inicio del cliente falló')} catch(error) {loggerLanding.error('No se pudo registrar el fallo de prueba',error.message)}
+    }
     setOverlayContent(
         title,
         desc,
@@ -642,6 +666,9 @@ async function dlAsync(login = true) {
         try {
             // Build Minecraft process.
             proc = pb.build()
+            const runningProcess=proc
+            proc.once('close',()=>{if(proc===runningProcess)proc=null;setLaunchEnabled(true)})
+            setLaunchEnabled(false)
 
             // Bind listeners to stdout.
             proc.stdout.on('data', tempListener)

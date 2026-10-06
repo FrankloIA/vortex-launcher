@@ -5,6 +5,9 @@ const { validateLocalFile } = require('helios-core/common')
 // Catálogo de pruebas: comprobar la instantánea importada, sin restaurar
 // configuraciones del jugador ni fingir que existe un servicio de actualización.
 async function verifyPackSnapshot(server, instancesRoot) {
+    if(server.rawServer.id === 'vortex-official') {
+        return require('../../../vortex/official-release.cjs').prepareOfficialRelease(instancesRoot)
+    }
     if(server.rawServer.id === 'vortex-published-test') {
         return require('../../../vortex/test-release.cjs').prepareTestRelease(instancesRoot)
     }

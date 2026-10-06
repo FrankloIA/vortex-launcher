@@ -51,7 +51,10 @@ function switchView(current, next, currentFadeTime = 500, nextFadeTime = 500, on
     $(`${current}`).fadeOut(currentFadeTime, async () => {
         await onCurrentFade()
         $(`${next}`).fadeIn(nextFadeTime, async () => {
-            if(next === VIEWS.landing) refreshServerStatus()
+            if(next === VIEWS.landing) {
+                refreshServerStatus()
+                checkOfficialPackUpdate().catch(error=>loggerLanding.warn('No se pudo consultar el pack oficial',error.message))
+            }
             await onNextFade()
         })
     })
@@ -102,6 +105,7 @@ async function showMainUI(data){
 
         {
             if(isLoggedIn){
+                checkOfficialPackUpdate().catch(error=>loggerLanding.warn('No se pudo consultar el pack oficial',error.message))
                 currentView = VIEWS.landing
                 $(VIEWS.landing).fadeIn(1000)
             } else {

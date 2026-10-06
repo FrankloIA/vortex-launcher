@@ -22,7 +22,7 @@ function prepareTestRelease(instancesRoot, expectedVersion, onProgress = () => {
         loaded += data.length
         onProgress({ percent: total ? Math.min(99, Math.floor(loaded * 100 / total)) : 99 })
         return data
-    })
+    }, {replaceSeeds:process.env.VORTEX_TEST_MODE==='1'})
     require('./mod-policy.cjs').applyOptional(instance)
     const shaders = require('./shader-policy.cjs'); shaders.set(instance, shaders.get(instance))
     onProgress({ percent: 100 })

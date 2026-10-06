@@ -6,6 +6,10 @@ const { ReleaseStore } = require('../vortex/release-store.cjs')
 const { Providers } = require('../vortex/providers.cjs')
 function startAdmin({ root = path.resolve(__dirname, '../.runtime/pack-admin'), port = 43117, password } = {}) {
     const store = new ReleaseStore(root)
+    const gate=new (require('../vortex/test-gate.cjs').TestGate)(root)
+    const publisher=new (require('../vortex/github-publisher.cjs').GithubPublisher)(root)
+    let githubReady=false,publishing=false
+    publisher.available().then(ready=>{githubReady=ready})
     const providers = new Providers(root)
     const metadata = new (require('../vortex/content-metadata.cjs').ContentMetadata)(root, providers)
     const protection = new (require('../vortex/jarvis-protection.cjs').JarvisProtection)(root)
@@ -62,6 +66,10 @@ function startAdmin({ root = path.resolve(__dirname, '../.runtime/pack-admin'), 
                     if(!response.ok) throw Error('No se pudo consultar el catálogo oficial de Minecraft')
                     const manifest=await response.json();return reply(200,{versions:manifest.versions.filter(v=>v.type==='release' && /^\d+\.\d+(\.\d+)?$/.test(v.id)).map(v=>v.id)})
                 }
+                if(req.url === '/api/test/status' && req.method==='GET') {
+                    const id=store.workspace().activeId
+                    return reply(200,{id,testResult:id ? gate.status(id) : null,githubReady,publishing})
+                }
                 if(req.method === 'GET' && /^\/api\/icon\/[a-f0-9]{64}$/.test(req.url)) {
                     try {
                         const zip = new Zip(fs.readFileSync(path.join(root, 'blobs', req.url.split('/').at(-1))))
@@ -76,6 +84,7 @@ function startAdmin({ root = path.resolve(__dirname, '../.runtime/pack-admin'), 
                 }
                 if(req.url === '/api/state' && req.method === 'GET') {
                     store.recoverWorkspace()
+                    if(store.workspace().activeId) store.syncLauncherNotes(store.workspace().activeId)
                     const directory = path.join(root, 'drafts')
                     const drafts = fs.existsSync(directory) ? fs.readdirSync(directory).filter(n => n.endsWith('.json')).map(n => ({ id: n.slice(0, -5), ...store.getDraft(n.slice(0, -5)) })) : []
                     const channels = Object.fromEntries(['test', 'stable'].map(channel => { const file = path.join(root, 'channels', channel + '.json'); return [channel, fs.existsSync(file) ? JSON.parse(fs.readFileSync(file)) : null] }))
@@ -83,7 +92,9 @@ function startAdmin({ root = path.resolve(__dirname, '../.runtime/pack-admin'), 
                     drafts.push(...releases.slice(0,4).map(r=>({...r,id:'release:'+r.version,published:true,readOnly:true})))
                     for(const draft of drafts) {
                         draft.published = store.isOfficial(draft)
-                        draft.status = store.isOfficial(draft) ? 'stable' : store.isPublished(draft) ? 'test' : 'draft'
+                        draft.status = store.isOfficial(draft) ? 'stable' : releases.some(r=>r.version===draft.version && r.revision===draft.revision) ? 'test' : 'draft'
+                        if(draft.readOnly) draft.notes=draft.manualNotes ?? draft.notes
+                        if(!draft.readOnly) draft.testResult=gate.status(draft.id)
                         for(const file of draft.files) {
                             if(file.path.startsWith('config/')) file.editableText=canEditConfig(file)
                             const cached=metadata.get(file);file.source ||= cached?.source
@@ -91,10 +102,11 @@ function startAdmin({ root = path.resolve(__dirname, '../.runtime/pack-admin'), 
                             file.protection=protection.status(file)
                         }
                     }
-                    return reply(200, { drafts, channels, workspace:store.workspace(), history:releases.filter((r,index)=>index>0 || r.version===store.workspace().baselineVersion).slice(0,3).map(r=>({version:r.version,publishedAt:r.publishedAt,minecraft:r.minecraft,loader:r.loader || 'neoforge',files:r.files.length,notes:r.notes})), currentRelease:releases[0]?.version })
+                    return reply(200, { drafts, channels, githubReady, publishing, workspace:store.workspace(), history:releases.filter((r,index)=>index>0 || r.version===store.workspace().baselineVersion).slice(0,3).map(r=>({version:r.version,publishedAt:r.publishedAt,minecraft:r.minecraft,loader:r.loader || 'neoforge',files:r.files.length,notes:r.notes})), currentRelease:releases[0]?.version })
                 }
                 if(req.method !== 'POST') return reply(404, { error: 'Ruta no encontrada' })
                 let result
+                if(publishing) throw Error('Espera a que termine la publicación oficial antes de modificar o probar')
                 const mutations=['/api/library/rename','/api/library/delete','/api/library/mark-jarvis','/api/providers/install','/api/remove','/api/notes','/api/add','/api/library/add','/api/config/save','/api/config/autosave','/api/publish']
                 if(mutations.includes(req.url) && store.workspace().activeId !== body.id) throw Error('Biblioteca de solo lectura: crea una nueva versión para modificar contenido')
                 switch(req.url) {
@@ -128,14 +140,27 @@ function startAdmin({ root = path.resolve(__dirname, '../.runtime/pack-admin'), 
                         result = { deleted: body.id, publishedVersionsPreserved: true }; break
                     }
                     case '/api/test/prepare': {
-                        const version = getCatalog(body.id).version
+                        const run=gate.prepare(body.id), version=run.version
                         const testing=require('../vortex/test-launcher.cjs').prepareTestLauncher(path.resolve(__dirname,'../.runtime'))
                         result = require('../vortex/test-release.cjs').prepareTestRelease(testing.instances, version)
                         result.account=testing.account
-                        const launcher = require('child_process').spawn(path.resolve(__dirname, '../node_modules/electron/dist/electron.exe'), [path.resolve(__dirname, '..'), '--vortex-test'], { cwd: path.resolve(__dirname, '..'), detached: true, stdio: 'ignore', windowsHide: false })
+                        const launcher = require('child_process').spawn(path.resolve(__dirname, '../node_modules/electron/dist/electron.exe'), [path.resolve(__dirname, '..'), '--vortex-test','--vortex-test-run='+run.id], { cwd: path.resolve(__dirname, '..'), detached: true, stdio: 'ignore', windowsHide: false })
                         await new Promise((resolve, reject) => { launcher.once('spawn', resolve); launcher.once('error', reject) })
                         launcher.unref()
+                        gate.launcherStarted(run.id,launcher.pid)
                         result.launcherOpened = true
+                        break
+                    }
+                    case '/api/test/approve': result=gate.approve(body.id,body.runId);break
+                    case '/api/test/reject': {
+                        const run=gate.status(body.id);if(run.id!==body.runId) throw Error('Prueba inválida')
+                        result=gate.fail(run.id,'Se encontraron problemas durante la prueba');break
+                    }
+                    case '/api/publish/official': {
+                        if(store.workspace().activeId!==body.id) throw Error('Selecciona la versión activa')
+                        store.syncLauncherNotes(body.id);gate.assertPassed(body.id)
+                        publishing=true
+                        try {result=await publisher.publish(body.id,body.revision)} finally {publishing=false}
                         break
                     }
                     case '/api/providers/search': result = await providers.search(body.provider, String(body.query || '').slice(0,200), body.category,targetFor(body.id)); break

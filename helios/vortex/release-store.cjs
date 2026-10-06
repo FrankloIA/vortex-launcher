@@ -45,6 +45,13 @@ class ReleaseStore {
     getDraft(name) { const d = json(this.draftFile(name)); if(!d) throw Error('Borrador inexistente'); return d }
     workspace() { return json(path.join(this.root,'workspace.json'),{activeId:null,target:{minecraft:'1.21.1',loader:'neoforge'}}) }
     setWorkspace(change) { const workspace={...this.workspace(),...change};save(path.join(this.root,'workspace.json'),workspace);return workspace }
+    syncLauncherNotes(name) {
+        const draft=this.getDraft(name), notes=require('./change-notes.cjs')
+        if(this.isOfficial(draft)) return draft
+        if(!draft.launcherBaseCommit) {draft.launcherBaseCommit=notes.sourceCommit();save(this.draftFile(name),draft)}
+        const existing=new Set((draft.automaticNotes || []).map(n=>n.key)), additions=notes.launcherChanges(draft.launcherBaseCommit).filter(n=>!existing.has(n.key))
+        return additions.length ? this.edit(name,draft.revision,d=>{d.automaticNotes ||= [];d.automaticNotes.push(...additions)}) : draft
+    }
     recoverWorkspace() {
         const workspace=this.workspace()
         if(workspace.draftRecoveryApplied) return workspace
@@ -71,7 +78,7 @@ class ReleaseStore {
         let draftVersion=manifest.version.replace(/ fixed$/, '')+'-restored'
         let suffix=1
         while(this.isPublished({version:draftVersion}) || (fs.existsSync(path.join(this.root,'drafts')) && fs.readdirSync(path.join(this.root,'drafts')).filter(n=>n.endsWith('.json')).some(n=>json(path.join(this.root,'drafts',n)).version===draftVersion))) draftVersion=manifest.version.replace(/ fixed$/, '')+'-restored-'+suffix++
-        const draft={...manifest,version:draftVersion,revision:0,notes:'Restauración completa de '+version,restoredFrom:version}
+        const draft={...manifest,version:draftVersion,revision:0,notes:'',automaticNotes:[{key:crypto.randomUUID(),text:'Restauración completa de '+version}],launcherBaseCommit:require('./change-notes.cjs').sourceCommit(),restoredFrom:version}
         delete draft.publishedAt;delete draft.editorDrafts
         save(this.draftFile(name),draft);this.setWorkspace({activeId:name,target:{minecraft:draft.minecraft,loader:draft.loader || 'neoforge'}})
         return {id:name,version:draftVersion,restoredFrom:version}
@@ -79,14 +86,15 @@ class ReleaseStore {
     create(name, version, author) {
         const target = this.draftFile(name)
         if(fs.existsSync(target)) throw Error('El borrador ya existe')
-        const draft = { schema: 1, version: versionName(version), minecraft: '1.21.1', neoforge: '21.1.250', revision: 0, author, notes: '', files: [] }
+        const draft = { schema: 1, version: versionName(version), minecraft: '1.21.1', neoforge: '21.1.250', revision: 0, author, notes: '', automaticNotes:[],launcherBaseCommit:require('./change-notes.cjs').sourceCommit(),files: [] }
         save(target, draft); return draft
     }
     edit(name, revision, change) {
         const draft = this.getDraft(name)
         if(draft.revision !== revision) throw Error('Conflicto: recarga el borrador')
         if(this.isOfficial(draft)) throw Error('Para añadir o modificar debes crear una nueva versión')
-        change(draft); validate(draft); draft.revision++; save(this.draftFile(name), draft); return draft
+        const before=structuredClone(draft)
+        change(draft); validate(draft); require('./change-notes.cjs').recordChanges(before,draft); draft.revision++; save(this.draftFile(name), draft); return draft
     }
     add(name, revision, source, target, policy, replacePath, origin = 'local') {
         const data = fs.readFileSync(source)
@@ -105,7 +113,19 @@ class ReleaseStore {
         return this.edit(name, revision, d => { d.files = d.files.filter(f => f.path.toLowerCase() !== target.toLowerCase() && f.path !== replacePath); d.files.push(candidate) })
     }
     remove(name, revision, target) { return this.edit(name, revision, d => { d.files = d.files.filter(f => f.path !== target) }) }
-    isOfficial(draft) { return json(path.join(this.root,'channels/stable.json'))?.version === draft.version }
+    isOfficial(draft) { return json(path.join(this.root,'channels/stable.json'))?.version === draft.version || !!json(path.join(this.root,'official-releases.json'),{})[draft.version] }
+    promote(name,revision) {
+        const draft=this.getDraft(name)
+        if(draft.revision!==revision) throw Error('Conflicto de revisión')
+        if(this.isOfficial(draft)) throw Error('La versión ya es oficial')
+        const run=new (require('./test-gate.cjs').TestGate)(this.root).assertPassed(name)
+        const channel=json(path.join(this.root,'channels/test.json'))
+        if(channel.releaseSha256!==run.releaseSha256) throw Error('La publicación cambió después de la prueba')
+        save(path.join(this.root,'channels/stable.json'),channel)
+        const history=json(path.join(this.root,'official-releases.json'),{});history[draft.version]=channel.releaseSha256;save(path.join(this.root,'official-releases.json'),history)
+        this.setWorkspace({activeId:null})
+        return {published:draft.version,releaseSha256:channel.releaseSha256}
+    }
     isPublished(draft) { return fs.existsSync(path.join(this.root, 'releases', versionName(draft.version) + '.json')) }
     createNext(mode, sourceId) {
         if(this.workspace().activeId) throw Error('Continúa, publica o cancela la versión actual antes de crear otra')
@@ -126,7 +146,7 @@ class ReleaseStore {
         const target=this.workspace().target
         const sameTarget=!source || (source.minecraft===target.minecraft && (source.loader || 'neoforge')===target.loader)
         if(mode==='fix' && !sameTarget) throw Error('Un Fix debe usar la misma versión de Minecraft y loader que la publicación')
-        const draft = { schema:1, version, minecraft:target.minecraft, loader:target.loader, neoforge:'21.1.250', revision:0, author:'administrador local', notes:'', files:structuredClone(sameTarget ? source?.files || [] : []) }
+        const draft = { schema:1, version, minecraft:target.minecraft, loader:target.loader, neoforge:'21.1.250', revision:0, author:'administrador local', notes:'', automaticNotes:[],launcherBaseCommit:require('./change-notes.cjs').sourceCommit(),files:structuredClone(sameTarget ? source?.files || [] : []) }
         validate(draft); save(this.draftFile(name), draft)
         this.setWorkspace({activeId:name})
         return {id:name, version}
@@ -152,7 +172,7 @@ class ReleaseStore {
             fs.writeFileSync(keyFile, keys.privateKey.export({ type: 'pkcs8', format: 'pem' }), { flag: 'wx', mode: 0o600 })
             fs.writeFileSync(path.join(this.root, 'public-signing-key.pem'), keys.publicKey.export({ type: 'spki', format: 'pem' }), { flag: 'wx' })
         }
-        const manifest = { ...draft, publishedAt: new Date().toISOString() }
+        const manifest = { ...draft, manualNotes:draft.notes, notes:require('./change-notes.cjs').notesFor(draft), publishedAt: new Date().toISOString() }
         const payload = JSON.stringify(manifest)
         const envelope = { payload, signature: crypto.sign(null, Buffer.from(payload), fs.readFileSync(keyFile)).toString('base64') }
         save(releaseFile, envelope)
@@ -202,7 +222,10 @@ function applyRelease(instance, envelope, publicKey, blobReader, options = {}) {
         const nextNames = new Set(manifest.files.map(f => f.path.toLowerCase()))
         for(const file of manifest.files) {
             const target = safe(instance, file.path)
-            if(file.policy === 'seed' && fs.existsSync(target)) continue
+            if(file.policy === 'seed' && fs.existsSync(target) && !options.replaceSeeds) {
+                const prior=priorFiles.get(file.path.toLowerCase())
+                if(!prior || hash(fs.readFileSync(target))!==prior.sha256) continue
+            }
             if(fs.existsSync(target) && hash(fs.readFileSync(target)) === file.sha256) continue
             if(fs.existsSync(target) && !priorFiles.has(file.path.toLowerCase())) throw Error('Archivo existente ajeno a Vortex: ' + file.path)
             const data = blobReader(file.sha256)

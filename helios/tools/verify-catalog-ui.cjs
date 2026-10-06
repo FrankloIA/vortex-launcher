@@ -14,8 +14,9 @@ app.whenReady().then(async () => {
             await new Promise(r=>setTimeout(r,1500));
             const images = [...document.querySelectorAll('.catalogIcon img')].filter(img=>img.complete && img.naturalWidth>0).length;
             if(!images) throw Error('Imágenes no cargadas');
-            return { results: rows.length, loadedImages: images, first: rows[0].querySelector('h3').textContent };
+            get('onlineResults').scrollIntoView(); return { top: rows[0].getBoundingClientRect().top, height: rows[0].getBoundingClientRect().height, results: rows.length, loadedImages: images, first: rows[0].querySelector('h3').textContent };
         })()`)
+        await new Promise(r => setTimeout(r, 700));
         fs.writeFileSync(path.resolve(__dirname, '../.runtime/catalog-ui.png'), (await window.webContents.capturePage()).toPNG())
         console.log(JSON.stringify(result)); app.exit(0)
     } catch(error) { console.error(error.message); app.exit(1) }

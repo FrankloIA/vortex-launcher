@@ -247,6 +247,8 @@ function render() {
         if(update && !file.protection?.protected) {
             const badge=document.createElement('p');badge.className='pendingUpdateBadge';badge.textContent='Actualización disponible · ' + update.version;info.append(badge);row.classList.add('hasUpdate')
             const updateButton=document.createElement('button');updateButton.textContent='Actualizar';updateButton.className='updateButton';updateButton.title='Actualizar a ' + update.version
+            updateButton.disabled = !canEdit()
+            if(!canEdit()) updateButton.title = 'Crea una nueva versión para actualizar este archivo'
             updateButton.onclick = () => { if(!requireEditable()) return; action(async () => {
                 await api('providers/install', { id: draft.id, revision: current().revision, provider: update.source.provider, projectId: update.source.projectId, category, replacePath: file.path })
                 availableUpdates.delete(draft.id + ':' + file.path)

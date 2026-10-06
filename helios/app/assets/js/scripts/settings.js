@@ -1498,30 +1498,40 @@ function populateSettingsUpdateInformation(data){
  * 
  * @param {Object} data The update data.
  */
+function showVortexUpdateMessage(message){
+    const popup = document.getElementById('vortexUpdatePopup')
+    document.getElementById('vortexUpdatePopupMessage').textContent = message.replace(/\.$/, '')
+    if(!popup.open) popup.showModal()
+    document.getElementById('vortexUpdatePopupOk').focus()
+}
+
 async function checkVortexLauncherUpdates(){
     settingsUpdateButtonStatus('Buscando actualizaciones…', true)
     settingsUpdateTitle.textContent = 'Consultando las publicaciones de Vortex…'
     try {
         const result = await ipcRenderer.invoke('vortex:check-launcher-update')
         if(result.status === 'available'){
-            settingsUpdateTitle.textContent = 'Nueva versión del launcher disponible: ' + result.version
+            showVortexUpdateMessage('Nueva versión del launcher disponible: ' + result.version)
+            settingsUpdateTitle.textContent = 'Versión disponible: ' + result.version
             settingsUpdateVersionValue.textContent = result.version
             settingsUpdateButtonStatus('Actualizar a ' + result.version, false, async () => {
                 settingsUpdateButtonStatus('Preparando actualización…', true)
                 try {
                     await ipcRenderer.invoke('vortex:download-launcher-update')
-                    settingsUpdateTitle.textContent = 'Descarga abierta. Ejecuta el instalador para actualizar Vortex Launcher.'
-                } catch { settingsUpdateTitle.textContent = 'No se pudo iniciar la descarga. Vuelve a buscar actualizaciones.' }
+                    showVortexUpdateMessage('Descarga abierta. Ejecuta el instalador para actualizar Vortex Launcher')
+                } catch { showVortexUpdateMessage('No se pudo iniciar la descarga. Vuelve a buscar actualizaciones') }
                 settingsUpdateButtonStatus('Buscar actualizaciones', false, checkVortexLauncherUpdates)
             })
             return
         }
-        settingsUpdateTitle.textContent = result.status === 'current'
+        const message = result.status === 'current'
             ? 'Ya tienes la última versión del launcher (' + result.current + ')'
             : result.status === 'unpublished' ? 'Todavía no hay versiones oficiales del launcher publicadas.'
             : result.status === 'unavailable' ? 'La versión ' + result.version + ' aún no tiene un instalador para tu sistema.'
             : 'No se pudieron comprobar las actualizaciones. Revisa tu conexión e inténtalo de nuevo.'
-    } catch { settingsUpdateTitle.textContent = 'No se pudieron comprobar las actualizaciones. Inténtalo de nuevo.' }
+        showVortexUpdateMessage(message)
+    } catch { showVortexUpdateMessage('No se pudieron comprobar las actualizaciones. Inténtalo de nuevo') }
+    settingsUpdateTitle.textContent = 'Busca actualizaciones de Vortex Launcher'
     settingsUpdateButtonStatus('Buscar actualizaciones', false, checkVortexLauncherUpdates)
 }
 

@@ -9,6 +9,7 @@
                     <button class="settingsNavItem" rSc="settingsTabAccount" id="settingsNavAccount" selected><%- lang('settings.navAccount') %></button>
                     <button class="settingsNavItem" rSc="settingsTabMinecraft"><%- lang('settings.navMinecraft') %></button>
                     <button class="settingsNavItem" rSc="settingsTabMods"><%- lang('settings.navMods') %></button>
+                    <button class="settingsNavItem" rSc="settingsTabShaders">Shaders</button>
                     <button class="settingsNavItem" rSc="settingsTabJava"><%- lang('settings.navJava') %></button>
                     <button class="settingsNavItem" rSc="settingsTabLauncher"><%- lang('settings.navLauncher') %></button>
                     <div class="settingsNavSpacer"></div>
@@ -133,16 +134,16 @@
                 </div>
             </div>
             <div id="settingsModsContainer">
-                <div id="settingsReqModsContainer">
-                    <div class="settingsModsHeader"><%- lang('settings.requiredMods') %></div>
-                    <div id="settingsReqModsContent">
-
-                    </div>
-                </div>
                 <div id="settingsOptModsContainer">
                     <div class="settingsModsHeader"><%- lang('settings.optionalMods') %></div>
                     <div id="settingsOptModsContent">
                         
+                    </div>
+                </div>
+                <div id="settingsReqModsContainer">
+                    <div class="settingsModsHeader"><%- lang('settings.requiredMods') %></div>
+                    <div id="settingsReqModsContent">
+
                     </div>
                 </div>
                 <div id="settingsDropinModsContainer">
@@ -152,7 +153,10 @@
                         
                     </div>
                 </div>
-                <div id="settingsShadersContainer">
+
+            </div>
+        </div>
+        <div id="settingsTabShaders" class="settingsTab" style="display:none"><div class="settingsTabHeader"><span class="settingsTabHeaderText">Shaders</span><span class="settingsTabHeaderDesc">Elige Luxury, Ratrero o Desactivados. Tu elección se guarda automáticamente.</span></div>                <div id="settingsShadersContainer">
                     <div class="settingsModsHeader"><%- lang('settings.shaderpacks') %></div>
                     <div id="settingsShaderpackDesc"><%- lang('settings.shaderpackDesc') %></div>
                     <div id="settingsShaderpackWrapper">
@@ -164,9 +168,7 @@
                             </div>
                         </div>
                     </div>
-                </div>
-            </div>
-        </div>
+                </div></div>
         <div id="settingsTabJava" class="settingsTab" style="display: none;">
             <div class="settingsTabHeader">
                 <span class="settingsTabHeaderText"><%- lang('settings.tabJavaHeaderText') %></span>

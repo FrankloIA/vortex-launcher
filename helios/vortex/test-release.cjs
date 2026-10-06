@@ -24,6 +24,7 @@ function prepareTestRelease(instancesRoot, expectedVersion, onProgress = () => {
         return data
     })
     require('./mod-policy.cjs').applyOptional(instance)
+    const shaders = require('./shader-policy.cjs'); shaders.set(instance, shaders.get(instance))
     onProgress({ percent: 100 })
     return { version: manifest.version, mods: manifest.files.filter(f => f.path.startsWith('mods/')).length, instance, result }
 }

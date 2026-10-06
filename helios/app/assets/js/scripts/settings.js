@@ -987,8 +987,8 @@ let CACHE_SELECTED_SHADERPACK
 async function resolveShaderpacksForUI(){
     const serv = (await DistroAPI.getDistribution()).getServerById(ConfigManager.getSelectedServer())
     CACHE_SETTINGS_INSTANCE_DIR = path.join(ConfigManager.getInstanceDirectory(), serv.rawServer.id)
-    CACHE_SHADERPACKS = DropinModUtil.scanForShaderpacks(CACHE_SETTINGS_INSTANCE_DIR)
-    CACHE_SELECTED_SHADERPACK = DropinModUtil.getEnabledShaderpack(CACHE_SETTINGS_INSTANCE_DIR)
+    CACHE_SHADERPACKS = require('../vortex/shader-policy.cjs').choices(CACHE_SETTINGS_INSTANCE_DIR)
+    CACHE_SELECTED_SHADERPACK = require('../vortex/shader-policy.cjs').get(CACHE_SETTINGS_INSTANCE_DIR)
 
     setShadersOptions(CACHE_SHADERPACKS, CACHE_SELECTED_SHADERPACK)
 }
@@ -1011,19 +1011,21 @@ function setShadersOptions(arr, selected){
             }
             this.setAttribute('selected', '')
             closeSettingsSelect()
+            require('../vortex/shader-policy.cjs').set(CACHE_SETTINGS_INSTANCE_DIR, this.getAttribute('value'))
         })
         cont.appendChild(d)
     }
 }
 
 function saveShaderpackSettings(){
+    if(!CACHE_SETTINGS_INSTANCE_DIR || !document.getElementById('settingsShadersOptions').children.length) return
     let sel = 'OFF'
     for(let opt of document.getElementById('settingsShadersOptions').childNodes){
         if(opt.hasAttribute('selected')){
             sel = opt.getAttribute('value')
         }
     }
-    DropinModUtil.setEnabledShaderpack(CACHE_SETTINGS_INSTANCE_DIR, sel)
+    require('../vortex/shader-policy.cjs').set(CACHE_SETTINGS_INSTANCE_DIR, sel)
 }
 
 function bindShaderpackButton() {

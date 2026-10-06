@@ -14,3 +14,7 @@ body[bkid]{background:#0c0e14!important;font-family:'Segoe UI',sans-serif}#main{
 #settingsAboutLogo{content:url('../images/vortex-icon-pixel.png');object-fit:contain}.serverListingImg{object-fit:contain}
 
 #settingsDropinFileSystemButton,#settingsDropinModsContent{display:none!important}
+
+#settingsShaderpackButton{display:none}#settingsTabShaders #settingsShadersContainer{margin-top:24px}
+
+#settingsDropinModsContainer{display:none!important}

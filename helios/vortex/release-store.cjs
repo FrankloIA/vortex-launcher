@@ -84,6 +84,7 @@ class ReleaseStore {
         const draft=this.getDraft(name)
         if(draft.revision!==revision) throw Error('Recarga la versión antes de cancelarla')
         if(this.isOfficial(draft)) throw Error('La publicación se conserva; crea otra versión')
+        save(path.join(this.root,'cancelled-drafts',crypto.randomUUID()+'.json'),{cancelledAt:new Date().toISOString(),draft})
         const releaseFile=path.join(this.root,'releases',draft.version+'.json')
         if(fs.existsSync(releaseFile)) {
             const history=path.join(this.root,'release-history');fs.mkdirSync(history,{recursive:true})
@@ -96,6 +97,27 @@ class ReleaseStore {
             }
         }
         fs.unlinkSync(this.draftFile(name));this.setWorkspace({activeId:null});return {cancelled:name}
+    }
+    restoreCancelled(version) {
+        versionName(version)
+        if(this.workspace().activeId) throw Error('Hay una versión de trabajo activa; no se sustituirá')
+        let draft
+        const backups=path.join(this.root,'cancelled-drafts')
+        if(fs.existsSync(backups)) draft=fs.readdirSync(backups).filter(n=>n.endsWith('.json')).map(n=>json(path.join(backups,n))).filter(b=>b.draft.version===version).sort((a,b)=>b.cancelledAt.localeCompare(a.cancelledAt))[0]?.draft
+        if(!draft) {
+            const folder=path.join(this.root,'release-history')
+            const manifests=fs.existsSync(folder)?fs.readdirSync(folder).filter(n=>n.startsWith('cancelled-') && n.endsWith('.json')).map(n=>verify(json(path.join(folder,n)),fs.readFileSync(path.join(this.root,'public-signing-key.pem')))).filter(r=>r.version===version):[]
+            draft=manifests.sort((a,b)=>b.revision-a.revision || b.publishedAt.localeCompare(a.publishedAt))[0]
+            if(draft) draft={...draft,notes:draft.manualNotes ?? draft.notes}
+        }
+        if(!draft) throw Error('No hay una instantánea recuperable de esta versión')
+        draft=validate({...draft});if(this.isOfficial(draft)) throw Error('La versión ya está publicada oficialmente')
+        for(const file of draft.files) {const bytes=fs.readFileSync(path.join(this.root,'blobs',file.sha256));if(bytes.length!==file.size || hash(bytes)!==file.sha256) throw Error('Archivo de recuperación corrupto: '+file.path)}
+        delete draft.publishedAt;delete draft.manualNotes
+        const name='recovered-'+crypto.randomUUID();save(this.draftFile(name),draft)
+        this.setWorkspace({activeId:name,target:{minecraft:draft.minecraft,loader:draft.loader || 'neoforge'}})
+        this.syncLauncherNotes(name)
+        return {id:name,version,files:draft.files.length}
     }
     restore(version) {
         const manifest=this.releases().find(r=>r.version===version)

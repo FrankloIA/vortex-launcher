@@ -8,13 +8,15 @@ test('Cancelar una versión en pruebas la retira de la lista y recupera el canal
     const root=fs.mkdtempSync(path.join(os.tmpdir(),'vortex-cancel-'));t.after(()=>fs.rmSync(root,{recursive:true,force:true}))
     const store=new ReleaseStore(root);store.create('base','1.0.1','test');const input=path.join(root,'input');fs.writeFileSync(input,'{}');store.add('base',0,input,'config/example.json','seed');store.publish('base',1)
     const next=store.createNext('new','base');store.publish(next.id,0)
+    store.edit(next.id,0,d=>{d.notes='Último cambio aún sin publicar'})
     assert.equal(store.releases()[0].version,'1.0.2')
     assert.throws(()=>store.cancel(next.id,99),/Recarga/);assert.equal(store.releases()[0].version,'1.0.2')
-    store.cancel(next.id,0)
+    store.cancel(next.id,1)
     assert(!fs.existsSync(store.draftFile(next.id)));assert(!store.releases().some(r=>r.version==='1.0.2'))
     assert.equal(JSON.parse(fs.readFileSync(path.join(root,'channels/test.json'))).version,'1.0.1')
     assert.equal(store.workspace().activeId,null);assert(fs.readdirSync(path.join(root,'release-history')).some(n=>n.startsWith('cancelled-')))
-    assert.equal(store.createNext('new','base').version,'1.0.2')
+    const recovered=store.restoreCancelled('1.0.2');assert.equal(recovered.version,'1.0.2');assert.equal(store.getDraft(recovered.id).notes,'Último cambio aún sin publicar')
+    assert.throws(()=>store.restoreCancelled('1.0.2'),/activa/)
 })
 
 test('En prueba conserva la edición y permite publicar otra revisión de la misma versión', () => {

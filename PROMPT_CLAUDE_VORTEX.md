@@ -79,3 +79,9 @@ En cada trabajo actualiza el historial y las fichas de mods implicados; registra
 Antes del commit revisa el diff; incluye solo tu trabajo y firma como Claude. No publiques oficialmente ni apruebes una prueba en nombre del usuario. La siguiente conversación de ChatGPT debe poder retomar leyendo estos documentos y los repositorios, sin necesitar el chat privado de Claude.
 
 Información faltante: nombres/rutas/repositorios de los mods actualmente desarrollados por Claude, sus ramas, commits, artefactos y pruebas. Completa `docs/MODS_EN_DESARROLLO.md` cuando el usuario o Claude los proporcionen. Hasta entonces no puede garantizarse continuidad de esos proyectos ajenos al repositorio.
+
+## Entrega del servidor incorporada el 2026-10-07
+
+Claude registró los proyectos en `docs/MODS_EN_DESARROLLO.md` (commit c02715b). Consulta esas fichas antes de tocar un mod o plugin. En este PC lee primero `D:\Vortex Server\MODS-DE-CLAUDE.md` y después `D:\Vortex Server\CLAUDE.md`; el AGENTS.md de esa carpeta es una copia antigua y el servidor aún no tiene Git. Consulta la auditoría del 2026-10-07 en HISTORIAL_VORTEX.md para hashes, limitaciones y pendientes. Los documentos extensos locales no están íntegros en GitHub: pide acceso si trabajas en otro equipo, sin inventar su contenido.
+
+La entrega reporta Arclight d8209dc/NeoForge 21.1.250, MusicPlayer V10 y parches con diferencias cliente/servidor. Faltan las fuentes originales de MobNames y VortexAdmin; existe un decompilado de este último. El ZIP nuevo declara 1.0.3 y conserva los hashes conocidos de MusicPlayer V10 y SecurityCraft v3; no ha sido importado, probado ni publicado por esta revisión. Mantén el estado del administrador independiente del nombre de un ZIP. La integración del servidor y su acceso API permanente siguen pendientes.

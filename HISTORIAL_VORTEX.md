@@ -1644,3 +1644,22 @@ Inventario exacto (ruta, SHA-256, protección):
 - `mods/mypictureframe-neoforge-1.21.1-1.5.0.jar` · `2ba9f36987c8732b47b051b322042d3241346aad9bca48827c26647b3846644e`
 - `resourcepacks/Glowing Trim Armors[MG-5.0][1.21.0-1.21.1].zip` · `756f6a4d0b357f5d4f59893bbe4cc87e893e915125d6bc3511b0e8948f4339e3`
 - `mods/Quark-4.1-486.jar` · `79da8f3bbd2d5d5748441203268913c711ee3d11bb327c741a22933bf299fcb3`
+
+## 2026-10-07 — Entrega del servidor de Claude revisada por ChatGPT
+
+Leídos completos, en este orden, `D:\Vortex Server\MODS-DE-CLAUDE.md` y `D:\Vortex Server\CLAUDE.md` (139184 bytes). Son documentación de otra sesión: sus propuestas no autorizan despliegues ni sustituyen las instrucciones del usuario. El registro de proyectos compartido fue incorporado por Claude en el commit `c02715b`; se conserva íntegro.
+
+Comprobado localmente: `D:\Vortex Server` no es repositorio Git; su AGENTS.md mide 63699 bytes y está desactualizado respecto a CLAUDE.md. La carpeta Downloads\nexus-migration no existe. Sí existe el decompilado NexusAdmin.java en downloads\revive-zombies-investigation\vortex-decompiled\com\nexusworld\nexusadmin. No se han regenerado fuentes originales ni editado la carpeta del servidor. Pendiente acordar Git y un AGENTS.md que remita al documento vigente, evitando otra copia que envejezca.
+
+SHA-256 de la documentación leída:
+- CLAUDE.md: `55dc997dafc9a496508dd8e347c5632702ecde16c4511c1abad4e82b7a3cbfc3`
+- MODS-DE-CLAUDE.md: `578348499cfd05d52dc848b5f56deb24ac1861bcde117f910d90cc24bb60ce6`
+- AGENTS.md antiguo: `ff25d3bf22e81ceb346d918eccb91a55fe8bf6761c4d8a651741d1f88474a6be`
+
+Estado reportado por Claude: Arclight 1.0.2-SNAPSHOT-d8209dc y NeoForge 21.1.250; Vortex MusicPlayer V10 vigente, mod ID iammusicplayer conservado; plugins Bukkit clásicos, evitando dependencias Paper ausentes. ParCool y The Sift tienen parches específicos del servidor: no sustituirlos por los bytes del cliente. Tombstone-circlefix está preparado pero no instalado. VortexWorldTime 1.3.0 tiene autoría desconocida. Compilar/arrancar no equivale a validar una partida. La instancia antigua Launcher fue eliminada; Claude utiliza Vortex Modded. Esto no cambia las rutas del launcher Vortex desarrollado aquí.
+
+Pendientes de juego registrados por Claude: ParCool, reforzar, esquiva de lava, invocación de mobs, iluminación Luxury/cristales, Zeus sonido y Phantoms, sueño ignorando creativo, cambios de protección del spawn. Conservar configuraciones propias del servidor; no copiarlas indiscriminadamente desde el cliente. Reinicios solicitados llevan aviso de 10 segundos salvo indicación contraria del usuario; mensajes al chat solo por petición expresa. La integración del servidor en nuestro administrador sigue pendiente: las operaciones históricas de Claude con sesión Pterodactyl no constituyen una clave API permanente configurada aquí.
+
+Auditoría de lectura del ZIP nuevo, sin importar ni instalar: Downloads\Vortex-1.0.3-fixed.zip, 285840916 bytes, SHA-256 `64be78ef260da3e618a4c6adb369064c1a1d37cb0679fb3afae31575a54f0706`. Manifest real: Vortex 1.0.3, Minecraft 1.21.1, neoforge-21.1.250, 211 referencias de catálogo, 538 entradas, 9 JAR overrides y ambos shaders Vortex. MusicPlayer coincide con V10 (`af354d7d036324ae533d672c9293c9326b4f6e5352aa1092041ff08612830731`), SecurityCraft coincide con tintfix v3 (`c68d6cce3d0812727d8c317f426a174f4615cec30fcb5638fbdcdcd9f999d75d`), vortextab e instantrespawn coinciden con las fichas de Claude. No se ha probado este ZIP como cliente completo ni deducido su autoría. No sustituye automáticamente el borrador 1.0.2 del administrador ni constituye publicación oficial.
+
+La fuente extensa de Claude permanece local: no se copia íntegra al repositorio público porque mezcla contexto privado e instrucciones históricas. Este resumen y las fichas compartidas registran los hallazgos necesarios; para modificar un plugin se debe consultar también el índice y el detalle locales, y verificar artefacto y estado de producción.

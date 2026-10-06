@@ -27,6 +27,8 @@ Contenido verificado históricamente: Quark 4.1-486 para NeoForge 21.1.250; corr
 
 ## Cronología verificable del código desde la primera versión
 
+- Corrección del panel: las actualizaciones periódicas del estado de pruebas y las consultas de actualizaciones conservan la pestaña seleccionada, sin superponer Biblioteca sobre Crear o Añadir.
+
 Los mensajes siguientes reflejan decisiones en su momento; las reglas vigentes arriba sustituyen decisiones antiguas (por ejemplo, una única cuenta global).
 
 - e55fe15 Initial commit: Vortex Launcher (Electron) with centralized GitHub sync

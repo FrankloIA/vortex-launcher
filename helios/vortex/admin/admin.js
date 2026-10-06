@@ -190,7 +190,7 @@ function render() {
     get('testStatus').textContent=state.publishing ? 'Publicando oficialmente en GitHub…' : (statuses[draft?.testResult?.status] || statuses.untested)+(draft?.testResult?.reason ? ' · '+draft.testResult.reason : '')+(!state.githubReady ? ' · GitHub no está conectado para publicar' : '')
     get('automaticNotes').textContent=(draft?.automaticNotes || []).map(n=>'- '+n.text).join('\n') || 'Los cambios se registrarán aquí automáticamente'
 
-    get('emptyPack').hidden = !!draft; get('library').hidden = !draft
+    get('emptyPack').hidden = !!draft; get('library').hidden = panel !== 'library' || !draft
     if(!draft) return
     if(category!=='config') checkLibraryUpdates(category).catch(error=>{get('updatesSummary').textContent='No se pudieron consultar las actualizaciones: ' + error.message})
     else get('updatesSummary').textContent=''

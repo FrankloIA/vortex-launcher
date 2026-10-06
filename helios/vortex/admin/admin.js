@@ -16,12 +16,21 @@ async function checkLibraryUpdates(contentCategory = category) {
     message(`${results.length - errors.length} actualizaciones disponibles.${errors.length ? ' No se pudieron consultar ' + errors.length + ' archivos; CurseForge necesita su clave API.' : ''}`)
     return results
 }
+function canEdit() { return !!current() && !current().published }
+function requireEditable() { if(canEdit()) return true; get('lockedDialog').showModal(); return false }
 function switchPanel(next) {
+    if(next === 'add' && !requireEditable()) return
     panel = next; get('library').hidden = next !== 'library' || !current(); get('onlineContent').hidden = next !== 'add'
     get('publishContent').hidden = next !== 'publish'
+    get('createContent').hidden = next !== 'create'
+    get('createTab').setAttribute('aria-pressed', String(next === 'create'))
     get('publishTab').setAttribute('aria-pressed', String(next === 'publish'))
     get('libraryTab').setAttribute('aria-pressed', String(next === 'library')); get('addTab').setAttribute('aria-pressed', String(next === 'add'))
 }
+get('createTab').onclick = () => switchPanel('create')
+get('closeLocked').onclick = () => get('lockedDialog').close()
+get('goCreate').onclick = () => { get('lockedDialog').close(); switchPanel('create') }
+get('startVersion').onclick = () => get('versionDialog').showModal()
 get('libraryTab').onclick = () => switchPanel('library')
 get('addTab').onclick = () => switchPanel('add')
 get('publishTab').onclick = () => switchPanel('publish')
@@ -34,7 +43,7 @@ testVersionButton.onclick = () => action(async () => {
 for(const button of document.querySelectorAll('[data-provider]')) button.onclick = () => {
     get('provider').value = button.dataset.provider; get('onlineResults').replaceChildren()
     for(const tab of document.querySelectorAll('[data-provider]')) tab.setAttribute('aria-pressed', String(tab === button))
-    message('Busca contenido en ' + button.textContent)
+    message('')
 }
 const message = text => { get('message').textContent = text }
 const current = () => state?.drafts.find(d => d.id === selected)
@@ -91,29 +100,66 @@ async function api(route, data) {
     if(!response.ok) throw Error(result.error)
     return result
 }
+const pendingSaves = new Map()
+let saveTimer, saveChain = Promise.resolve()
+function queueAutosave(kind, id, text, path) {
+    const item = {kind,id,text,path}; const key = id + ':' + kind + ':' + (path || '')
+    pendingSaves.set(key,item); localStorage.setItem('vortexAutosave:' + key, JSON.stringify(item))
+    clearTimeout(saveTimer); saveTimer = setTimeout(() => flushAutosave().catch(error => message('No se pudo guardar: ' + error.message)), 650)
+}
+function flushAutosave() {
+    clearTimeout(saveTimer)
+    saveChain = saveChain.catch(() => {}).then(async () => {
+        for(const [key,item] of [...pendingSaves]) {
+            const draft = state?.drafts.find(d => d.id === item.id)
+            if(!state) continue
+            if(!draft || draft.published) { pendingSaves.delete(key); localStorage.removeItem('vortexAutosave:' + key); continue }
+            const result = await api(item.kind === 'notes' ? 'notes' : 'config/autosave', item.kind === 'notes' ? {id:item.id,revision:draft.revision,notes:item.text} : {id:item.id,revision:draft.revision,path:item.path,text:item.text})
+            Object.assign(draft,result)
+            if(pendingSaves.get(key) === item) { pendingSaves.delete(key); localStorage.removeItem('vortexAutosave:' + key) }
+            if(editing?.id === item.id) editing.revision = result.revision
+            if(item.kind === 'config') get('dirtyStatus').textContent = 'Borrador guardado · Pendiente de aplicar'
+            get('revision').textContent = draft.files.length + ' archivos · Guardado'
+        }
+    })
+    return saveChain
+}
+for(let i=0;i<localStorage.length;i++) { const key=localStorage.key(i); if(key.startsWith('vortexAutosave:')) { try { const item=JSON.parse(localStorage.getItem(key)); pendingSaves.set(key.slice(15),item) } catch {} } }
+window.addEventListener('beforeunload', event => { if(pendingSaves.size) { event.preventDefault(); event.returnValue = '' } })
 async function action(callback) {
     const buttons = [...document.querySelectorAll('button')]; buttons.forEach(b => { b.disabled = true })
-    try { await callback() } catch(error) { message(error.message) }
-    finally { buttons.forEach(b => { b.disabled = false }); get('cancelDraft').disabled = !current() }
+    try { await flushAutosave(); await callback() } catch(error) { message(error.message) }
+    finally { buttons.forEach(b => { b.disabled = false }); render(); switchPanel(panel) }
 }
 async function refresh() {
     state = await api('state')
-    if(!current()) selected = state.drafts.find(d => d.files.some(f => f.path.startsWith('mods/')))?.id || state.drafts.at(-1)?.id
+    if(!selected) selected = localStorage.getItem('vortexWorkingDraft')
+    if(!current()) selected = state.drafts.at(-1)?.id
     get('login').hidden = true; get('workspace').hidden = false
-    get('testVersion').textContent = state.channels.test?.version || 'Sin publicar'
+
     get('draftSelect').replaceChildren()
     for(const draft of state.drafts) { const option = document.createElement('option'); option.value = draft.id; option.textContent = draft.version; get('draftSelect').append(option) }
     get('draftSelect').value = selected || ''
     render()
+    if(pendingSaves.size) { await flushAutosave(); render() }
+    if(panel === 'add' && !canEdit()) panel = 'library'
     switchPanel(panel)
 }
 function render() {
     const draft = current()
-    get('cancelDraft').disabled = !draft
+    if(draft) localStorage.setItem('vortexWorkingDraft', selected)
+    get('workingStatus').textContent = 'Estatus: ' + (draft?.status === 'stable' ? 'Publicada' : 'Sin publicar')
+    get('workingStatus').dataset.status = draft?.status || 'draft'
+    get('draftNotice').hidden = !draft || draft.published
+    get('cancelDraft').disabled = !draft || draft.published
+    get('notes').disabled = !canEdit()
+    get('saveNotes').disabled = !canEdit()
+    get('publish').disabled = !canEdit()
+    get('addButton').hidden = !canEdit()
     get('emptyPack').hidden = !!draft; get('library').hidden = !draft
     if(!draft) return
-    get('revision').textContent = `${draft.files.length} archivos · Cambios guardados en borrador`
-    get('notes').value = draft.notes
+    get('revision').textContent = `${draft.files.length} archivos · Guardado`
+    if(document.activeElement !== get('notes')) get('notes').value = draft.notes
     for(const button of document.querySelectorAll('[data-category]')) {
         const key = button.dataset.category
         button.textContent = `${names[key]} (${draft.files.filter(f => f.path.startsWith(key + '/')).length})`
@@ -164,10 +210,10 @@ function render() {
             title.append(author); info.append(filename)
         }
         const actions = document.createElement('div'); actions.className = 'fileActions'
-        const button = (text, callback) => { const b = document.createElement('button'); b.className = 'secondary'; b.textContent = text; b.onclick = callback; actions.append(b) }
+        const button = (text, callback) => { const b = document.createElement('button'); b.className = 'secondary'; b.textContent = text; b.onclick = () => { if(requireEditable()) callback() }; actions.append(b) }
         if(category === 'config') button('Editar', () => action(async () => {
             const result = await api('config/read', { id: draft.id, path: file.path }); editing = { id: draft.id, revision: draft.revision, path: file.path }
-            get('configTitle').textContent = file.path; originalText = result.text; get('configText').value = result.text
+            get('configTitle').textContent = file.path; originalText = result.savedText ?? result.text; get('configText').value = result.text
             get('configSearch').value = ''; get('editorMessage').textContent = ''
             get('formatJson').hidden = !file.path.endsWith('.json'); get('configDialog').showModal(); updateEditor(); get('configText').focus()
         }))
@@ -190,6 +236,7 @@ function render() {
     }
 }
 async function upload(files, oldPath) {
+    if(!requireEditable()) return
     const draftId = selected, uploadCategory = category
     for(const file of files) {
         if(file.size > 64 * 1048576) throw Error('El archivo supera 64 MiB: ' + file.name)
@@ -200,7 +247,7 @@ async function upload(files, oldPath) {
     message(oldPath ? 'Archivo sustituido. La versión anterior se ha retirado del borrador.' : `${files.length} archivo(s) añadido(s) al pack`)
 }
 get('loginForm').onsubmit = event => { event.preventDefault(); action(async () => { await api('login', { password: get('password').value }); get('password').value = ''; await refresh(); message('Biblioteca lista para editar') }) }
-get('draftSelect').onchange = () => { selected = get('draftSelect').value; render() }
+get('draftSelect').onchange = () => { selected = get('draftSelect').value; folder = ''; render(); switchPanel('library') }
 for(const button of document.querySelectorAll('[data-category]')) button.onclick = () => { category = button.dataset.category; get('search').value = ''; render() }
 get('search').oninput = render
 const providerLabel = document.createElement('label'); providerLabel.textContent = 'Proveedor'
@@ -210,21 +257,21 @@ for(const [value, text] of [['all', 'Todos los proveedores'], ['modrinth', 'Modr
 }
 providerLabel.append(providerSelect); get('search').closest('label').after(providerLabel)
 providerSelect.onchange = () => { folder = ''; render() }
-get('addButton').onclick = () => get('upload').click()
+get('addButton').onclick = () => { if(requireEditable()) get('upload').click() }
 const checkUpdatesButton = document.createElement('button')
 checkUpdatesButton.id = 'libraryUpdates'; checkUpdatesButton.className = 'secondary'; checkUpdatesButton.textContent = 'Buscar actualizaciones'
 checkUpdatesButton.onclick = () => action(() => checkLibraryUpdates())
 get('addButton').before(checkUpdatesButton)
 get('upload').onchange = () => { const files = [...get('upload').files]; if(files.length) action(() => upload(files)); get('upload').value = '' }
 get('replacement').onchange = () => { const files = [...get('replacement').files]; if(files.length) action(() => upload(files, replacePath)); get('replacement').value = '' }
-function newVersion() { get('versionHint').textContent = current() ? 'El contenido actual se copiará para que puedas seguir editándolo.' : 'Crea una versión y empieza a añadir contenido.'; get('versionDialog').showModal() }
-get('newDraft').onclick = newVersion; get('firstDraft').onclick = newVersion
+get('firstDraft').onclick = () => switchPanel('create')
 const renameDraftButton = document.createElement('button')
 renameDraftButton.className = 'secondary'; renameDraftButton.textContent = 'Cambiar nombre'
-get('newDraft').after(renameDraftButton)
+get('publishContent').append(renameDraftButton)
 renameDraftButton.onclick = () => action(async () => {
     const draft = current()
     if(!draft) throw Error('Selecciona un borrador')
+    if(!requireEditable()) return
     const name = prompt('Nuevo nombre de versión (letras, números, puntos y guiones):', draft.version)
     if(name === null || name.trim() === draft.version) return
     await api('library/rename', { id: draft.id, revision: draft.revision, version: name.trim() })
@@ -232,11 +279,12 @@ renameDraftButton.onclick = () => action(async () => {
 })
 const deleteDraftButton = document.createElement('button')
 deleteDraftButton.id = 'deleteDraft'; deleteDraftButton.className = 'secondary'; deleteDraftButton.textContent = 'Eliminar borrador'
-get('newDraft').after(deleteDraftButton)
+get('publishContent').append(deleteDraftButton)
 async function discardCurrentDraft(cancel = false){
     const draft = current()
     if(!draft) throw Error('Selecciona un borrador para cancelarlo')
     const verb = cancel ? 'Cancelar' : 'Eliminar'
+    if(!requireEditable()) return
     if(!confirm(verb + ' el borrador ' + draft.version + '? Se perderán sus cambios sin publicar. Las versiones publicadas se conservan.')) return
     await api('library/delete', { id: draft.id, revision: draft.revision })
     for(const key of [...availableUpdates.keys()]) if(key.startsWith(draft.id + ':')) availableUpdates.delete(key)
@@ -247,11 +295,12 @@ async function discardCurrentDraft(cancel = false){
 deleteDraftButton.onclick = () => action(() => discardCurrentDraft())
 get('cancelDraft').onclick = () => action(() => discardCurrentDraft(true))
 get('cancelVersion').onclick = () => get('versionDialog').close()
-get('versionForm').onsubmit = event => { event.preventDefault(); action(async () => {
-    const version = get('version').value, source = current()?.id
-    const result = await api('library/create', { version, source }); selected = result.id
-    get('versionDialog').close(); await refresh(); message('Versión preparada para editar')
-}) }
+async function createVersion(mode) {
+    const result = await api('library/start', { mode, source:selected }); selected = result.id
+    get('versionDialog').close(); panel = 'add'; await refresh(); message('Borrador ' + result.version + ' creado y guardado')
+}
+get('createFix').onclick = () => action(() => createVersion('fix'))
+get('createNew').onclick = () => action(() => createVersion('new'))
 function updateEditor() {
     const editor = get('configText'), before = editor.value.slice(0, editor.selectionStart)
     get('syntaxHighlight').innerHTML = highlightConfig(editor.value, editing?.path || '')
@@ -263,10 +312,10 @@ function updateEditor() {
     get('dirtyStatus').textContent = editor.value === originalText ? 'Sin cambios' : 'Cambios sin guardar'
 }
 function closeEditor() {
-    if(get('configText').value !== originalText && !confirm('Hay cambios sin guardar. ¿Cerrar y descartarlos?')) return
-    get('configDialog').close()
+    flushAutosave().then(() => get('configDialog').close()).catch(error => message(error.message))
 }
 async function saveConfig() {
+    editing.revision = current().revision
     await api('config/save', { ...editing, text: get('configText').value })
     originalText = get('configText').value; await refresh()
     editing.revision = state.drafts.find(d => d.id === editing.id).revision
@@ -275,7 +324,7 @@ async function saveConfig() {
 get('cancelConfig').onclick = closeEditor
 get('configDialog').oncancel = event => { event.preventDefault(); closeEditor() }
 get('saveConfig').onclick = () => action(async () => { try { await saveConfig() } catch(error) { get('editorMessage').textContent = error.message; throw error } })
-get('configText').oninput = updateEditor
+get('configText').oninput = () => { updateEditor(); queueAutosave('config', editing.id, get('configText').value, editing.path) }
 get('configText').onclick = updateEditor
 get('configText').onkeyup = updateEditor
 get('configText').onscroll = () => {
@@ -289,7 +338,7 @@ get('configDialog').onkeydown = event => {
     if((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'f') { event.preventDefault(); get('configSearch').focus() }
 }
 get('configText').onkeydown = event => {
-    if(event.key === 'Tab') { event.preventDefault(); const editor = get('configText'); editor.setRangeText('    ', editor.selectionStart, editor.selectionEnd, 'end'); updateEditor() }
+    if(event.key === 'Tab') { event.preventDefault(); const editor = get('configText'); editor.setRangeText('    ', editor.selectionStart, editor.selectionEnd, 'end'); updateEditor(); queueAutosave('config', editing.id, editor.value, editing.path) }
 }
 get('findNext').onclick = () => {
     const editor = get('configText'), query = get('configSearch').value
@@ -302,9 +351,10 @@ get('findNext').onclick = () => {
     get('editorMessage').textContent = 'Coincidencia encontrada'; updateEditor()
 }
 get('formatJson').onclick = () => {
-    try { get('configText').value = JSON.stringify(JSON.parse(get('configText').value), null, 2) + '\n'; updateEditor(); get('editorMessage').textContent = 'JSON formateado; guarda para aplicar el cambio' }
+    try { get('configText').value = JSON.stringify(JSON.parse(get('configText').value), null, 2) + '\n'; updateEditor(); queueAutosave('config', editing.id, get('configText').value, editing.path); get('editorMessage').textContent = 'JSON formateado; guarda para aplicar el cambio' }
     catch { get('editorMessage').textContent = 'JSON inválido: revisa su sintaxis antes de formatearlo' }
 }
+get('notes').oninput = () => queueAutosave('notes', selected, get('notes').value)
 get('saveNotes').onclick = () => action(async () => { await api('notes', { id: selected, revision: current().revision, notes: get('notes').value }); await refresh(); message('Notas guardadas') })
 get('publish').onclick = () => action(async () => { const draft = current(); if(!confirm(`¿Publicar la versión ${draft.version} en pruebas?`)) return; await api('publish', { id: draft.id, revision: draft.revision }); await refresh(); message('Versión publicada en el canal de pruebas') })
 action(async () => { try { await refresh() } catch { message('Inicia sesión para abrir tu biblioteca') } })

@@ -3,6 +3,7 @@ const path = require('path')
 const crypto = require('crypto')
 const hash = data => crypto.createHash('sha256').update(data).digest('hex')
 const id = value => { if(typeof value !== 'string' || !/^[a-zA-Z0-9][a-zA-Z0-9._-]{0,79}$/.test(value)) throw Error('Identificador inválido'); return value }
+const versionName = value => { if(typeof value !== 'string' || !/^[a-zA-Z0-9][a-zA-Z0-9._-]{0,79}( fixed)?$/.test(value)) throw Error('Nombre de versión inválido'); return value }
 function safe(root, relative) {
     if(typeof relative !== 'string' || !relative || /[\\:\x00-\x1f]/.test(relative) || relative.startsWith('/') || relative.split('/').some(p => !p || p === '.' || p === '..' || /[. ]$/.test(p) || /^(con|prn|aux|nul|com[1-9]|lpt[1-9])(\.|$)/i.test(p))) throw Error('Ruta inválida')
     const target = path.resolve(root, relative)
@@ -24,7 +25,7 @@ const json = (file, fallback) => fs.existsSync(file) ? JSON.parse(fs.readFileSyn
 const save = (file, value) => atomic(file, JSON.stringify(value, null, 2))
 function validate(manifest) {
     if(manifest.schema !== 1 || manifest.minecraft !== '1.21.1' || manifest.neoforge !== '21.1.250' || !Array.isArray(manifest.files) || manifest.files.length > 10000) throw Error('Catálogo incompatible')
-    id(manifest.version)
+    versionName(manifest.version)
     const names = new Set()
     for(const file of manifest.files) {
         safe(path.resolve('.'), file.path)
@@ -45,12 +46,13 @@ class ReleaseStore {
     create(name, version, author) {
         const target = this.draftFile(name)
         if(fs.existsSync(target)) throw Error('El borrador ya existe')
-        const draft = { schema: 1, version: id(version), minecraft: '1.21.1', neoforge: '21.1.250', revision: 0, author, notes: '', files: [] }
+        const draft = { schema: 1, version: versionName(version), minecraft: '1.21.1', neoforge: '21.1.250', revision: 0, author, notes: '', files: [] }
         save(target, draft); return draft
     }
     edit(name, revision, change) {
         const draft = this.getDraft(name)
         if(draft.revision !== revision) throw Error('Conflicto: recarga el borrador')
+        if(this.isPublished(draft)) throw Error('Para añadir o modificar debes crear una nueva versión')
         change(draft); validate(draft); draft.revision++; save(this.draftFile(name), draft); return draft
     }
     add(name, revision, source, target, policy, replacePath) {
@@ -63,12 +65,33 @@ class ReleaseStore {
         return this.edit(name, revision, d => { d.files = d.files.filter(f => f.path.toLowerCase() !== target.toLowerCase() && f.path !== replacePath); d.files.push(candidate) })
     }
     remove(name, revision, target) { return this.edit(name, revision, d => { d.files = d.files.filter(f => f.path !== target) }) }
+    isPublished(draft) { return fs.existsSync(path.join(this.root, 'releases', versionName(draft.version) + '.json')) }
+    createNext(mode, sourceId) {
+        if(!['fix', 'new'].includes(mode)) throw Error('Tipo de versión inválido')
+        const channel = json(path.join(this.root, 'channels', 'stable.json')) || json(path.join(this.root, 'channels', 'test.json'))
+        const source = channel ? JSON.parse(json(path.join(this.root, 'releases', versionName(channel.version) + '.json')).payload) : sourceId ? this.getDraft(sourceId) : null
+        const numbers = source?.version.match(/^(\d+)\.(\d+)\.(\d+)/)
+        if(mode === 'fix' && !numbers) throw Error('Crea primero una versión para poder preparar un Fix')
+        let version = '1.0.0'
+        if(numbers) {
+            const [, major, minor, patch] = numbers.map(Number)
+            version = mode === 'fix' ? `${major}.${minor}.${patch} fixed` : `${major}.${minor + Math.floor((patch + 1) / 10)}.${(patch + 1) % 10}`
+        }
+        const directory = path.join(this.root, 'drafts')
+        const exists = this.isPublished({version}) || (fs.existsSync(directory) && fs.readdirSync(directory).filter(n => n.endsWith('.json')).some(n => json(path.join(directory,n)).version === version))
+        if(exists) throw Error('Ya existe la versión ' + version + '; selecciona su borrador para continuar')
+        const name = 'pack-' + crypto.randomUUID()
+        const draft = { schema:1, version, minecraft:'1.21.1', neoforge:'21.1.250', revision:0, author:'administrador local', notes:'', files:structuredClone(source?.files || []) }
+        validate(draft); save(this.draftFile(name), draft)
+        return {id:name, version}
+    }
     publish(name, revision, channel = 'test') {
         if(channel !== 'test') throw Error('Solo publicación en pruebas habilitada; promoción estable pendiente de validación')
         const draft = validate(this.getDraft(name))
         if(draft.revision !== revision) throw Error('Conflicto de revisión')
         if(!draft.files.length) throw Error('No se publica un pack vacío')
-        const releaseFile = path.join(this.root, 'releases', id(draft.version) + '.json')
+        if(Object.keys(draft.editorDrafts || {}).length) throw Error('Hay configuraciones pendientes: abre el editor y guarda los cambios antes de publicar')
+        const releaseFile = path.join(this.root, 'releases', versionName(draft.version) + '.json')
         if(fs.existsSync(releaseFile)) throw Error('La versión es inmutable; usa una nueva versión')
         for(const file of draft.files) {
             const data = fs.readFileSync(path.join(this.root, 'blobs', file.sha256))

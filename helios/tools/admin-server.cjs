@@ -60,14 +60,19 @@ function startAdmin({ root = path.resolve(__dirname, '../.runtime/pack-admin'), 
                     const directory = path.join(root, 'drafts')
                     const drafts = fs.existsSync(directory) ? fs.readdirSync(directory).filter(n => n.endsWith('.json')).map(n => ({ id: n.slice(0, -5), ...store.getDraft(n.slice(0, -5)) })) : []
                     const channels = Object.fromEntries(['test', 'stable'].map(channel => { const file = path.join(root, 'channels', channel + '.json'); return [channel, fs.existsSync(file) ? JSON.parse(fs.readFileSync(file)) : null] }))
-                    for(const draft of drafts) for(const file of draft.files) file.display = libraryMetadata.get(String(file.source?.projectId) + ':' + file.source?.fileId)
+                    for(const draft of drafts) {
+                        draft.published = store.isPublished(draft)
+                        draft.status = channels.stable?.version === draft.version ? 'stable' : draft.published ? 'test' : 'draft'
+                        for(const file of draft.files) file.display = libraryMetadata.get(String(file.source?.projectId) + ':' + file.source?.fileId)
+                    }
                     return reply(200, { drafts, channels })
                 }
                 if(req.method !== 'POST') return reply(404, { error: 'Ruta no encontrada' })
                 let result
                 switch(req.url) {
+                    case '/api/library/start': result = store.createNext(body.mode, body.source); break
                     case '/api/library/rename': {
-                        if(typeof body.version !== 'string' || !/^[a-zA-Z0-9][a-zA-Z0-9._-]{0,79}$/.test(body.version)) throw Error('Nombre inválido: usa letras, números, puntos, guiones o guiones bajos')
+                        if(typeof body.version !== 'string' || !/^[a-zA-Z0-9][a-zA-Z0-9._-]{0,79}( fixed)?$/.test(body.version)) throw Error('Nombre de versión inválido')
                         const directory = path.join(root, 'drafts')
                         if(fs.readdirSync(directory).filter(n => n.endsWith('.json') && n !== body.id + '.json').some(n => store.getDraft(n.slice(0, -5)).version.toLowerCase() === body.version.toLowerCase())) throw Error('Ya existe otro borrador con ese nombre')
                         if(fs.existsSync(path.join(root, 'releases', body.version + '.json'))) throw Error('Ese nombre ya está publicado; utiliza uno nuevo')
@@ -75,6 +80,7 @@ function startAdmin({ root = path.resolve(__dirname, '../.runtime/pack-admin'), 
                     }
                     case '/api/library/delete': {
                         const draft = store.getDraft(body.id)
+                        if(store.isPublished(draft)) throw Error('Las versiones publicadas no se pueden eliminar como borradores')
                         if(draft.revision !== body.revision) throw Error('El borrador cambió; recarga antes de eliminarlo')
                         fs.unlinkSync(store.draftFile(body.id))
                         result = { deleted: body.id, publishedVersionsPreserved: true }; break
@@ -97,6 +103,7 @@ function startAdmin({ root = path.resolve(__dirname, '../.runtime/pack-admin'), 
                     case '/api/providers/search': result = await providers.search(body.provider, String(body.query || '').slice(0,200), body.category); break
                     case '/api/providers/install': {
                         const draft = store.getDraft(body.id)
+                        if(store.isPublished(draft)) throw Error('Para añadir o modificar debes crear una nueva versión')
                         if(draft.revision !== body.revision) throw Error('Recarga el borrador')
                         if(body.replacePath && !draft.files.some(f => f.path === body.replacePath && f.path.startsWith(body.category + '/') && f.source?.provider === body.provider && String(f.source.projectId) === String(body.projectId))) throw Error('La actualización no corresponde al archivo seleccionado')
                         const file = await providers.latest(body.provider, body.projectId, body.category)
@@ -157,13 +164,20 @@ function startAdmin({ root = path.resolve(__dirname, '../.runtime/pack-admin'), 
                         if(!file || !file.path.startsWith('config/') || file.size > 1024 * 1024 || !['.json', '.toml', '.properties', '.txt', '.cfg', '.yaml', '.yml', '.conf', '.ini'].includes(path.extname(file.path).toLowerCase())) throw Error('Esta configuración no se puede editar como texto')
                         const current = fs.readFileSync(path.join(root, 'blobs', file.sha256))
                         if(current.includes(0)) throw Error('Archivo binario: usa Sustituir archivo')
-                        if(req.url === '/api/config/read') { result = { path: file.path, text: current.toString('utf8') }; break }
+                        if(req.url === '/api/config/read') { result = { path: file.path, text: store.getDraft(body.id).editorDrafts?.[body.path] ?? current.toString('utf8'), savedText:current.toString('utf8') }; break }
                         if(typeof body.text !== 'string' || Buffer.byteLength(body.text) > 1024 * 1024 || body.text.includes('\0')) throw Error('Texto inválido')
                         if(file.path.endsWith('.json')) { try { JSON.parse(body.text) } catch { throw Error('JSON inválido: corrige el contenido antes de guardar') } }
                         const upload = path.join(root, 'upload-' + crypto.randomUUID()); fs.writeFileSync(upload, body.text)
-                        try { result = store.add(body.id, body.revision, upload, file.path, 'seed') }
+                        try { result = store.add(body.id, body.revision, upload, file.path, 'seed'); result = store.edit(body.id, result.revision, d => { if(d.editorDrafts) delete d.editorDrafts[body.path] }) }
                         finally { fs.unlinkSync(upload) }
                         break
+                    }
+                    case '/api/config/autosave': {
+                        if(typeof body.text !== 'string' || Buffer.byteLength(body.text) > 1024 * 1024 || body.text.includes('\0')) throw Error('Texto inválido')
+                        result = store.edit(body.id, body.revision, d => {
+                            if(!d.files.some(f => f.path === body.path && f.path.startsWith('config/'))) throw Error('Configuración inexistente')
+                            d.editorDrafts ||= {}; d.editorDrafts[body.path] = body.text
+                        }); break
                     }
                     case '/api/publish': result = store.publish(body.id, body.revision, 'test'); result = { published: JSON.parse(result.payload).version }; break
                     default: return reply(404, { error: 'Ruta no encontrada' })

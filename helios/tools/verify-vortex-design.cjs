@@ -6,9 +6,9 @@ require('../index')
 app.whenReady().then(async () => {
     try {
         const root = path.resolve(__dirname, '..')
-        const png = nativeImage.createFromPath(path.join(root, 'app/assets/images/vortex-icon-round.png')).resize({width:256,height:256}).toPNG()
+        const png = nativeImage.createFromPath(path.join(root, 'app/assets/images/vortex-icon-pixel.png')).resize({width:256,height:256}).toPNG()
         const header = Buffer.alloc(22); header.writeUInt16LE(1,2); header.writeUInt16LE(1,4); header.writeUInt16LE(1,10); header.writeUInt16LE(32,12); header.writeUInt32LE(png.length,14); header.writeUInt32LE(22,18)
-        fs.writeFileSync(path.join(root, 'app/assets/images/vortex-icon-round.ico'), Buffer.concat([header,png]))
+        fs.writeFileSync(path.join(root, 'app/assets/images/vortex-icon-pixel.ico'), Buffer.concat([header,png]))
         const window = BrowserWindow.getAllWindows()[0]
         if(window.webContents.isLoading()) await new Promise(r=>window.webContents.once('did-finish-load',r))
         await new Promise(r=>setTimeout(r,3500))

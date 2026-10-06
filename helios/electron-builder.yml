@@ -20,7 +20,7 @@ extraResources:
 
 # Windows Configuration
 win: 
-  icon: 'app/assets/images/vortex-icon-round.ico'
+  icon: 'app/assets/images/vortex-icon-pixel.ico'
   target: 
     - target: 'nsis'
       arch: 'x64'

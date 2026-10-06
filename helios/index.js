@@ -244,7 +244,7 @@ function createWindow() {
         height: 860,
         minWidth: 980,
         minHeight: 620,
-        icon: path.join(__dirname, 'app/assets/images/vortex-icon-round.png'),
+        icon: path.join(__dirname, 'app/assets/images/vortex-icon-pixel.png'),
         frame: false,
         webPreferences: {
             preload: path.join(__dirname, 'app', 'assets', 'js', 'preloader.js'),

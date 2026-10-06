@@ -29,7 +29,7 @@ const testVersionButton = document.createElement('button'); testVersionButton.te
 get('publish').after(testVersionButton)
 testVersionButton.onclick = () => action(async () => {
     const result = await api('test/prepare', { id: selected })
-    message(`Prueba ${result.version} preparada con ${result.mods} mods. Abre Vortex Launcher, selecciona «Vortex — publicación de pruebas» y pulsa Jugar.`)
+    message(`Prueba ${result.version} preparada con ${result.mods} mods. Se ha abierto Vortex Launcher: comprueba el perfil «Vortex — publicación de pruebas» y pulsa Jugar.`)
 })
 for(const button of document.querySelectorAll('[data-provider]')) button.onclick = () => {
     get('provider').value = button.dataset.provider; get('onlineResults').replaceChildren()

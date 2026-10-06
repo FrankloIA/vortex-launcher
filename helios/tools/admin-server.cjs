@@ -69,6 +69,16 @@ function startAdmin({ root = path.resolve(__dirname, '../.runtime/pack-admin'), 
                     case '/api/test/prepare': {
                         const version = store.getDraft(body.id).version
                         result = require('../vortex/test-release.cjs').prepareTestRelease(path.resolve(__dirname, '../.runtime/data/instances'), version)
+                        const configFile = path.resolve(__dirname, '../.runtime/launcher/config.json')
+                        if(fs.existsSync(configFile)) {
+                            const config = JSON.parse(fs.readFileSync(configFile))
+                            config.selectedServer = 'vortex-published-test'
+                            fs.writeFileSync(configFile, JSON.stringify(config, null, 4))
+                        }
+                        const launcher = require('child_process').spawn(path.resolve(__dirname, '../node_modules/electron/dist/electron.exe'), [path.resolve(__dirname, '..')], { cwd: path.resolve(__dirname, '..'), detached: true, stdio: 'ignore', windowsHide: false })
+                        launcher.on('error', error => console.error('No se pudo abrir el launcher:', error.message))
+                        launcher.unref()
+                        result.launcherOpened = true
                         break
                     }
                     case '/api/providers/search': result = await providers.search(body.provider, String(body.query || '').slice(0,200), body.category); break

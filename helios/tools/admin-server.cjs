@@ -47,10 +47,6 @@ function startAdmin({ root = path.resolve(__dirname, '../.runtime/pack-admin'), 
                 if(req.method !== 'POST') return reply(404, { error: 'Ruta no encontrada' })
                 let result
                 switch(req.url) {
-                    case '/api/providers/key': {
-                        if(typeof body.key !== 'string' || !body.key.trim() || body.key.length > 1024) throw Error('Clave inválida')
-                        fs.writeFileSync(providers.keyFile, body.key.trim(), { mode: 0o600 }); result = { ok: true }; break
-                    }
                     case '/api/providers/search': result = await providers.search(body.provider, String(body.query || '').slice(0,200), body.category); break
                     case '/api/providers/install': {
                         const draft = store.getDraft(body.id)

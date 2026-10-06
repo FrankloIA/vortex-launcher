@@ -37,7 +37,6 @@ function onlineRow(title, description, callback, label, item) {
     if(callback) { const button = document.createElement('button'); button.textContent = label; button.onclick = () => action(callback); row.append(button) }
     get('onlineResults').append(row)
 }
-get('saveCurseKey').onclick = () => action(async () => { await api('providers/key', { key: get('curseKey').value }); get('curseKey').value = ''; message('Clave CurseForge guardada en este PC') })
 get('onlineSearch').onclick = () => action(async () => {
     if(!current()) throw Error('Selecciona un borrador')
     const provider = get('provider').value, contentCategory = get('onlineCategory').value

@@ -2,26 +2,54 @@ const get = id => document.getElementById(id)
 const names = { mods: 'Mods', resourcepacks: 'Resourcepacks', shaderpacks: 'Shaders', config: 'Configuraciones' }
 const extensions = { mods: '.jar', resourcepacks: '.zip', shaderpacks: '.zip', config: '.json,.toml,.properties,.txt,.cfg,.yaml,.yml,.conf,.ini' }
 let state, selected, category = 'mods', replacePath, editing, folder = '', originalText = ''
+let panel = 'library'
+function switchPanel(next) {
+    panel = next; get('library').hidden = next !== 'library' || !current(); get('onlineContent').hidden = next !== 'add'
+    get('libraryTab').setAttribute('aria-pressed', String(next === 'library')); get('addTab').setAttribute('aria-pressed', String(next === 'add'))
+}
+get('libraryTab').onclick = () => switchPanel('library')
+get('addTab').onclick = () => switchPanel('add')
+for(const button of document.querySelectorAll('[data-provider]')) button.onclick = () => {
+    get('provider').value = button.dataset.provider; get('onlineResults').replaceChildren()
+    for(const tab of document.querySelectorAll('[data-provider]')) tab.setAttribute('aria-pressed', String(tab === button))
+    message('Busca contenido en ' + button.textContent)
+}
 const message = text => { get('message').textContent = text }
 const current = () => state?.drafts.find(d => d.id === selected)
-function onlineRow(title, description, callback, label) {
+function onlineRow(title, description, callback, label, item) {
     const row = document.createElement('article'); row.className = 'fileRow'
+    if(item) {
+        row.classList.add('catalogRow')
+        const icon = document.createElement('div'); icon.className = 'catalogIcon'; icon.textContent = title.slice(0,2).toUpperCase()
+        if(item.icon) { try { const url = new URL(item.icon); if(url.protocol === 'https:' && ['cdn.modrinth.com','media.forgecdn.net','mediafilez.forgecdn.net'].includes(url.hostname)) { const img = document.createElement('img'); img.src = url.href; img.alt = ''; img.loading = 'lazy'; img.onerror = () => img.remove(); icon.append(img) } } catch {} }
+        row.append(icon)
+    }
     const info = document.createElement('div'); info.className = 'fileInfo'
     const heading = document.createElement('h3'); heading.textContent = title
     const detail = document.createElement('p'); detail.textContent = description
     info.append(heading, detail); row.append(info)
+    if(item) {
+        const footer = document.createElement('div'); footer.className = 'catalogMeta'
+        const tags = document.createElement('span'); tags.textContent = (item.categories || []).slice(0,5).join(' · ')
+        const stats = document.createElement('span'); stats.textContent = [Number.isFinite(item.downloads) ? new Intl.NumberFormat('es',{notation:'compact'}).format(item.downloads) + ' descargas' : '', item.updated ? new Date(item.updated).toLocaleDateString('es') : '', item.environment || '', 'Minecraft 1.21.1', get('onlineCategory').value === 'mods' ? 'NeoForge' : ''].filter(Boolean).join(' · ')
+        footer.append(tags, stats); info.append(footer)
+    }
     if(callback) { const button = document.createElement('button'); button.textContent = label; button.onclick = () => action(callback); row.append(button) }
     get('onlineResults').append(row)
 }
 get('saveCurseKey').onclick = () => action(async () => { await api('providers/key', { key: get('curseKey').value }); get('curseKey').value = ''; message('Clave CurseForge guardada en este PC') })
 get('onlineSearch').onclick = () => action(async () => {
     if(!current()) throw Error('Selecciona un borrador')
-    const provider = get('provider').value, contentCategory = category
+    const provider = get('provider').value, contentCategory = get('onlineCategory').value
     const results = await api('providers/search', { provider, category: contentCategory, query: get('onlineQuery').value })
     get('onlineResults').replaceChildren()
-    for(const item of results) onlineRow(item.title, item.author + ' · ' + item.description, async () => {
+    for(const item of results) {
+        const installed = current().files.some(f => f.source?.provider === provider && String(f.source.projectId) === String(item.projectId))
+        onlineRow(item.title, 'Por ' + item.author + ' — ' + item.description, installed ? null : async () => {
         await api('providers/install', { id: selected, revision: current().revision, provider, projectId: item.projectId, category: contentCategory }); await refresh(); message('Contenido descargado y guardado en el borrador')
-    }, 'Añadir al borrador')
+    }, 'Instalar', item)
+        if(installed) { const badge = document.createElement('span'); badge.textContent = 'En tu biblioteca'; badge.className = 'badge'; get('onlineResults').lastElementChild.append(badge) }
+    }
     message(results.length + ' resultados compatibles')
 })
 get('onlineUpdates').onclick = () => action(async () => {
@@ -56,6 +84,7 @@ async function refresh() {
     for(const draft of state.drafts) { const option = document.createElement('option'); option.value = draft.id; option.textContent = draft.version; get('draftSelect').append(option) }
     get('draftSelect').value = selected || ''
     render()
+    switchPanel(panel)
 }
 function render() {
     const draft = current()

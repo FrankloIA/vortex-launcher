@@ -14,7 +14,7 @@ function startAdmin({ root = path.resolve(__dirname, '../.runtime/pack-admin'), 
     const server = http.createServer(async (req, res) => {
         res.setHeader('Cache-Control', 'no-store')
         res.setHeader('X-Content-Type-Options', 'nosniff')
-        res.setHeader('Content-Security-Policy', "default-src 'self'; script-src 'self'; style-src 'self'; frame-ancestors 'none'; base-uri 'none'")
+        res.setHeader('Content-Security-Policy', "default-src 'self'; img-src 'self' https://cdn.modrinth.com https://media.forgecdn.net https://mediafilez.forgecdn.net; script-src 'self'; style-src 'self'; frame-ancestors 'none'; base-uri 'none'")
         const reply = (status, body) => { res.writeHead(status, { 'Content-Type': 'application/json' }); res.end(JSON.stringify(body)) }
         try {
             const origin = `http://127.0.0.1:${server.address().port}`

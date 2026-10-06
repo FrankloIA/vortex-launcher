@@ -19,12 +19,12 @@ class Providers {
             const facets = [['project_type:' + type], ['versions:1.21.1']]
             if(category === 'mods') facets.push(['categories:neoforge'])
             const data = await this.request(provider, 'search?' + new URLSearchParams({ query, facets: JSON.stringify(facets), limit: 20 }))
-            return data.hits.map(p => ({ projectId: p.project_id, title: p.title, author: p.author, description: p.description }))
+            return data.hits.map(p => ({ projectId: p.project_id, title: p.title, author: p.author, description: p.description, icon: p.icon_url, categories: p.categories, downloads: p.downloads, updated: p.date_modified, environment: [p.client_side !== 'unsupported' ? 'Cliente' : '', p.server_side !== 'unsupported' ? 'Servidor' : ''].filter(Boolean).join(' y ') }))
         }
         const params = { gameId: 432, classId: { mods: 6, resourcepacks: 12, shaderpacks: 6552 }[category], gameVersion: '1.21.1', searchFilter: query, pageSize: 20 }
         if(category === 'mods') params.modLoaderType = 6
         const data = await this.request(provider, 'mods/search?' + new URLSearchParams(params))
-        return data.data.map(p => ({ projectId: p.id, title: p.name, author: p.authors.map(a => a.name).join(', '), description: p.summary }))
+        return data.data.map(p => ({ projectId: p.id, title: p.name, author: p.authors.map(a => a.name).join(', '), description: p.summary, icon: p.logo?.thumbnailUrl, categories: p.categories.map(c => c.name), downloads: p.downloadCount, updated: p.dateModified }))
     }
     async latest(provider, projectId, category) {
         const project = encodeURIComponent(String(projectId))

@@ -49,6 +49,16 @@ Al cerrar cada tarea registrar aquí: fecha/agente, motivo, archivos o mods afec
   - Faltan fichas de Chat Heads, My Picture Frame, Citadel, GeckoBetterFPS, Forgematica, `w2w2` y EssentialPatcher.
 - **Pendientes y siguiente paso para ChatGPT:** (1) el usuario debe decidir cómo versionar los mods propios (un repositorio por mod o uno común) antes de importar nada al pack; (2) comparar hashes locales con los desplegados; (3) antes de que el sistema servidor clasifique cliente/servidor, usar la columna «Destino» del registro como punto de partida, no como verdad definitiva: sigue necesitando la doble revisión; (4) el detalle operativo del servidor y de las reglas de despliegue está en `D:\Vortex Server\CLAUDE.md` (no está en este repositorio).
 
+### Entrega de Claude — 2026-10-07 (2): un repositorio privado por mod
+
+- **Decisión del usuario:** un repositorio por mod, privado, y también para los parches a mods de terceros. Sustituye la pregunta abierta «un repositorio por mod o uno común» de la entrega anterior.
+- **Hecho:** 15 repositorios preparados en `D:\Vortex Mods\<repositorio>`, con fuentes, scripts de parche, README (compatibilidad, estado, hash del artefacto) y `.gitignore` que excluye jars. Sin jars de terceros ni credenciales. Creados en `FrankloIA` (privados): `vortex-admin`, `vortex-mobnames`, `vortex-instantrespawn`, `vortex-lavadodge`, `vortex-musicplayer`, `vortex-patch-securitycraft`, `vortex-patch-parcool`, `vortex-patch-enhancedai`, `vortex-patch-majrusz`, `vortex-patch-sift`.
+- **Pendiente por límite de GitHub** («too many repositories, too quickly»): `vortex-sleep`, `vortex-tab`, `vortex-reinforce`, `vortex-worldtime`, `vortex-patch-tombstone`. Están preparados y con commit local en `D:\Vortex Mods`; falta crearlos y subirlos cuando se levante el límite. No se reintentó en bucle.
+- **Comprobación contra el servidor:** se compararon los SHA-256 de los jars desplegados con las copias locales. Coinciden VortexAdmin, MobNames, VortexReinforce, VortexLavaDodge, VortexWorldTime (con `VortexWorldTime-v1.3.jar`) y vortexsleep. VortexAetherOnly no tiene fuente ni copia local; solo se anotó su hash desplegado.
+- **Corrección:** el jar desplegado de VortexWorldTime es el mismo que `VortexWorldTime-v1.3.jar` de la carpeta de trabajo, con `plugin.yml` 1.3.0. Antes se anotó que la 1.3.0 no era de Claude; la autoría del cambio de 1.2 a 1.3 queda como no confirmada, y falta comprobar que la fuente compile a ese jar.
+- **Límites:** los repositorios no se han probado desde cero (nadie ha recompilado desde ellos); VortexAdmin y MobNames no se pueden reconstruir solo desde su repositorio porque falta la fuente original. Los repositorios son privados: ChatGPT necesita acceso a la cuenta `FrankloIA`.
+- **Siguiente paso:** terminar de crear los 5 repositorios pendientes y actualizar las filas marcadas «creación pendiente»; después, cada agente trabaja en su rama dentro de cada repositorio y registra commit y hash en `docs/MODS_EN_DESARROLLO.md`.
+
 ### Código posterior a la primera recopilación del historial
 
 - 3d59a0b Conservar inventarios y cambios antes de retirar publicaciones antiguas para limitar el almacenamiento de GitHub
@@ -1663,3 +1673,7 @@ Pendientes de juego registrados por Claude: ParCool, reforzar, esquiva de lava, 
 Auditoría de lectura del ZIP nuevo, sin importar ni instalar: Downloads\Vortex-1.0.3-fixed.zip, 285840916 bytes, SHA-256 `64be78ef260da3e618a4c6adb369064c1a1d37cb0679fb3afae31575a54f0706`. Manifest real: Vortex 1.0.3, Minecraft 1.21.1, neoforge-21.1.250, 211 referencias de catálogo, 538 entradas, 9 JAR overrides y ambos shaders Vortex. MusicPlayer coincide con V10 (`af354d7d036324ae533d672c9293c9326b4f6e5352aa1092041ff08612830731`), SecurityCraft coincide con tintfix v3 (`c68d6cce3d0812727d8c317f426a174f4615cec30fcb5638fbdcdcd9f999d75d`), vortextab e instantrespawn coinciden con las fichas de Claude. No se ha probado este ZIP como cliente completo ni deducido su autoría. No sustituye automáticamente el borrador 1.0.2 del administrador ni constituye publicación oficial.
 
 La fuente extensa de Claude permanece local: no se copia íntegra al repositorio público porque mezcla contexto privado e instrucciones históricas. Este resumen y las fichas compartidas registran los hallazgos necesarios; para modificar un plugin se debe consultar también el índice y el detalle locales, y verificar artefacto y estado de producción.
+## 2026-10-07 — Repositorios independientes de mods
+
+Claude creará repositorios independientes para los mods y plugins que mantiene. Cuando estén disponibles, enlazarlos en `docs/MODS_EN_DESARROLLO.md` con repositorio, rama, responsable, commit, artefacto y pruebas. El repositorio del launcher seguirá siendo la fuente de integración y continuidad; crear un repositorio de un mod no autoriza sustituir sus bytes Jarvis ni publicar cambios sin verificar hashes y compatibilidad.
+

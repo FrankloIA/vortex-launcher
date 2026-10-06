@@ -830,7 +830,7 @@ function saveModConfiguration(){
 function _saveModConfiguration(modConf){
     for(let m of Object.entries(modConf)){
         const tSwitch = settingsModsContainer.querySelectorAll(`[formod='${m[0]}']`)
-        if(!tSwitch[0].hasAttribute('dropin')){
+        if(tSwitch.length && !tSwitch[0].hasAttribute('dropin')){
             if(typeof m[1] === 'boolean'){
                 modConf[m[0]] = tSwitch[0].checked
             } else {
@@ -860,29 +860,16 @@ async function resolveDropinModsForUI(){
     CACHE_SETTINGS_MODS_DIR = path.join(ConfigManager.getInstanceDirectory(), serv.rawServer.id, 'mods')
     CACHE_DROPIN_MODS = DropinModUtil.scanForDropinMods(CACHE_SETTINGS_MODS_DIR, serv.rawServer.minecraftVersion)
 
-    let dropinMods = ''
-
-    for(dropin of CACHE_DROPIN_MODS){
-        dropinMods += `<div id="${dropin.fullName}" class="settingsBaseMod settingsDropinMod" ${!dropin.disabled ? 'enabled' : ''}>
-                    <div class="settingsModContent">
-                        <div class="settingsModMainWrapper">
-                            <div class="settingsModStatus"></div>
-                            <div class="settingsModDetails">
-                                <span class="settingsModName">${dropin.name}</span>
-                                <div class="settingsDropinRemoveWrapper">
-                                    <button class="settingsDropinRemoveButton" remmod="${dropin.fullName}">${Lang.queryJS('settings.dropinMods.removeButton')}</button>
-                                </div>
-                            </div>
-                        </div>
-                        <label class="toggleSwitch">
-                            <input type="checkbox" formod="${dropin.fullName}" dropin ${!dropin.disabled ? 'checked' : ''}>
-                            <span class="toggleSwitchSlider"></span>
-                        </label>
-                    </div>
-                </div>`
+    let req = '', opt = ''
+    for(const dropin of CACHE_DROPIN_MODS){
+        const optional = require('../vortex/mod-policy.cjs').isOptional(dropin.name)
+        let row = '<div id="'+dropin.fullName+'" class="settingsBaseMod settingsDropinMod" '+(!dropin.disabled?'enabled':'')+'><div class="settingsModContent"><div class="settingsModMainWrapper"><div class="settingsModStatus"></div><div class="settingsModDetails"><span class="settingsModName">'+(optional?'Distant Horizons':dropin.name)+'</span></div></div>'
+        row += optional ? '<label class="toggleSwitch"><input type="checkbox" formod="'+dropin.fullName+'" dropin '+(!dropin.disabled?'checked':'')+'><span class="toggleSwitchSlider"></span></label>' : '<span>Obligatorio</span>'
+        row += '</div></div>'; if(optional) opt += row; else req += row
     }
-
-    document.getElementById('settingsDropinModsContent').innerHTML = dropinMods
+    document.getElementById('settingsReqModsContent').innerHTML = req
+    document.getElementById('settingsOptModsContent').innerHTML = opt
+    document.getElementById('settingsDropinModsContent').innerHTML = ''
 }
 
 /**
@@ -914,6 +901,7 @@ function bindDropinModsRemoveButton(){
  * server configuration.
  */
 function bindDropinModFileSystemButton(){
+    return
     const fsBtn = document.getElementById('settingsDropinFileSystemButton')
     fsBtn.onclick = () => {
         DropinModUtil.validateDir(CACHE_SETTINGS_MODS_DIR)
@@ -945,10 +933,12 @@ function bindDropinModFileSystemButton(){
  * of adding/removing the .disabled extension.
  */
 function saveDropinModConfiguration(){
-    for(dropin of CACHE_DROPIN_MODS){
+    for(const dropin of CACHE_DROPIN_MODS){
+        if(!require('../vortex/mod-policy.cjs').isOptional(dropin.name)) continue
         const dropinUI = document.getElementById(dropin.fullName)
         if(dropinUI != null){
             const dropinUIEnabled = dropinUI.hasAttribute('enabled')
+            require('../vortex/mod-policy.cjs').setOptional(path.dirname(CACHE_SETTINGS_MODS_DIR), dropinUIEnabled)
             if(DropinModUtil.isDropinModEnabled(dropin.fullName) != dropinUIEnabled){
                 DropinModUtil.toggleDropinMod(CACHE_SETTINGS_MODS_DIR, dropin.fullName, dropinUIEnabled).catch(err => {
                     if(!isOverlayVisible()){
@@ -1402,10 +1392,7 @@ const settingsAboutChangelogText   = settingsTabAbout.getElementsByClassName('se
 const settingsAboutChangelogButton = settingsTabAbout.getElementsByClassName('settingsChangelogButton')[0]
 
 // Bind the devtools toggle button.
-document.getElementById('settingsAboutDevToolsButton').onclick = (e) => {
-    let window = remote.getCurrentWindow()
-    window.toggleDevTools()
-}
+
 
 /**
  * Return whether or not the provided version is a prerelease.

@@ -77,6 +77,7 @@ exports.scanForDropinMods = function(modsDir, version) {
  */
 exports.addDropinMods = function(files, modsdir) {
 
+    throw Error('Los mods se gestionan desde el panel administrador')
     exports.validateDir(modsdir)
 
     for(let f of files) {
@@ -97,6 +98,7 @@ exports.addDropinMods = function(files, modsdir) {
  */
 exports.deleteDropinMod = async function(modsDir, fullName){
 
+    throw Error('No se pueden quitar los mods del pack')
     const res = await ipcRenderer.invoke(SHELL_OPCODE.TRASH_ITEM, path.join(modsDir, fullName))
 
     if(!res.result) {
@@ -120,6 +122,7 @@ exports.deleteDropinMod = async function(modsDir, fullName){
  * been toggled. If an IO error occurs the promise will be rejected.
  */
 exports.toggleDropinMod = function(modsDir, fullName, enable){
+    if(!require('../../../vortex/mod-policy.cjs').isOptional(fullName)) return Promise.reject(Error('Este mod es obligatorio'))
     return new Promise((resolve, reject) => {
         const oldPath = path.join(modsDir, fullName)
         const newPath = path.join(modsDir, enable ? fullName.substring(0, fullName.indexOf(DISABLED_EXT)) : fullName + DISABLED_EXT)

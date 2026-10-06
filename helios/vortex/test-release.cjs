@@ -23,6 +23,7 @@ function prepareTestRelease(instancesRoot, expectedVersion, onProgress = () => {
         onProgress({ percent: total ? Math.min(99, Math.floor(loaded * 100 / total)) : 99 })
         return data
     })
+    require('./mod-policy.cjs').applyOptional(instance)
     onProgress({ percent: 100 })
     return { version: manifest.version, mods: manifest.files.filter(f => f.path.startsWith('mods/')).length, instance, result }
 }

@@ -1391,7 +1391,6 @@ async function prepareJavaTab(){
 const settingsTabAbout             = document.getElementById('settingsTabAbout')
 const settingsAboutChangelogTitle  = settingsTabAbout.getElementsByClassName('settingsChangelogTitle')[0]
 const settingsAboutChangelogText   = settingsTabAbout.getElementsByClassName('settingsChangelogText')[0]
-const settingsAboutChangelogButton = settingsTabAbout.getElementsByClassName('settingsChangelogButton')[0]
 
 // Bind the devtools toggle button.
 
@@ -1443,7 +1442,6 @@ function populateAboutVersionInformation(){
 function populateReleaseNotes(){
     settingsAboutChangelogTitle.textContent = 'Notas de Vortex Launcher'
     settingsAboutChangelogText.textContent = 'Launcher de Vortex con inicio de sesión de Microsoft, perfiles de pruebas y gestión del pack desde el panel de administración.'
-    settingsAboutChangelogButton.href = 'https://github.com/FrankloIA/vortex-launcher'
 }
 
 /**

@@ -204,6 +204,7 @@ function render() {
         }
     }
     const files = categoryFiles.filter(f => (f.path + ' ' + (f.display?.title || '')).toLowerCase().includes(query) && (category !== 'config' || !folder || f.path.slice(0, f.path.lastIndexOf('/')) === folder)).sort((a, b) => {
+        if(category === 'config' && !!a.editableText !== !!b.editableText) return Number(!!b.editableText) - Number(!!a.editableText)
         const priority = Number(availableUpdates.has(draft.id + ':' + b.path)) - Number(availableUpdates.has(draft.id + ':' + a.path))
         return priority || (a.display?.title || a.path).localeCompare(b.display?.title || b.path)
     })
@@ -233,7 +234,7 @@ function render() {
         }
         const actions = document.createElement('div'); actions.className = 'fileActions'
         const button = (text, callback) => { const b = document.createElement('button'); b.className = 'secondary'; b.textContent = text; b.onclick = () => { if(requireEditable()) callback() }; if(canEdit()) actions.append(b) }
-        if(category === 'config') button('Editar', () => action(async () => {
+        if(category === 'config' && file.editableText) button('Editar', () => action(async () => {
             const result = await api('config/read', { id: draft.id, path: file.path }); editing = { id: draft.id, revision: draft.revision, path: file.path }
             get('configTitle').textContent = file.path; originalText = result.savedText ?? result.text; get('configText').value = result.text
             get('configSearch').value = ''; get('editorMessage').textContent = ''

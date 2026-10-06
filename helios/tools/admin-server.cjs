@@ -10,6 +10,12 @@ function startAdmin({ root = path.resolve(__dirname, '../.runtime/pack-admin'), 
     const metadata = new (require('../vortex/content-metadata.cjs').ContentMetadata)(root, providers)
     const protection = new (require('../vortex/jarvis-protection.cjs').JarvisProtection)(root)
     const updateCache = new Map()
+    const configTextCache = new Map()
+    const canEditConfig = file => {
+        const key=file?.path+':'+file?.sha256
+        if(!configTextCache.has(key)) configTextCache.set(key,require('../vortex/config-text.cjs').editableConfig(file,sha=>fs.readFileSync(path.join(root,'blobs',sha))))
+        return configTextCache.get(key)
+    }
     const getCatalog = name => name?.startsWith('release:') ? store.releases().find(r => 'release:' + r.version === name) : store.getDraft(name)
     const targetFor = name => { const d=name ? getCatalog(name) : null;return d ? {minecraft:d.minecraft,loader:d.loader || 'neoforge'} : store.workspace().target }
     const Zip = require('adm-zip')
@@ -79,6 +85,7 @@ function startAdmin({ root = path.resolve(__dirname, '../.runtime/pack-admin'), 
                         draft.published = store.isOfficial(draft)
                         draft.status = store.isOfficial(draft) ? 'stable' : store.isPublished(draft) ? 'test' : 'draft'
                         for(const file of draft.files) {
+                            if(file.path.startsWith('config/')) file.editableText=canEditConfig(file)
                             const cached=metadata.get(file);file.source ||= cached?.source
                             file.display = cached?.display || protection.display(file) || libraryMetadata.get(String(file.source?.projectId) + ':' + file.source?.fileId) || [...libraryMetadata.values()].find(item=>item.filename?.toLowerCase()===file.path.split('/').at(-1).toLowerCase())
                             file.protection=protection.status(file)
@@ -220,7 +227,7 @@ function startAdmin({ root = path.resolve(__dirname, '../.runtime/pack-admin'), 
                     case '/api/config/read':
                     case '/api/config/save': {
                         const file = getCatalog(body.id).files.find(f => f.path === body.path)
-                        if(!file || !file.path.startsWith('config/') || file.size > 1024 * 1024 || !['.json', '.toml', '.properties', '.txt', '.cfg', '.yaml', '.yml', '.conf', '.ini'].includes(path.extname(file.path).toLowerCase())) throw Error('Esta configuración no se puede editar como texto')
+                        if(!canEditConfig(file)) throw Error('Esta configuración no se puede editar como texto')
                         const current = fs.readFileSync(path.join(root, 'blobs', file.sha256))
                         if(current.includes(0)) throw Error('Archivo binario: usa Sustituir archivo')
                         if(req.url === '/api/config/read') { result = { path: file.path, text: getCatalog(body.id).editorDrafts?.[body.path] ?? current.toString('utf8'), savedText:current.toString('utf8') }; break }

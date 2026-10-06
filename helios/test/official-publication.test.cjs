@@ -24,7 +24,7 @@ test('Un informe de crash, una señal o cerrar antes de cargar mantiene la publi
 })
 test('Publicar en GitHub actualiza el canal al final y bloquea también versiones oficiales anteriores',async t=>{
     const s=setup(t),run=s.run();s.gate.finished(run.id,0,null);s.gate.launcherClosed(run.id);s.gate.approve('trial',run.id)
-    const calls=[],publisher=new GithubPublisher(s.root,async args=>{calls.push(args);if(args[0]==='api')return JSON.stringify({private:false,permissions:{push:true}});return ''},fs.readFileSync(path.join(s.root,'public-signing-key.pem'),'utf8'))
+    const calls=[],publisher=new GithubPublisher(s.root,async args=>{calls.push(args);if(args[0]==='api')return JSON.stringify({private:false,permissions:{push:true}});return ''},fs.readFileSync(path.join(s.root,'public-signing-key.pem'),'utf8'),{historyFile:require('path').join(s.root,'history.md')})
     const result=await publisher.publish('trial',1)
     assert.equal(result.published,'1.0.1');assert.equal(s.store.workspace().activeId,null)
     assert.equal(calls.at(-1)[2],'vortex-pack-stable');assert(calls.at(-1).some(a=>a.endsWith('stable.json')))
@@ -52,7 +52,7 @@ test('Publicar oficialmente también publica el instalador de la versión como a
     const s=setup(t),run=s.run();s.gate.finished(run.id,0,null);s.gate.launcherClosed(run.id);s.gate.approve('trial',run.id)
     const installer=path.join(s.root,'Vortex Launcher-setup-1.0.1.exe');fs.writeFileSync(installer,'instalador de prueba')
     const calls=[],gh=async args=>{calls.push(args);if(args[0]==='api'){if(args[1].includes('/releases/tags/'))throw Error('404');return JSON.stringify({private:false,permissions:{push:true}})}return ''}
-    const publisher=new GithubPublisher(s.root,gh,fs.readFileSync(path.join(s.root,'public-signing-key.pem'),'utf8'),{launcherBuild:()=>({version:'1.0.1',installer,sha256:hash(fs.readFileSync(installer))})})
+    const publisher=new GithubPublisher(s.root,gh,fs.readFileSync(path.join(s.root,'public-signing-key.pem'),'utf8'),{historyFile:path.join(s.root,'history.md'),launcherBuild:()=>({version:'1.0.1',installer,sha256:hash(fs.readFileSync(installer))})})
     await publisher.publish('trial',1)
     assert(calls.some(args=>args[1]==='upload' && args[2]==='v1.0.1' && args.includes(installer)))
     assert.equal(calls.at(-1)[2],'v1.0.1');assert(calls.at(-1).includes('--latest=true'))

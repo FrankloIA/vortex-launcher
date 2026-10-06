@@ -17,3 +17,9 @@ Los paquetes se dividen en archivos de hasta 256 MiB y se verifican con SHA-256.
 Al iniciar sesión y cada diez minutos, el launcher comprueba el canal oficial. También lo comprueba antes de iniciar el perfil oficial. La instalación conserva mundos y preferencias, y actualiza configuraciones predeterminadas que el jugador no haya modificado. Una descarga corrupta o incompleta no se aplica. Si falla la aplicación de archivos, se recupera la versión anterior.
 
 No elimines ni regeneres la clave privada de firma de `.runtime/pack-admin`: cambiarla requiere distribuir previamente otra clave de confianza a los jugadores.
+# Conservación y registro compartido
+
+`HISTORIAL_VORTEX.md` conserva la cronología del código y los inventarios completos por versión, con notas, rutas y SHA-256 de mods, resourcepacks, shaders y configuraciones. No reconstruir datos antiguos que no tengan manifiesto. Incluir sus cambios en el commit compartido al terminar.
+
+Después de publicar oficialmente, el publicador registra los manifiestos antes de limpiar GitHub. Conserva las tres últimas versiones oficiales del historial de Crear, el canal estable y el instalador vigente. Solo elimina releases antiguas identificadas mediante los manifiestos oficiales locales; conserva tags y commits, publicaciones desconocidas y borradores remotos. Los resultados se guardan en `.runtime/pack-admin/github-cleanup.json`. Un fallo de limpieza no revoca una publicación realizada: se vuelve a intentar en la siguiente publicación oficial. La retención remota no borra los manifiestos ni blobs locales.
+

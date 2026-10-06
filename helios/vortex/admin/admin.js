@@ -113,7 +113,8 @@ function render() {
     get('upload').accept = extensions[category]; get('replacement').accept = extensions[category]
     get('categoryHint').textContent = category === 'config' ? 'Añade archivos de configuración o edita los que ya están guardados. Los ajustes existentes se conservan.' : 'Selecciona archivos descargados compatibles con Minecraft 1.21.1 y NeoForge. Puedes añadir varios a la vez.'
     const query = get('search').value.toLowerCase()
-    const categoryFiles = draft.files.filter(f => f.path.startsWith(category + '/'))
+    const providerFilter = get('libraryProvider').value
+    const categoryFiles = draft.files.filter(f => f.path.startsWith(category + '/') && (providerFilter === 'all' || (f.source?.provider || 'unlinked') === providerFilter))
     get('folders').hidden = category !== 'config'
     get('folders').replaceChildren()
     if(category === 'config') {
@@ -144,7 +145,8 @@ function render() {
         }
         const info = document.createElement('div'); info.className = 'fileInfo'
         const title = document.createElement('h3'); title.textContent = file.display?.title || file.source?.title || file.path.split('/').at(-1)
-        const detail = document.createElement('p'); detail.textContent = `${category === 'config' ? file.path + ' · ' : ''}${(file.size / 1048576).toFixed(2)} MiB · ${file.policy === 'seed' ? 'Conservar ajustes existentes' : 'Incluido en el pack'}`
+        const providerName = { modrinth: 'Modrinth', curseforge: 'CurseForge' }[file.source?.provider] || 'Sin proveedor asociado'
+        const detail = document.createElement('p'); detail.textContent = `${category === 'config' ? file.path + ' · ' : ''}${(file.size / 1048576).toFixed(2)} MiB · ${providerName} · ${file.policy === 'seed' ? 'Conservar ajustes existentes' : 'Incluido en el pack'}`
         info.append(title, detail)
         if(category !== 'config') {
             const filename = document.createElement('p'); filename.className = 'libraryFilename'; filename.textContent = file.path.split('/').at(-1)
@@ -191,6 +193,13 @@ get('loginForm').onsubmit = event => { event.preventDefault(); action(async () =
 get('draftSelect').onchange = () => { selected = get('draftSelect').value; render() }
 for(const button of document.querySelectorAll('[data-category]')) button.onclick = () => { category = button.dataset.category; get('search').value = ''; render() }
 get('search').oninput = render
+const providerLabel = document.createElement('label'); providerLabel.textContent = 'Proveedor'
+const providerSelect = document.createElement('select'); providerSelect.id = 'libraryProvider'
+for(const [value, text] of [['all', 'Todos los proveedores'], ['modrinth', 'Modrinth'], ['curseforge', 'CurseForge'], ['unlinked', 'Sin proveedor asociado']]) {
+    const option = document.createElement('option'); option.value = value; option.textContent = text; providerSelect.append(option)
+}
+providerLabel.append(providerSelect); get('search').closest('label').after(providerLabel)
+providerSelect.onchange = () => { folder = ''; render() }
 get('addButton').onclick = () => get('upload').click()
 const checkUpdatesButton = document.createElement('button')
 checkUpdatesButton.id = 'libraryUpdates'; checkUpdatesButton.className = 'secondary'; checkUpdatesButton.textContent = 'Buscar actualizaciones'

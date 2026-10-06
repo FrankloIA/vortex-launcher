@@ -66,6 +66,13 @@ function startAdmin({ root = path.resolve(__dirname, '../.runtime/pack-admin'), 
                 if(req.method !== 'POST') return reply(404, { error: 'Ruta no encontrada' })
                 let result
                 switch(req.url) {
+                    case '/api/library/rename': {
+                        if(typeof body.version !== 'string' || !/^[a-zA-Z0-9][a-zA-Z0-9._-]{0,79}$/.test(body.version)) throw Error('Nombre inválido: usa letras, números, puntos, guiones o guiones bajos')
+                        const directory = path.join(root, 'drafts')
+                        if(fs.readdirSync(directory).filter(n => n.endsWith('.json') && n !== body.id + '.json').some(n => store.getDraft(n.slice(0, -5)).version.toLowerCase() === body.version.toLowerCase())) throw Error('Ya existe otro borrador con ese nombre')
+                        if(fs.existsSync(path.join(root, 'releases', body.version + '.json'))) throw Error('Ese nombre ya está publicado; utiliza uno nuevo')
+                        result = store.edit(body.id, body.revision, d => { d.version = body.version }); break
+                    }
                     case '/api/library/delete': {
                         const draft = store.getDraft(body.id)
                         if(draft.revision !== body.revision) throw Error('El borrador cambió; recarga antes de eliminarlo')

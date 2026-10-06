@@ -218,6 +218,17 @@ get('upload').onchange = () => { const files = [...get('upload').files]; if(file
 get('replacement').onchange = () => { const files = [...get('replacement').files]; if(files.length) action(() => upload(files, replacePath)); get('replacement').value = '' }
 function newVersion() { get('versionHint').textContent = current() ? 'El contenido actual se copiará para que puedas seguir editándolo.' : 'Crea una versión y empieza a añadir contenido.'; get('versionDialog').showModal() }
 get('newDraft').onclick = newVersion; get('firstDraft').onclick = newVersion
+const renameDraftButton = document.createElement('button')
+renameDraftButton.className = 'secondary'; renameDraftButton.textContent = 'Cambiar nombre'
+get('newDraft').after(renameDraftButton)
+renameDraftButton.onclick = () => action(async () => {
+    const draft = current()
+    if(!draft) throw Error('Selecciona un borrador')
+    const name = prompt('Nuevo nombre de versión (letras, números, puntos y guiones):', draft.version)
+    if(name === null || name.trim() === draft.version) return
+    await api('library/rename', { id: draft.id, revision: draft.revision, version: name.trim() })
+    await refresh(); message('Nombre del borrador actualizado. Las publicaciones anteriores se conservan.')
+})
 const deleteDraftButton = document.createElement('button')
 deleteDraftButton.id = 'deleteDraft'; deleteDraftButton.className = 'secondary'; deleteDraftButton.textContent = 'Eliminar borrador'
 get('newDraft').after(deleteDraftButton)

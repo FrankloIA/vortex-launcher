@@ -13,8 +13,9 @@ app.whenReady().then(async () => {
         if(window.webContents.isLoading()) await new Promise(r=>window.webContents.once('did-finish-load',r))
         await new Promise(r=>setTimeout(r,3500))
         const result = await window.webContents.executeJavaScript(`(() => {
-            const ids = ['vortexSettings','vortexProfiles','vortexNews','launch_button','server_selection_button','avatarOverlay'];
+            const ids = ['vortexSettings','vortexHome','launch_button','server_selection_button','avatarOverlay'];
             for(const id of ids) if(!document.getElementById(id)) throw Error('Control ausente: '+id);
+            if(document.querySelectorAll('.vortexNav button').length!==2 || document.querySelector('.vortexCards')) throw Error('Navegación sin simplificar');
             if(document.querySelectorAll('#launch_button').length!==1) throw Error('Control duplicado');
             document.getElementById('main').style.display='block';document.getElementById('landingContainer').style.display='block';document.getElementById('loadingContainer').style.display='none';
             for(const id of ['welcomeContainer','loginContainer','loginOptionsContainer','settingsContainer','waitingContainer']) {const el=document.getElementById(id);if(el)el.style.display='none'}

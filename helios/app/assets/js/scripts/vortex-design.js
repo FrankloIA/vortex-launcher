@@ -17,8 +17,5 @@ document.addEventListener('DOMContentLoaded', () => {
     const normalizeStatus = () => { if(!status.textContent.trim() || status.textContent.trim() === 'null') status.textContent = 'Estado no disponible' }
     normalizeStatus(); new MutationObserver(normalizeStatus).observe(status, { childList: true, characterData: true, subtree: true })
     byId('vortexSettings').onclick = () => byId('settingsMediaButton').click()
-    byId('vortexProfiles').onclick = () => byId('server_selection_button').click()
-    byId('vortexExplore').onclick = () => byId('server_selection_button').click()
-    byId('vortexNews').onclick = byId('vortexNewsCard').onclick = () => byId('newsButton').click()
     byId('vortexHome').onclick = () => { if(byId('newsContainer').style.top === '0px') byId('newsButton').click() }
 })

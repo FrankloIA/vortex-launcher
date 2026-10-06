@@ -218,6 +218,17 @@ get('upload').onchange = () => { const files = [...get('upload').files]; if(file
 get('replacement').onchange = () => { const files = [...get('replacement').files]; if(files.length) action(() => upload(files, replacePath)); get('replacement').value = '' }
 function newVersion() { get('versionHint').textContent = current() ? 'El contenido actual se copiará para que puedas seguir editándolo.' : 'Crea una versión y empieza a añadir contenido.'; get('versionDialog').showModal() }
 get('newDraft').onclick = newVersion; get('firstDraft').onclick = newVersion
+const deleteDraftButton = document.createElement('button')
+deleteDraftButton.id = 'deleteDraft'; deleteDraftButton.className = 'secondary'; deleteDraftButton.textContent = 'Eliminar borrador'
+get('newDraft').after(deleteDraftButton)
+deleteDraftButton.onclick = () => action(async () => {
+    const draft = current()
+    if(!draft) throw Error('Selecciona un borrador para eliminarlo')
+    if(!confirm(`¿Eliminar el borrador ${draft.version}? Se perderán sus cambios sin publicar. Las publicaciones existentes se conservan.`)) return
+    await api('library/delete', { id: draft.id, revision: draft.revision })
+    for(const key of [...availableUpdates.keys()]) if(key.startsWith(draft.id + ':')) availableUpdates.delete(key)
+    selected = undefined; editing = undefined; folder = ''; await refresh(); message('Borrador eliminado. Las publicaciones existentes se conservan.')
+})
 get('cancelVersion').onclick = () => get('versionDialog').close()
 get('versionForm').onsubmit = event => { event.preventDefault(); action(async () => {
     const version = get('version').value, source = current()?.id

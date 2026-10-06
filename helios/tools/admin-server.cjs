@@ -66,6 +66,12 @@ function startAdmin({ root = path.resolve(__dirname, '../.runtime/pack-admin'), 
                 if(req.method !== 'POST') return reply(404, { error: 'Ruta no encontrada' })
                 let result
                 switch(req.url) {
+                    case '/api/library/delete': {
+                        const draft = store.getDraft(body.id)
+                        if(draft.revision !== body.revision) throw Error('El borrador cambió; recarga antes de eliminarlo')
+                        fs.unlinkSync(store.draftFile(body.id))
+                        result = { deleted: body.id, publishedVersionsPreserved: true }; break
+                    }
                     case '/api/test/prepare': {
                         const version = store.getDraft(body.id).version
                         result = require('../vortex/test-release.cjs').prepareTestRelease(path.resolve(__dirname, '../.runtime/data/instances'), version)

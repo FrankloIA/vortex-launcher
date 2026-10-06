@@ -69,6 +69,7 @@ function startAdmin({ root = path.resolve(__dirname, '../.runtime/pack-admin'), 
                     } catch { return reply(404, { error: 'Sin imagen' }) }
                 }
                 if(req.url === '/api/state' && req.method === 'GET') {
+                    store.recoverWorkspace()
                     const directory = path.join(root, 'drafts')
                     const drafts = fs.existsSync(directory) ? fs.readdirSync(directory).filter(n => n.endsWith('.json')).map(n => ({ id: n.slice(0, -5), ...store.getDraft(n.slice(0, -5)) })) : []
                     const channels = Object.fromEntries(['test', 'stable'].map(channel => { const file = path.join(root, 'channels', channel + '.json'); return [channel, fs.existsSync(file) ? JSON.parse(fs.readFileSync(file)) : null] }))

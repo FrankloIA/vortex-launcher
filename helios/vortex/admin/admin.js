@@ -150,6 +150,7 @@ async function action(callback) {
 }
 async function refresh() {
     state = await api('state')
+    if(state.workspace.activeId && (!current() || current().published)) selected = state.workspace.activeId
     if(!current() || (selected === localStorage.getItem('vortexWorkingDraft') && !state.workspace.activeId)) selected = state.workspace.activeId || state.drafts.find(d => d.readOnly)?.id || state.drafts.find(d => !d.readOnly)?.id
     get('workspace').hidden = false
 
@@ -166,7 +167,7 @@ async function refresh() {
 function render() {
     const draft = current()
     if(draft) localStorage.setItem('vortexWorkingDraft', selected)
-    get('workingStatus').textContent = (draft?.status === 'stable' ? 'Publicada' : 'Sin publicar')
+    get('workingStatus').textContent = (draft?.status === 'stable' ? 'Publicada' : draft?.published ? 'Publicada en pruebas' : 'Sin publicar')
     get('workingStatus').dataset.status = draft?.status || 'draft'
     get('draftNotice').hidden = !canEdit() || createdThisSession.has(draft.id)
     get('cancelDraft').disabled = !draft || draft.published

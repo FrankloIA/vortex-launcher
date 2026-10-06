@@ -45,6 +45,13 @@ class ReleaseStore {
     getDraft(name) { const d = json(this.draftFile(name)); if(!d) throw Error('Borrador inexistente'); return d }
     workspace() { return json(path.join(this.root,'workspace.json'),{activeId:null,target:{minecraft:'1.21.1',loader:'neoforge'}}) }
     setWorkspace(change) { const workspace={...this.workspace(),...change};save(path.join(this.root,'workspace.json'),workspace);return workspace }
+    recoverWorkspace() {
+        const workspace=this.workspace()
+        if(workspace.draftRecoveryApplied) return workspace
+        const directory=path.join(this.root,'drafts')
+        const drafts=fs.existsSync(directory) ? fs.readdirSync(directory).filter(n=>n.endsWith('.json')).map(n=>({id:n.slice(0,-5),draft:json(path.join(directory,n)),modified:fs.statSync(path.join(directory,n)).mtimeMs})).filter(item=>!this.isPublished(item.draft)).sort((a,b)=>b.modified-a.modified) : []
+        return this.setWorkspace({activeId:workspace.activeId || drafts[0]?.id || null,draftRecoveryApplied:true})
+    }
     releases() {
         const folder=path.join(this.root,'releases')
         return fs.existsSync(folder) ? fs.readdirSync(folder).filter(n=>n.endsWith('.json')).map(n=>JSON.parse(json(path.join(folder,n)).payload)).sort((a,b)=>b.publishedAt.localeCompare(a.publishedAt)) : []

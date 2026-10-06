@@ -8,7 +8,7 @@
         <div class="vortexAccount" id="vortexAccount"></div>
     </aside>
     <section class="vortexMain">
-        <div class="vortexHero"><h1>Tu próxima <span>aventura</span></h1><p>Todo listo para volver a Vortex.</p></div>
+        <div class="vortexHero"><h1>Tu próxima <span>aventura</span></h1><p>Todo listo para volver a Vortex</p></div>
         <div class="vortexPlaybar">
             <div class="vortexServer"><h3>Servidor Vortex</h3><div id="vortexServerStatus"></div></div>
             <div class="vortexVersion"><strong>Minecraft 1.21.1</strong>NeoForge 21.1.250<br>Verificación del pack al iniciar</div>
@@ -112,9 +112,10 @@
         <div id="left">
             <div class="bot_wrapper">
                 <div id="content">
-                    <div id="server_status_wrapper">
-                        <span class="bot_label" id="landingPlayerLabel"><%- lang('landing.serverStatus') %></span>
-                        <span id="player_count"><%- lang('landing.serverStatusPlaceholder') %></span>
+                    <div id="server_status_wrapper" data-state="checking" role="status" aria-live="polite">
+                        <span class="vortexServerDot" aria-hidden="true"></span>
+                        <span class="bot_label" id="landingPlayerLabel">Servidor</span>
+                        <span id="player_count">Comprobando</span>
                     </div>
                     <div class="bot_divider"></div>
                     <div id="mojangStatusWrapper">

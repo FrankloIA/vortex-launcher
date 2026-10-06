@@ -870,6 +870,7 @@ async function resolveDropinModsForUI(){
     document.getElementById('settingsReqModsContent').innerHTML = req
     document.getElementById('settingsOptModsContent').innerHTML = opt
     document.getElementById('settingsDropinModsContent').innerHTML = ''
+    filterVortexMods()
 }
 
 /**
@@ -1505,12 +1506,8 @@ function populateSettingsUpdateInformation(data){
         settingsUpdateTitle.innerHTML = Lang.queryJS('settings.updates.latestVersionTitle')
         settingsUpdateChangelogCont.style.display = 'none'
         populateVersionInformation(remote.app.getVersion(), settingsUpdateVersionValue, settingsUpdateVersionTitle, settingsUpdateVersionCheck)
-        settingsUpdateButtonStatus(Lang.queryJS('settings.updates.checkForUpdatesButton'), false, () => {
-            if(!isDev){
-                ipcRenderer.send('autoUpdateAction', 'checkForUpdate')
-                settingsUpdateButtonStatus(Lang.queryJS('settings.updates.checkingForUpdatesButton'), true)
-            }
-        })
+        settingsUpdateTitle.textContent = 'Busca actualizaciones de Vortex Launcher'
+        settingsUpdateButtonStatus('Buscar actualizaciones', false, checkVortexLauncherUpdates)
     }
 }
 
@@ -1519,6 +1516,33 @@ function populateSettingsUpdateInformation(data){
  * 
  * @param {Object} data The update data.
  */
+async function checkVortexLauncherUpdates(){
+    settingsUpdateButtonStatus('Buscando actualizaciones…', true)
+    settingsUpdateTitle.textContent = 'Consultando las publicaciones de Vortex…'
+    try {
+        const result = await ipcRenderer.invoke('vortex:check-launcher-update')
+        if(result.status === 'available'){
+            settingsUpdateTitle.textContent = 'Nueva versión del launcher disponible: ' + result.version
+            settingsUpdateVersionValue.textContent = result.version
+            settingsUpdateButtonStatus('Actualizar a ' + result.version, false, async () => {
+                settingsUpdateButtonStatus('Preparando actualización…', true)
+                try {
+                    await ipcRenderer.invoke('vortex:download-launcher-update')
+                    settingsUpdateTitle.textContent = 'Descarga abierta. Ejecuta el instalador para actualizar Vortex Launcher.'
+                } catch { settingsUpdateTitle.textContent = 'No se pudo iniciar la descarga. Vuelve a buscar actualizaciones.' }
+                settingsUpdateButtonStatus('Buscar actualizaciones', false, checkVortexLauncherUpdates)
+            })
+            return
+        }
+        settingsUpdateTitle.textContent = result.status === 'current'
+            ? 'Ya tienes la última versión del launcher (' + result.current + ').'
+            : result.status === 'unpublished' ? 'Todavía no hay versiones oficiales del launcher publicadas.'
+            : result.status === 'unavailable' ? 'La versión ' + result.version + ' aún no tiene un instalador para tu sistema.'
+            : 'No se pudieron comprobar las actualizaciones. Revisa tu conexión e inténtalo de nuevo.'
+    } catch { settingsUpdateTitle.textContent = 'No se pudieron comprobar las actualizaciones. Inténtalo de nuevo.' }
+    settingsUpdateButtonStatus('Buscar actualizaciones', false, checkVortexLauncherUpdates)
+}
+
 function prepareUpdateTab(data = null){
     populateSettingsUpdateInformation(data)
 }
@@ -1548,3 +1572,16 @@ async function prepareSettings(first = false) {
 
 // Prepare the settings UI on startup.
 //prepareSettings(true)
+
+function filterVortexMods(){
+    const query = document.getElementById('vortexModSearch').value.trim().toLocaleLowerCase()
+    let count = 0
+    for(const row of document.querySelectorAll('#settingsModsContainer .settingsBaseMod')){
+        const name = row.querySelector('.settingsModName')?.textContent || ''
+        const match = (name + ' ' + row.id).toLocaleLowerCase().includes(query)
+        row.style.display = match ? '' : 'none'
+        if(match) count++
+    }
+    document.getElementById('vortexModSearchResult').textContent = query ? (count ? count + ' mods encontrados' : 'No se encontraron mods con ese nombre.') : ''
+}
+document.getElementById('vortexModSearch').addEventListener('input', filterVortexMods)

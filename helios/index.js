@@ -94,6 +94,19 @@ ipcMain.on('autoUpdateAction', (event, arg, data) => {
             break
     }
 })
+ipcMain.handle('vortex:check-launcher-update', async () => {
+    try {
+        const updates = require('./vortex/launcher-updates.cjs')
+        return updates.assess(await updates.fetchLatest(), app.getVersion())
+    } catch(error) { return {status:'error', message:error.message} }
+})
+ipcMain.handle('vortex:download-launcher-update', async () => {
+    const updates = require('./vortex/launcher-updates.cjs')
+    const result = updates.assess(await updates.fetchLatest(), app.getVersion())
+    if(result.status !== 'available') throw Error('No hay un instalador nuevo disponible')
+    await shell.openExternal(result.url)
+    return result.version
+})
 // Redirect distribution index event from preloader to renderer.
 ipcMain.on('distributionIndexDone', (event, res) => {
     event.sender.send('distributionIndexDone', res)

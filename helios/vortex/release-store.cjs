@@ -80,10 +80,16 @@ class ReleaseStore {
         return fs.existsSync(folder) ? fs.readdirSync(folder).filter(n=>n.endsWith('.json')).map(n=>JSON.parse(json(path.join(folder,n)).payload)).sort((a,b)=>b.publishedAt.localeCompare(a.publishedAt)) : []
     }
     cancel(name,revision) {
-        if(this.workspace().activeId !== name) throw Error('No hay una versión activa para cancelar')
-        const draft=this.getDraft(name)
+        const releaseOnly=name.startsWith('release:')
+        const draft=releaseOnly ? this.releases().find(r=>r.version===name.slice(8)) : this.getDraft(name)
+        if(!draft) throw Error('La versión seleccionada no existe')
         if(draft.revision!==revision) throw Error('Recarga la versión antes de cancelarla')
         if(this.isOfficial(draft)) throw Error('La publicación se conserva; crea otra versión')
+        if(releaseOnly) {
+            const folder=path.join(this.root,'drafts')
+            const matching=fs.existsSync(folder)?fs.readdirSync(folder).filter(n=>n.endsWith('.json')).find(n=>json(path.join(folder,n)).version===draft.version):null
+            if(matching) {const draftId=matching.slice(0,-5);return this.cancel(draftId,this.getDraft(draftId).revision)}
+        }
         save(path.join(this.root,'cancelled-drafts',crypto.randomUUID()+'.json'),{cancelledAt:new Date().toISOString(),draft})
         const releaseFile=path.join(this.root,'releases',draft.version+'.json')
         if(fs.existsSync(releaseFile)) {
@@ -96,7 +102,9 @@ class ReleaseStore {
                 else fs.unlinkSync(channelFile)
             }
         }
-        fs.unlinkSync(this.draftFile(name));this.setWorkspace({activeId:null});return {cancelled:name}
+        if(!releaseOnly) fs.unlinkSync(this.draftFile(name))
+        if(this.workspace().activeId===name) this.setWorkspace({activeId:null})
+        return {cancelled:name}
     }
     restoreCancelled(version) {
         versionName(version)

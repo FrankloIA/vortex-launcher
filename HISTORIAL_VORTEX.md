@@ -27,6 +27,8 @@ Contenido verificado históricamente: Quark 4.1-486 para NeoForge 21.1.250; corr
 
 ## Cronología verificable del código desde la primera versión
 
+- Cancelar esta versión se aplica únicamente a la versión seleccionada en la izquierda, incluyendo una publicación en pruebas anterior, sin cancelar un borrador distinto que esté activo. Esta regla sustituye la cancelación automática del trabajo activo al consultar otra versión.
+
 - Recuperación de 1.0.2 tras cancelación accidental desde la última publicación en pruebas conservada. La cancelación guarda ahora también el borrador íntegro (notas, configuraciones pendientes y última revisión) para recuperaciones futuras, comprobando los hashes de todos los archivos.
 
 - Cancelar esta versión permanece habilitado y actúa sobre la versión de trabajo activa aunque se consulte otra versión. Si no existe una versión pendiente, el diálogo lo indica; las publicaciones oficiales se conservan.

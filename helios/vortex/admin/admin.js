@@ -32,7 +32,7 @@ async function checkLibraryUpdates(contentCategory = category, force = false) {
     return results
 }
 function canEdit() { return !!current() && !current().published && selected === state.workspace?.activeId }
-function cancellableDraft() {const active=state?.drafts.find(d=>d.id===state.workspace?.activeId);return active && !active.published ? active : null}
+function cancellableDraft() {const draft=current();return draft && !draft.published ? draft : null}
 function requireEditable() { if(canEdit()) return true; get('lockedDialog').showModal(); return false }
 function switchPanel(next) {
     if(next === 'add' && !requireEditable()) return
@@ -362,7 +362,7 @@ keepVersion.onclick=()=>cancelDialog.close()
 get('cancelDraft').onclick=()=>{
     cancelTarget=cancellableDraft()
     cancelTitle.textContent=cancelTarget?'¿Eliminar esta versión?':'Cancelar esta versión'
-    cancelDescription.textContent=cancelTarget?'Se eliminará la versión '+cancelTarget.version+' y sus cambios de trabajo de la lista. Volverás a Crear':'No hay una versión de trabajo pendiente para cancelar'
+    cancelDescription.textContent=cancelTarget?'Se eliminará la versión '+cancelTarget.version+' y sus cambios de trabajo de la lista. Volverás a Crear':current()?.published?'La versión '+current().version+' está publicada oficialmente y se conserva':'No hay una versión seleccionada para cancelar'
     deleteVersion.hidden=!cancelTarget;keepVersion.textContent=cancelTarget?'No, conservar':'Cerrar'
     cancelDialog.showModal()
 }

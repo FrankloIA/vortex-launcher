@@ -45,6 +45,22 @@ class ReleaseStore {
     getDraft(name) { const d = json(this.draftFile(name)); if(!d) throw Error('Borrador inexistente'); return d }
     workspace() { return json(path.join(this.root,'workspace.json'),{activeId:null,target:{minecraft:'1.21.1',loader:'neoforge'}}) }
     setWorkspace(change) { const workspace={...this.workspace(),...change};save(path.join(this.root,'workspace.json'),workspace);return workspace }
+    synchronizeLauncherVersion(version) {
+        if(!/^\d+\.\d+\.\d+$/.test(version)) throw Error('Versión del launcher inválida')
+        const workspace=this.workspace(),name=workspace.activeId
+        if(name) {
+            const draft=this.getDraft(name),match=draft.version.match(/^(\d+)\.(\d+)\.(\d+)( fixed)?$/)
+            if(!this.isOfficial(draft) && match) {
+                const current=match.slice(1,4).map(Number),next=version.split('.').map(Number)
+                const newer=next.some((value,index)=>value>current[index] && next.slice(0,index).every((n,i)=>n===current[i]))
+                if(newer) {
+                    if(this.isPublished({version})) throw Error('La versión del launcher ya tiene una publicación: selecciona su borrador para continuar')
+                    this.edit(name,draft.revision,d=>{d.version=version})
+                }
+            }
+        }
+        return this.setWorkspace({launcherVersion:version})
+    }
     syncLauncherNotes(name) {
         const draft=this.getDraft(name), notes=require('./change-notes.cjs')
         if(this.isOfficial(draft)) return draft

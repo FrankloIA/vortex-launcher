@@ -4,11 +4,11 @@ const path = require('path')
 const crypto = require('crypto')
 const { ReleaseStore } = require('../vortex/release-store.cjs')
 const { Providers } = require('../vortex/providers.cjs')
-function startAdmin({ root = path.resolve(__dirname, '../.runtime/pack-admin'), port = 43117, password } = {}) {
+function startAdmin({ root = path.resolve(__dirname, '../.runtime/pack-admin'), port = 43117, password, syncVersion=()=>JSON.parse(fs.readFileSync(path.resolve(__dirname,'../package.json'))).version } = {}) {
     const store = new ReleaseStore(root)
     const gate=new (require('../vortex/test-gate.cjs').TestGate)(root)
-    const publisher=new (require('../vortex/github-publisher.cjs').GithubPublisher)(root)
-    let githubReady=false,publishing=false
+    const publisher=new (require('../vortex/github-publisher.cjs').GithubPublisher)(root,undefined,undefined,{launcherBuild:require('../vortex/build-launcher.cjs').launcherBuild})
+    let githubReady=false,publishing=false,preparingTest=false
     publisher.available().then(ready=>{githubReady=ready})
     const providers = new Providers(root)
     const metadata = new (require('../vortex/content-metadata.cjs').ContentMetadata)(root, providers)
@@ -84,6 +84,7 @@ function startAdmin({ root = path.resolve(__dirname, '../.runtime/pack-admin'), 
                 }
                 if(req.url === '/api/state' && req.method === 'GET') {
                     store.recoverWorkspace()
+                    if(syncVersion) store.synchronizeLauncherVersion(syncVersion())
                     if(store.workspace().activeId) store.syncLauncherNotes(store.workspace().activeId)
                     const directory = path.join(root, 'drafts')
                     const drafts = fs.existsSync(directory) ? fs.readdirSync(directory).filter(n => n.endsWith('.json')).map(n => ({ id: n.slice(0, -5), ...store.getDraft(n.slice(0, -5)) })) : []
@@ -102,11 +103,11 @@ function startAdmin({ root = path.resolve(__dirname, '../.runtime/pack-admin'), 
                             file.protection=protection.status(file)
                         }
                     }
-                    return reply(200, { drafts, channels, githubReady, publishing, workspace:store.workspace(), history:releases.filter((r,index)=>index>0 || r.version===store.workspace().baselineVersion).slice(0,3).map(r=>({version:r.version,publishedAt:r.publishedAt,minecraft:r.minecraft,loader:r.loader || 'neoforge',files:r.files.length,notes:r.notes})), currentRelease:releases[0]?.version })
+                    return reply(200, { drafts, channels, githubReady, publishing, workspace:store.workspace(), history:releases.filter(r=>store.isOfficial(r)).slice(0,3).map(r=>({version:r.version,publishedAt:r.publishedAt,minecraft:r.minecraft,loader:r.loader || 'neoforge',files:r.files.length,notes:r.notes})), currentRelease:releases[0]?.version })
                 }
                 if(req.method !== 'POST') return reply(404, { error: 'Ruta no encontrada' })
                 let result
-                if(publishing) throw Error('Espera a que termine la publicación oficial antes de modificar o probar')
+                if(publishing || preparingTest) throw Error('Espera a que termine la publicación o la preparación de la prueba antes de modificar')
                 const mutations=['/api/library/rename','/api/library/delete','/api/library/mark-jarvis','/api/providers/install','/api/remove','/api/notes','/api/add','/api/library/add','/api/config/save','/api/config/autosave','/api/publish']
                 if(mutations.includes(req.url) && store.workspace().activeId !== body.id) throw Error('Biblioteca de solo lectura: crea una nueva versión para modificar contenido')
                 switch(req.url) {
@@ -140,15 +141,29 @@ function startAdmin({ root = path.resolve(__dirname, '../.runtime/pack-admin'), 
                         result = { deleted: body.id, publishedVersionsPreserved: true }; break
                     }
                     case '/api/test/prepare': {
-                        const run=gate.prepare(body.id), version=run.version
+                        const snapshot=gate.snapshot(body.id), version=snapshot.version
+                        const previousId=store.workspace().testRunId
+                        if(previousId) {
+                            const previous=gate.read(previousId)
+                            if(previous.launcherPid && !previous.launcherClosedNormally) {
+                                let alive=false;try {process.kill(previous.launcherPid,0);alive=true} catch {}
+                                if(alive) throw Error('Cierra el juego y el launcher de pruebas antes de preparar otra prueba')
+                            }
+                        }
+                        preparingTest=true
+                        try {
+                        const build=await require('../vortex/build-launcher.cjs').ensureLauncherBuild(version)
+                        const run=gate.prepare(body.id)
                         const testing=require('../vortex/test-launcher.cjs').prepareTestLauncher(path.resolve(__dirname,'../.runtime'))
                         result = require('../vortex/test-release.cjs').prepareTestRelease(testing.instances, version)
                         result.account=testing.account
-                        const launcher = require('child_process').spawn(path.resolve(__dirname, '../node_modules/electron/dist/electron.exe'), [path.resolve(__dirname, '..'), '--vortex-test','--vortex-test-run='+run.id], { cwd: path.resolve(__dirname, '..'), detached: true, stdio: 'ignore', windowsHide: false })
+                        const launcher = require('child_process').spawn(build.executable, ['--vortex-test','--vortex-test-run='+run.id], { cwd: path.resolve(__dirname, '..'), detached: true, stdio: 'ignore', windowsHide: false,env:{...process.env,VORTEX_TEST_DIRECTORY:testing.root,VORTEX_ADMIN_ROOT:root,VORTEX_SOURCE_ROOT:path.resolve(__dirname,'..')} })
                         await new Promise((resolve, reject) => { launcher.once('spawn', resolve); launcher.once('error', reject) })
                         launcher.unref()
                         gate.launcherStarted(run.id,launcher.pid)
                         result.launcherOpened = true
+                        result.launcherVersion=build.version
+                        } finally {preparingTest=false}
                         break
                     }
                     case '/api/test/approve': result=gate.approve(body.id,body.runId);break

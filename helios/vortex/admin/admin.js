@@ -52,9 +52,10 @@ get('publishTab').onclick = () => switchPanel('publish')
 const testVersionButton = document.createElement('button'); testVersionButton.textContent = 'Probar versión'; testVersionButton.id = 'tryVersion'
 get('publish').after(testVersionButton)
 testVersionButton.onclick = () => action(async () => {
+    get('testStatus').textContent='Preparando el launcher de esta versión · La primera compilación puede tardar unos minutos'
     const result = await api('test/prepare', { id: selected })
     await refresh()
-    message(`Launcher exclusivo de pruebas abierto con ${result.account} · Versión ${result.version} · ${result.mods} mods. Pulsa Jugar para probar el cliente.`)
+    message(`Launcher ${result.launcherVersion} de pruebas abierto con ${result.account} · Versión ${result.version} · ${result.mods} mods. Pulsa Jugar para probar el cliente.`)
 })
 for(const button of document.querySelectorAll('[data-provider]')) button.onclick = () => {
     get('provider').value = button.dataset.provider; get('onlineResults').replaceChildren()
@@ -353,7 +354,7 @@ function renderTargetAndHistory() {
             const result=await api('library/restore',{version:release.version});selected=result.id;createdThisSession.add(result.id);panel='library';await refresh();message('Contenido de ' + release.version + ' recuperado; revisa y publica la restauración')
         });row.append(info,button);get('versionHistory').append(row)
     }
-    if(!state.history.length) get('versionHistory').textContent='Las versiones anteriores aparecerán aquí después de publicar nuevas versiones'
+    if(!state.history.length) get('versionHistory').textContent='Las versiones aparecerán aquí después de publicarlas oficialmente'
     get('pendingDrafts').replaceChildren()
     if(state.workspace.activeId) {
         const hint=document.createElement('p');hint.textContent='Tienes una versión sin finalizar. Puedes continuar o cancelarla desde Publicar';const resume=document.createElement('button');resume.textContent='Continuar versión';resume.onclick=()=>{selected=state.workspace.activeId;render();switchPanel('library')};get('pendingDrafts').append(hint,resume)

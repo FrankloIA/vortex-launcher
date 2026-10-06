@@ -6,7 +6,7 @@ const path = require('path')
 const { startAdmin } = require('../tools/admin-server.cjs')
 test('API privada: exige sesión, rechaza otro origen y publica solo en pruebas', async t => {
     const root = fs.mkdtempSync(path.join(os.tmpdir(), 'vortex-admin-'))
-    const { server, url } = await startAdmin({ root, port: 0, password: 'test-only' })
+    const { server, url } = await startAdmin({ root, port: 0, password: 'test-only',syncVersion:null })
     t.after(async () => { await new Promise(resolve => server.close(resolve)); fs.rmSync(root, { recursive: true, force: true }) })
     assert.equal((await fetch(url + '/api/state')).status, 401)
     const post = (route, data, cookie, origin = url) => fetch(url + '/api/' + route, { method: 'POST', headers: { Origin: origin, 'Content-Type': 'application/json', ...(cookie ? { Cookie: cookie } : {}) }, body: JSON.stringify(data) })

@@ -1,5 +1,5 @@
-function monitorTestProcess(child,gate,id,{instance,account}) {
-    gate.gameStarted(id,child.pid,instance,account)
+function monitorTestProcess(child,gate,id,{instance,account,launcherVersion}) {
+    gate.gameStarted(id,child.pid,instance,account,launcherVersion)
     let buffer=''
     const output=data=>{
         buffer=(buffer+data.toString()).slice(-16384)

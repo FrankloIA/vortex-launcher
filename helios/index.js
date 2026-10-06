@@ -15,7 +15,7 @@ const LangLoader                        = require('./app/assets/js/langloader')
 
 // Datos propios: el desarrollo queda dentro de esta copia del proyecto.
 if(process.argv.includes('--vortex-test')) {
-    process.env.VORTEX_DATA_DIRECTORY = path.join(__dirname,'.runtime/testing')
+    process.env.VORTEX_DATA_DIRECTORY = process.env.VORTEX_TEST_DIRECTORY || (app.isPackaged ? path.join(app.getPath('appData'),'Vortex Launcher','.runtime/testing') : path.join(__dirname,'.runtime/testing'))
     process.env.VORTEX_TEST_MODE = '1'
     process.env.VORTEX_TEST_RUN = process.argv.find(arg=>arg.startsWith('--vortex-test-run='))?.split('=')[1] || ''
 }
@@ -307,8 +307,9 @@ function createWindow() {
 
     win.loadURL(pathToFileURL(path.join(__dirname, 'app', 'app.ejs')).toString())
     if(process.env.VORTEX_TEST_MODE === '1') win.webContents.on('did-finish-load',()=>{
-        win.setTitle('VORTEX LAUNCHER · PRUEBAS')
-        win.webContents.executeJavaScript("document.getElementById('frameTitleText').textContent='VORTEX LAUNCHER · PRUEBAS'")
+        const title='VORTEX LAUNCHER · '+app.getVersion()+' · PRUEBAS'
+        win.setTitle(title)
+        win.webContents.executeJavaScript("document.getElementById('frameTitleText').textContent="+JSON.stringify(title))
     })
 
     /*win.once('ready-to-show', () => {

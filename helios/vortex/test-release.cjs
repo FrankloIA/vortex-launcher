@@ -2,7 +2,7 @@ const fs = require('fs')
 const path = require('path')
 const { applyRelease, hash, verify } = require('./release-store.cjs')
 function prepareTestRelease(instancesRoot, expectedVersion, onProgress = () => {}) {
-    const root = path.resolve(__dirname, '../.runtime/pack-admin')
+    const root = process.env.VORTEX_ADMIN_ROOT || path.resolve(__dirname, '../.runtime/pack-admin')
     const channel = JSON.parse(fs.readFileSync(path.join(root, 'channels/test.json')))
     if(expectedVersion && channel.version !== expectedVersion) throw Error('Publica este borrador en pruebas antes de probarlo')
     const bytes = fs.readFileSync(path.join(root, 'releases', channel.version + '.json'))
@@ -29,7 +29,7 @@ function prepareTestRelease(instancesRoot, expectedVersion, onProgress = () => {
     return { version: manifest.version, mods: manifest.files.filter(f => f.path.startsWith('mods/')).length, instance, result }
 }
 function getTestReleaseStatus(instancesRoot) {
-    const file = path.resolve(__dirname, '../.runtime/pack-admin/channels/test.json')
+    const file = path.join(process.env.VORTEX_ADMIN_ROOT || path.resolve(__dirname,'../.runtime/pack-admin'),'channels/test.json')
     if(!fs.existsSync(file)) return null
     const channel = JSON.parse(fs.readFileSync(file))
     const installed = path.join(instancesRoot, 'vortex-published-test', '.vortex-owned.json')

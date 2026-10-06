@@ -4,7 +4,7 @@ const {TestGate}=require('./test-gate.cjs')
 const {hash,verify}=require('./release-store.cjs')
 const REPOSITORY='FrankloIA/vortex-launcher',CHANNEL_TAG='vortex-pack-stable'
 class GithubPublisher {
-    constructor(root,gh=async args=>(await execute('gh',args,{windowsHide:true,timeout:600000,maxBuffer:1024*1024})).stdout,expectedKey=require('./pack-feed.json').publicKey) {this.root=root;this.gh=gh;this.expectedKey=expectedKey}
+    constructor(root,gh=async args=>(await execute('gh',args,{windowsHide:true,timeout:600000,maxBuffer:1024*1024})).stdout,expectedKey=require('./pack-feed.json').publicKey,options={}) {this.root=root;this.gh=gh;this.expectedKey=expectedKey;this.options=options}
     async available() {
         if(!fs.existsSync(path.join(this.root,'private-signing-key.pem')) || fs.readFileSync(path.join(this.root,'public-signing-key.pem'),'utf8')!==this.expectedKey) return false
         try {const repo=JSON.parse(await this.gh(['api','repos/'+REPOSITORY]));return !repo.private && !!repo.permissions?.push} catch {return false}
@@ -16,6 +16,8 @@ class GithubPublisher {
         const bytes=fs.readFileSync(path.join(this.root,'releases',draft.version+'.json'))
         if(hash(bytes)!==run.releaseSha256) throw Error('La versión cambió después de probar')
         const key=fs.readFileSync(path.join(this.root,'public-signing-key.pem')),manifest=verify(JSON.parse(bytes),key)
+        const build=this.options.launcherBuild?.(draft.version)
+        if(this.options.launcherBuild && !build) throw Error('El instalador no coincide con la versión probada; vuelve a abrir Probar versión para recompilarlo')
         const tag='vortex-pack-'+draft.version.replace(/ /g,'-')+'-'+run.releaseSha256.slice(0,12),output=path.join(this.root,'publication',tag)
         const parts=require('./pack-bundles.cjs').bundles(this.root,manifest.files,output)
         const releaseFile=path.join(output,'release.json'),notesFile=path.join(output,'notes.txt')
@@ -24,6 +26,17 @@ class GithubPublisher {
         let exists=false;try {await this.gh(['release','view',tag,'--repo',REPOSITORY]);exists=true} catch {}
         if(!exists) await this.gh(['release','create',tag,'--repo',REPOSITORY,'--draft','--latest=false','--title','Vortex '+draft.version,'--notes-file',notesFile])
         await this.gh(['release','upload',tag,releaseFile,...parts.map(p=>p.file),'--repo',REPOSITORY,'--clobber'])
+        const installerTag=build ? 'v'+build.version : null
+        if(build) {
+            let installerRelease=null;try {installerRelease=JSON.parse(await this.gh(['api','repos/'+REPOSITORY+'/releases/tags/'+installerTag]))} catch {}
+            if(installerRelease && !installerRelease.draft) {
+                const asset=installerRelease.assets.find(a=>a.name===path.basename(build.installer))
+                if(asset?.digest!=='sha256:'+build.sha256) throw Error('Ese número de launcher ya está publicado con otro instalador; crea una nueva versión')
+            } else {
+                if(!installerRelease) await this.gh(['release','create',installerTag,'--repo',REPOSITORY,'--draft','--latest=false','--title','Vortex Launcher '+build.version,'--notes-file',notesFile])
+                await this.gh(['release','upload',installerTag,build.installer,'--repo',REPOSITORY,'--clobber'])
+            }
+        }
         gate.assertPassed(name)
         await this.gh(['release','edit',tag,'--repo',REPOSITORY,'--draft=false','--latest=false'])
         const payload=JSON.stringify({schema:1,version:draft.version,releaseSha256:run.releaseSha256,releaseUrl:url('release.json'),bundles:parts.map(p=>({url:url(p.name),sha256:p.sha256,size:p.size})),publishedAt:new Date().toISOString()})
@@ -33,6 +46,7 @@ class GithubPublisher {
         if(!channelExists) await this.gh(['release','create',CHANNEL_TAG,'--repo',REPOSITORY,'--latest=false','--title','Canal oficial del pack Vortex','--notes','Canal de distribución firmado de Vortex'])
         gate.assertPassed(name)
         await this.gh(['release','upload',CHANNEL_TAG,stableFile,'--repo',REPOSITORY,'--clobber'])
+        if(build) await this.gh(['release','edit',installerTag,'--repo',REPOSITORY,'--draft=false','--latest=true','--notes-file',notesFile])
         return {...gate.store.promote(name,revision),url:'https://github.com/'+REPOSITORY+'/releases/tag/'+tag}
     }
 }

@@ -1,7 +1,7 @@
 const fs=require('fs'),path=require('path'),crypto=require('crypto')
 const {ReleaseStore,hash,verify}=require('./release-store.cjs')
 function launcherHash() {
-    const root=path.resolve(__dirname,'..'),files=['index.js','package.json']
+    const root=process.env.VORTEX_SOURCE_ROOT || path.resolve(__dirname,'..'),files=['index.js','package.json']
     const walk=directory=>{for(const entry of fs.readdirSync(path.join(root,directory),{withFileTypes:true})) {const relative=path.join(directory,entry.name);if(entry.isDirectory())walk(relative);else if(/\.(js|cjs|ejs|css|json|toml)$/.test(entry.name))files.push(relative)}}
     walk('app');walk('vortex');const digest=crypto.createHash('sha256')
     for(const file of files.sort()) {digest.update(file);digest.update(fs.readFileSync(path.join(root,file)))}
@@ -33,9 +33,10 @@ class TestGate {
     fail(id,reason) {return this.mutate(id,run=>{run.status='failed';run.reason=reason})}
     launcherStarted(id,pid) {return this.mutate(id,run=>{run.launcherPid=pid})}
     launcherClosed(id) {return this.mutate(id,run=>{if(['awaitingApproval','passed'].includes(run.status))run.launcherClosedNormally=true;else if(['prepared','running'].includes(run.status)){run.status='failed';run.reason='El launcher se cerró antes de completar la prueba'}})}
-    gameStarted(id,pid,instance,account) {
+    gameStarted(id,pid,instance,account,launcherVersion) {
         return this.mutate(id,run=>{
         if(run.status!=='prepared' || account?.toLowerCase()!=='mystwer') throw Error('Abre Probar versión desde el panel con Mystwer antes de iniciar otra prueba')
+        if(launcherVersion && launcherVersion!==run.version.replace(/ fixed$/,'')) throw Error('El launcher y la versión del panel no coinciden; vuelve a preparar la prueba')
         this.snapshot(run.draftId)
         run.status='running';run.gamePid=pid;run.instance=instance;run.startedAt=Date.now();run.ready=false
         })
@@ -73,5 +74,5 @@ class TestGate {
     }
     assertPassed(name) {const run=this.status(name);if(!run.eligible) throw Error('Prueba esta revisión, cierra el juego sin fallos y confirma el resultado antes de publicar oficialmente');return run}
 }
-function currentGate() {return process.env.VORTEX_TEST_RUN ? new TestGate(path.resolve(__dirname,'../.runtime/pack-admin')) : null}
-module.exports={TestGate,currentGate}
+function currentGate() {return process.env.VORTEX_TEST_RUN ? new TestGate(process.env.VORTEX_ADMIN_ROOT || path.resolve(__dirname,'../.runtime/pack-admin')) : null}
+module.exports={TestGate,currentGate,launcherHash}

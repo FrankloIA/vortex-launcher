@@ -100,8 +100,22 @@ function setLaunchEnabled(val){
 
 // Bind launch button
 let packUpdatePrompted
+let launcherUpdatePrompted
+async function checkRequiredLauncherUpdate(force=false) {
+    if(process.env.VORTEX_TEST_MODE==='1') return false
+    const update=await ipcRenderer.invoke('vortex:check-launcher-update')
+    if(update.status!=='available') return false
+    if(force || launcherUpdatePrompted!==update.version) {
+        launcherUpdatePrompted=update.version
+        setOverlayContent('Nueva versión de Vortex Launcher','Actualiza a '+update.version+' para utilizar la versión publicada desde el panel','Actualizar','Más tarde')
+        setOverlayHandler(async()=>{try {await ipcRenderer.invoke('vortex:download-launcher-update');toggleOverlay(false)} catch(error) {showLaunchFailure('No se pudo descargar la actualización',error.message)}})
+        setDismissHandler(()=>toggleOverlay(false));toggleOverlay(true,true)
+    }
+    return true
+}
 async function checkOfficialPackUpdate() {
     if(process.env.VORTEX_TEST_MODE==='1' || proc) return
+    if(await checkRequiredLauncherUpdate()) return
     const release=await require('./assets/js/../../../vortex/official-release.cjs').checkOfficialRelease(ConfigManager.getInstanceDirectory())
     if(!release) return
     ConfigManager.setSelectedServer('vortex-official');ConfigManager.save()
@@ -123,6 +137,7 @@ setInterval(()=>checkOfficialPackUpdate().catch(error=>loggerLanding.warn('Actua
 document.getElementById('launch_button').addEventListener('click', async e => {
     loggerLanding.info('Launching game..')
     try {
+        if(await checkRequiredLauncherUpdate(true)) return
         const server = (await DistroAPI.getDistribution()).getServerById(ConfigManager.getSelectedServer())
         const jExe = ConfigManager.getJavaExecutable(ConfigManager.getSelectedServer())
         if(jExe == null){

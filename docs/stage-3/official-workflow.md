@@ -1,12 +1,14 @@
 # Publicación del pack Vortex
 
-El launcher Windows 1.0.2 incorpora el canal de packs firmado de GitHub. Los clientes anteriores necesitan instalarlo para recibir las nuevas publicaciones del pack. El número del ejecutable y el del pack son independientes.
+El launcher Windows 1.0.2 incorpora el canal de packs firmado de GitHub. Los clientes anteriores necesitan instalarlo para recibir las nuevas publicaciones del pack. El panel sincroniza la versión activa con la del launcher nuevo y no baja el número de una versión futura que ya se esté preparando.
 
 1. Prepara los cambios en la versión activa. Las notas automáticas registran añadidos, sustituciones, retiradas y cambios de configuración. Los commits del launcher posteriores al inicio del borrador también se incorporan.
-2. Publica la revisión en pruebas y abre «Probar versión». Se utiliza Mystwer, con datos y sesión del launcher separados.
+2. Publica la revisión en pruebas y abre «Probar versión». El panel compila el ejecutable y el instalador con el mismo número que la versión activa, reutilizando una compilación solo si coincide también su código y su hash. Se utiliza Mystwer, con datos y sesión del launcher separados.
 3. Inicia el cliente, juega al menos un minuto y ciérralo normalmente. Cierra también el launcher de pruebas antes de confirmar el resultado. Los errores de preparación, cierres anormales, informes de crash y fallos del launcher bloquean la prueba. Esta comprobación no garantiza que se hayan probado todas las situaciones posibles.
 4. Confirma «La partida funcionó correctamente» si la comprobación automática terminó bien y no observaste problemas. Si hay problemas, utiliza «Encontré problemas».
-5. «Publicar oficialmente» sube los archivos exactos a GitHub Releases y actualiza el canal firmado únicamente después de completar la subida. Se requiere una sesión de GitHub CLI con permiso de escritura en `FrankloIA/vortex-launcher`.
+5. «Publicar oficialmente» sube los archivos exactos y el instalador correspondiente a GitHub Releases. Actualiza el canal firmado y publica la actualización del launcher después de completar las subidas. Un instalador oficial anterior no se sustituye por otro distinto con el mismo número. Se requiere una sesión de GitHub CLI con permiso de escritura en `FrankloIA/vortex-launcher`.
+
+El historial de Crear muestra únicamente las tres últimas versiones publicadas oficialmente; excluye versiones de pruebas.
 
 Cambiar archivos, notas, la revisión publicada o el código del launcher invalida la prueba. Las publicaciones oficiales quedan bloqueadas incluso cuando hay otra versión oficial más reciente. Para modificar una publicación se crea una nueva versión o un Fix.
 

@@ -82,7 +82,7 @@ function requireAccountSession(){
 
 async function showMainUI(data){
 
-    if(!isDev){
+    if(!isDev && process.env.VORTEX_TEST_MODE !== '1'){
         loggerAutoUpdater.info('Initializing..')
         ipcRenderer.send('autoUpdateAction', 'initAutoUpdater', ConfigManager.getAllowPrerelease())
     }

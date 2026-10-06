@@ -91,7 +91,7 @@ class ProcessBuilder {
         })
         if(process.env.VORTEX_TEST_RUN) {
             try {
-                require('../../../vortex/test-process.cjs').monitorTestProcess(child,require('../../../vortex/test-gate.cjs').currentGate(),process.env.VORTEX_TEST_RUN,{instance:this.gameDir,account:this.authUser.displayName})
+                require('../../../vortex/test-process.cjs').monitorTestProcess(child,require('../../../vortex/test-gate.cjs').currentGate(),process.env.VORTEX_TEST_RUN,{instance:this.gameDir,account:this.authUser.displayName,launcherVersion:this.launcherVersion})
             } catch(error) {child.kill();throw error}
         }
 

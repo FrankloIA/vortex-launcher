@@ -48,3 +48,12 @@ test('Las notas registran automáticamente añadido, cambio y retirada sin dupli
     const s=setup(t);fs.writeFileSync(s.input,'corregido');s.store.add('trial',1,s.input,'mods/example.jar','managed');s.store.remove('trial',2,'mods/example.jar')
     assert.deepEqual(s.store.getDraft('trial').automaticNotes.map(n=>n.text),['Añadido: mods/example.jar','Actualizado o sustituido: mods/example.jar','Retirado: mods/example.jar'])
 })
+test('Publicar oficialmente también publica el instalador de la versión como actualización del launcher',async t=>{
+    const s=setup(t),run=s.run();s.gate.finished(run.id,0,null);s.gate.launcherClosed(run.id);s.gate.approve('trial',run.id)
+    const installer=path.join(s.root,'Vortex Launcher-setup-1.0.1.exe');fs.writeFileSync(installer,'instalador de prueba')
+    const calls=[],gh=async args=>{calls.push(args);if(args[0]==='api'){if(args[1].includes('/releases/tags/'))throw Error('404');return JSON.stringify({private:false,permissions:{push:true}})}return ''}
+    const publisher=new GithubPublisher(s.root,gh,fs.readFileSync(path.join(s.root,'public-signing-key.pem'),'utf8'),{launcherBuild:()=>({version:'1.0.1',installer,sha256:hash(fs.readFileSync(installer))})})
+    await publisher.publish('trial',1)
+    assert(calls.some(args=>args[1]==='upload' && args[2]==='v1.0.1' && args.includes(installer)))
+    assert.equal(calls.at(-1)[2],'v1.0.1');assert(calls.at(-1).includes('--latest=true'))
+})

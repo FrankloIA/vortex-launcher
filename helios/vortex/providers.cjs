@@ -12,19 +12,22 @@ class Providers {
         if(!response.ok) throw Error(`${provider}: HTTP ${response.status}`)
         return response.json()
     }
-    async search(provider, query, category, target = {minecraft:'1.21.1',loader:'neoforge'}) {
+    async search(provider, query, category, target = {minecraft:'1.21.1',loader:'neoforge'}, options = {}) {
+        const offset=Number(options.offset || 0)
+        if(!Number.isInteger(offset) || offset<0 || (provider==='curseforge' && offset>9980)) throw Error('Página del catálogo inválida')
+        const page=(items,total)=>options.paginated ? {items,total,offset,nextOffset:offset+20<Math.min(total,provider==='curseforge'?10000:Infinity)?offset+20:null} : items
         const type = { mods: 'mod', resourcepacks: 'resourcepack', shaderpacks: 'shader' }[category]
         if(!type) throw Error('Selecciona mods, resourcepacks o shaders')
         if(provider === 'modrinth') {
             const facets = [['project_type:' + type], ['versions:' + target.minecraft]]
             if(category === 'mods') facets.push(['categories:' + target.loader])
-            const data = await this.request(provider, 'search?' + new URLSearchParams({ query, facets: JSON.stringify(facets), limit: 20 }))
-            return data.hits.map(p => ({ projectId: p.project_id, title: p.title, author: p.author, description: p.description, icon: p.icon_url, categories: p.categories, downloads: p.downloads, updated: p.date_modified, environment: [p.client_side !== 'unsupported' ? 'Cliente' : '', p.server_side !== 'unsupported' ? 'Servidor' : ''].filter(Boolean).join(' y ') }))
+            const data = await this.request(provider, 'search?' + new URLSearchParams({ query, facets: JSON.stringify(facets), limit: 20, offset, index:query.trim()?'relevance':'downloads' }))
+            return page(data.hits.map(p => ({ projectId: p.project_id, slug:p.slug, title: p.title, author: p.author, description: p.description, icon: p.icon_url, categories: p.categories, downloads: p.downloads, updated: p.date_modified, environment: [p.client_side !== 'unsupported' ? 'Cliente' : '', p.server_side !== 'unsupported' ? 'Servidor' : ''].filter(Boolean).join(' y ') })),data.total_hits)
         }
-        const params = { gameId: 432, classId: { mods: 6, resourcepacks: 12, shaderpacks: 6552 }[category], gameVersion: target.minecraft, searchFilter: query, pageSize: 20 }
+        const params = { gameId: 432, classId: { mods: 6, resourcepacks: 12, shaderpacks: 6552 }[category], gameVersion: target.minecraft, searchFilter: query, pageSize: 20, index:offset,sortField:query.trim()?2:6,sortOrder:'desc' }
         if(category === 'mods') params.modLoaderType = {forge:1,fabric:4,quilt:5,neoforge:6}[target.loader]
         const data = await this.request(provider, 'mods/search?' + new URLSearchParams(params))
-        return data.data.map(p => ({ projectId: p.id, title: p.name, author: p.authors.map(a => a.name).join(', '), description: p.summary, icon: p.logo?.thumbnailUrl, categories: p.categories.map(c => c.name), downloads: p.downloadCount, updated: p.dateModified }))
+        return page(data.data.map(p => ({ projectId: p.id, slug:p.slug, title: p.name, author: p.authors.map(a => a.name).join(', '), description: p.summary, icon: p.logo?.thumbnailUrl, categories: p.categories.map(c => c.name), downloads: p.downloadCount, updated: p.dateModified })),data.pagination?.totalCount ?? offset+data.data.length)
     }
     async latest(provider, projectId, category, target = {minecraft:'1.21.1',loader:'neoforge'}) {
         const project = encodeURIComponent(String(projectId))

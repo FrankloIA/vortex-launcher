@@ -27,6 +27,8 @@ Contenido verificado históricamente: Quark 4.1-486 para NeoForge 21.1.250; corr
 
 ## Cronología verificable del código desde la primera versión
 
+- Añadir abre automáticamente el catálogo de Modrinth o CurseForge, ordenado por descargas y filtrado por Minecraft y loader, con buscador, páginas y exclusión de los proyectos ya vinculados o identificados por nombre en el pack. Los archivos de Jarvis permanecen protegidos.
+
 - Corrección del panel: las actualizaciones periódicas del estado de pruebas y las consultas de actualizaciones conservan la pestaña seleccionada, sin superponer Biblioteca sobre Crear o Añadir.
 
 Los mensajes siguientes reflejan decisiones en su momento; las reglas vigentes arriba sustituyen decisiones antiguas (por ejemplo, una única cuenta global).

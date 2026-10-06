@@ -179,6 +179,16 @@ function startAdmin({ root = path.resolve(__dirname, '../.runtime/pack-admin'), 
                         break
                     }
                     case '/api/providers/search': result = await providers.search(body.provider, String(body.query || '').slice(0,200), body.category,targetFor(body.id)); break
+                    case '/api/providers/catalog': {
+                        result=await providers.search(body.provider,String(body.query || '').slice(0,200),body.category,targetFor(body.id),{offset:body.offset,paginated:true})
+                        const files=getCatalog(body.id)?.files || []
+                        result.items=result.items.filter(item=>!files.some(file=>{
+                            if(!file.path.startsWith(body.category+'/')) return false
+                            const info=metadata.get(file),source=file.source || info?.source,display=file.display || info?.display
+                            return source?.provider===body.provider && String(source.projectId)===String(item.projectId) || display?.title?.trim().toLowerCase()===item.title.trim().toLowerCase()
+                        }))
+                        break
+                    }
                     case '/api/providers/install': {
                         const draft = store.getDraft(body.id)
                         if(store.isOfficial(draft)) throw Error('Para añadir o modificar debes crear una nueva versión')

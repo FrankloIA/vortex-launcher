@@ -3,6 +3,7 @@ const names = { mods: 'Mods', resourcepacks: 'Resourcepacks', shaderpacks: 'Shad
 const extensions = { mods: '.jar', resourcepacks: '.zip', shaderpacks: '.zip', config: '.json,.toml,.properties,.txt,.cfg,.yaml,.yml,.conf,.ini' }
 let state, selected, category = 'mods', replacePath, editing, folder = '', originalText = ''
 let panel = 'library'
+let catalogOffset=0, catalogKey='', catalogRequest=0
 let actionActive=false
 const availableUpdates = new Map()
 const createdThisSession = new Set()
@@ -41,6 +42,7 @@ function switchPanel(next) {
     get('createTab').setAttribute('aria-pressed', String(next === 'create'))
     get('publishTab').setAttribute('aria-pressed', String(next === 'publish'))
     get('libraryTab').setAttribute('aria-pressed', String(next === 'library')); get('addTab').setAttribute('aria-pressed', String(next === 'add'))
+    if(next==='add' && get('provider').value!=='local') loadCatalog().catch(error=>message(error.message))
 }
 get('createTab').onclick = () => switchPanel('create')
 get('closeLocked').onclick = () => get('lockedDialog').close()
@@ -62,7 +64,9 @@ for(const button of document.querySelectorAll('[data-provider]')) button.onclick
     get('remoteControls').hidden = button.dataset.provider === 'local'
     get('localContent').hidden = button.dataset.provider !== 'local'
     for(const tab of document.querySelectorAll('[data-provider]')) tab.setAttribute('aria-pressed', String(tab === button))
+    catalogOffset=0;catalogKey='';catalogRequest++;get('catalogPagination').hidden=button.dataset.provider==='local'
     message('')
+    if(button.dataset.provider!=='local') loadCatalog(true).catch(error=>message(error.message))
 }
 get('addLocal').onclick = () => { if(requireEditable()) { get('upload').accept = extensions[get('localCategory').value]; get('upload').click() } }
 let messageTimer
@@ -93,25 +97,47 @@ function onlineRow(title, description, callback, label, item) {
     if(callback) { const button = document.createElement('button'); button.textContent = label; button.onclick = () => action(callback); row.append(button) }
     get('onlineResults').append(row)
 }
-get('onlineSearch').onclick = () => action(async () => {
-    if(!current()) throw Error('Selecciona un borrador')
-    const provider = get('provider').value, contentCategory = get('onlineCategory').value
-    const results = await api('providers/search', { id:selected, provider, category: contentCategory, query: get('onlineQuery').value })
-    get('onlineResults').replaceChildren()
-    for(const item of results) {
-        const installed = current().files.some(f => f.source?.provider === provider && String(f.source.projectId) === String(item.projectId))
-        onlineRow(item.title, 'Por ' + item.author + ' — ' + item.description, installed ? null : async () => {
-        await api('providers/install', { id: selected, revision: current().revision, provider, projectId: item.projectId, category: contentCategory }); await refresh(); message('Contenido descargado y guardado en el borrador')
-    }, 'Instalar', item)
-        if(installed) { const badge = document.createElement('span'); badge.textContent = 'En tu biblioteca'; badge.className = 'badge'; get('onlineResults').lastElementChild.append(badge) }
+const catalogPagination=document.createElement('div');catalogPagination.id='catalogPagination';catalogPagination.className='catalogPagination'
+const previousCatalog=document.createElement('button');previousCatalog.textContent='Anterior'
+const catalogInfo=document.createElement('span');catalogInfo.setAttribute('role','status')
+const nextCatalog=document.createElement('button');nextCatalog.textContent='Siguiente'
+catalogPagination.append(previousCatalog,catalogInfo,nextCatalog);get('onlineResults').after(catalogPagination)
+previousCatalog.onclick=()=>{catalogOffset=Math.max(0,catalogOffset-20);loadCatalog(true).catch(error=>message(error.message))}
+nextCatalog.onclick=()=>{catalogOffset+=20;loadCatalog(true).catch(error=>message(error.message))}
+async function loadCatalog(force=false) {
+    if(!current() || get('provider').value==='local') return
+    const provider=get('provider').value, contentCategory=get('onlineCategory').value, draftId=selected, query=get('onlineQuery').value.trim(), offset=catalogOffset
+    const key=JSON.stringify([draftId,current().revision,provider,contentCategory,query,offset])
+    if(!force && key===catalogKey) return
+    catalogKey=key;const request=++catalogRequest
+    catalogPagination.hidden=false;previousCatalog.disabled=true;nextCatalog.disabled=true;catalogInfo.textContent='Cargando catálogo…';get('onlineResults').replaceChildren()
+    try {
+        const page=await api('providers/catalog',{id:draftId,provider,category:contentCategory,query,offset})
+        if(request!==catalogRequest || selected!==draftId || get('provider').value!==provider || get('onlineCategory').value!==contentCategory) return
+        const items=page.items.filter(item=>!current().files.some(f=>f.path.startsWith(contentCategory+'/') && (f.source?.provider===provider && String(f.source.projectId)===String(item.projectId) || f.display?.title?.trim().toLowerCase()===item.title.trim().toLowerCase())))
+        for(const item of items) onlineRow(item.title,'Por '+item.author+' — '+item.description,async()=>{
+            if(selected!==draftId || !requireEditable()) return
+            await api('providers/install',{id:draftId,revision:current().revision,provider,projectId:item.projectId,category:contentCategory});await refresh();message('Contenido descargado y guardado en el borrador')
+        },'Instalar',item)
+        previousCatalog.disabled=offset===0;nextCatalog.disabled=page.nextOffset===null
+        catalogInfo.textContent='Página '+(offset/20+1)+' · '+items.length+' disponibles para añadir'
+        if(!items.length) {const empty=document.createElement('p');empty.textContent=page.nextOffset!==null?'Los resultados de esta página ya están en tu biblioteca. Puedes seguir a la siguiente':'No hay más contenido compatible que añadir con estos filtros';get('onlineResults').append(empty)}
+    } catch(error) {
+        if(request!==catalogRequest) return
+        catalogInfo.textContent='No se pudo cargar el catálogo';previousCatalog.disabled=offset===0
+        throw error
     }
-    message(results.length + ' resultados compatibles')
-})
+}
+function searchCatalog() {catalogOffset=0;loadCatalog(true).catch(error=>message(error.message))}
+get('onlineSearch').onclick=searchCatalog
+get('onlineQuery').onkeydown=event=>{if(event.key==='Enter'){event.preventDefault();searchCatalog()}}
+get('onlineCategory').onchange=searchCatalog
 get('onlineUpdates').onclick = () => action(async () => {
     if(!current()) throw Error('Selecciona un borrador')
     message('Consultando versiones; puede tardar unos minutos…')
     const contentCategory = get('onlineCategory').value, draftId = selected
     const results = await checkLibraryUpdates(contentCategory)
+    catalogRequest++;catalogKey=JSON.stringify([selected,current().revision,get('provider').value,contentCategory,get('onlineQuery').value.trim(),catalogOffset]);catalogPagination.hidden=true
     get('onlineResults').replaceChildren()
     for(const item of results) onlineRow(item.path, item.error || 'Versión disponible: ' + item.version, item.error ? null : async () => {
         if(selected !== draftId) throw Error('Vuelve al borrador consultado')

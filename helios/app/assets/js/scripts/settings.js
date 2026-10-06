@@ -1517,7 +1517,7 @@ async function checkVortexLauncherUpdates(){
             return
         }
         settingsUpdateTitle.textContent = result.status === 'current'
-            ? 'Ya tienes la última versión del launcher (' + result.current + ').'
+            ? 'Ya tienes la última versión del launcher (' + result.current + ')'
             : result.status === 'unpublished' ? 'Todavía no hay versiones oficiales del launcher publicadas.'
             : result.status === 'unavailable' ? 'La versión ' + result.version + ' aún no tiene un instalador para tu sistema.'
             : 'No se pudieron comprobar las actualizaciones. Revisa tu conexión e inténtalo de nuevo.'

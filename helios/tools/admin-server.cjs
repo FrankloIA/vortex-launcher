@@ -3,8 +3,10 @@ const fs = require('fs')
 const path = require('path')
 const crypto = require('crypto')
 const { ReleaseStore } = require('../vortex/release-store.cjs')
+const { Providers } = require('../vortex/providers.cjs')
 function startAdmin({ root = path.resolve(__dirname, '../.runtime/pack-admin'), port = 43117, password } = {}) {
     const store = new ReleaseStore(root)
+    const providers = new Providers(root)
     const credentialsFile = path.join(root, 'admin-password.txt')
     // El panel local abre directamente; las pruebas pueden pedir autenticación explícita.
     const requirePassword = typeof password === 'string' && password.length > 0
@@ -45,6 +47,34 @@ function startAdmin({ root = path.resolve(__dirname, '../.runtime/pack-admin'), 
                 if(req.method !== 'POST') return reply(404, { error: 'Ruta no encontrada' })
                 let result
                 switch(req.url) {
+                    case '/api/providers/key': {
+                        if(typeof body.key !== 'string' || !body.key.trim() || body.key.length > 1024) throw Error('Clave inválida')
+                        fs.writeFileSync(providers.keyFile, body.key.trim(), { mode: 0o600 }); result = { ok: true }; break
+                    }
+                    case '/api/providers/search': result = await providers.search(body.provider, String(body.query || '').slice(0,200), body.category); break
+                    case '/api/providers/install': {
+                        const draft = store.getDraft(body.id)
+                        if(draft.revision !== body.revision) throw Error('Recarga el borrador')
+                        if(body.replacePath && !draft.files.some(f => f.path === body.replacePath && f.path.startsWith(body.category + '/') && f.source?.provider === body.provider && String(f.source.projectId) === String(body.projectId))) throw Error('La actualización no corresponde al archivo seleccionado')
+                        const file = await providers.latest(body.provider, body.projectId, body.category)
+                        if(file.dependencies.length) throw Error('Esta versión requiere dependencias: instalación automática pendiente. Usa Añadir archivo tras revisar las dependencias.')
+                        if(path.basename(file.filename) !== file.filename || !({ mods: '.jar', resourcepacks: '.zip', shaderpacks: '.zip' }[body.category]) || path.extname(file.filename).toLowerCase() !== { mods: '.jar', resourcepacks: '.zip', shaderpacks: '.zip' }[body.category]) throw Error('Archivo incompatible')
+                        const temp = path.join(root, 'download-' + crypto.randomUUID())
+                        fs.writeFileSync(temp, await providers.download(file))
+                        try {
+                            result = store.add(body.id, body.revision, temp, body.category + '/' + file.filename, 'managed', body.replacePath)
+                            result = store.edit(body.id, result.revision, d => { d.files.find(f => f.path === body.category + '/' + file.filename).source = { provider: file.provider, projectId: file.projectId, fileId: file.fileId, version: file.version } })
+                        } finally { fs.unlinkSync(temp) }
+                        break
+                    }
+                    case '/api/providers/updates': {
+                        const draft = store.getDraft(body.id), updates = []
+                        for(const file of draft.files.filter(f => f.source && f.path.startsWith(body.category + '/'))) {
+                            try { const latest = await providers.latest(file.source.provider, file.source.projectId, body.category); if(String(latest.fileId) !== String(file.source.fileId)) updates.push({ path: file.path, source: file.source, version: latest.version }) }
+                            catch(error) { updates.push({ path: file.path, error: error.message }) }
+                        }
+                        result = updates; break
+                    }
                     case '/api/library/create': {
                         const draftId = 'pack-' + crypto.randomUUID()
                         const source = body.source ? store.getDraft(body.source) : null

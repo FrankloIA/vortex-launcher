@@ -4,6 +4,38 @@ const extensions = { mods: '.jar', resourcepacks: '.zip', shaderpacks: '.zip', c
 let state, selected, category = 'mods', replacePath, editing, folder = '', originalText = ''
 const message = text => { get('message').textContent = text }
 const current = () => state?.drafts.find(d => d.id === selected)
+function onlineRow(title, description, callback, label) {
+    const row = document.createElement('article'); row.className = 'fileRow'
+    const info = document.createElement('div'); info.className = 'fileInfo'
+    const heading = document.createElement('h3'); heading.textContent = title
+    const detail = document.createElement('p'); detail.textContent = description
+    info.append(heading, detail); row.append(info)
+    if(callback) { const button = document.createElement('button'); button.textContent = label; button.onclick = () => action(callback); row.append(button) }
+    get('onlineResults').append(row)
+}
+get('saveCurseKey').onclick = () => action(async () => { await api('providers/key', { key: get('curseKey').value }); get('curseKey').value = ''; message('Clave CurseForge guardada en este PC') })
+get('onlineSearch').onclick = () => action(async () => {
+    if(!current()) throw Error('Selecciona un borrador')
+    const provider = get('provider').value, contentCategory = category
+    const results = await api('providers/search', { provider, category: contentCategory, query: get('onlineQuery').value })
+    get('onlineResults').replaceChildren()
+    for(const item of results) onlineRow(item.title, item.author + ' · ' + item.description, async () => {
+        await api('providers/install', { id: selected, revision: current().revision, provider, projectId: item.projectId, category: contentCategory }); await refresh(); message('Contenido descargado y guardado en el borrador')
+    }, 'Añadir al borrador')
+    message(results.length + ' resultados compatibles')
+})
+get('onlineUpdates').onclick = () => action(async () => {
+    if(!current()) throw Error('Selecciona un borrador')
+    message('Consultando versiones; puede tardar unos minutos…')
+    const contentCategory = category, draftId = selected
+    const results = await api('providers/updates', { id: draftId, category: contentCategory })
+    get('onlineResults').replaceChildren()
+    for(const item of results) onlineRow(item.path, item.error || 'Versión disponible: ' + item.version, item.error ? null : async () => {
+        if(selected !== draftId) throw Error('Vuelve al borrador consultado')
+        await api('providers/install', { id: draftId, revision: current().revision, provider: item.source.provider, projectId: item.source.projectId, category: contentCategory, replacePath: item.path }); await refresh(); message('Actualización guardada en el borrador')
+    }, 'Actualizar')
+    message(results.length ? 'Consulta completada. Revisa los resultados.' : 'No se encontraron actualizaciones en los archivos vinculados a un proveedor')
+})
 async function api(route, data) {
     const response = await fetch('/api/' + route, data ? { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) } : {})
     const result = await response.json()

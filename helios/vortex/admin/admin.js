@@ -125,7 +125,10 @@ function render() {
             button.onclick = () => { folder = name; render() }; get('folders').append(button)
         }
     }
-    const files = categoryFiles.filter(f => (f.path + ' ' + (f.display?.title || '')).toLowerCase().includes(query) && (category !== 'config' || !folder || f.path.slice(0, f.path.lastIndexOf('/')) === folder)).sort((a, b) => (a.display?.title || a.path).localeCompare(b.display?.title || b.path))
+    const files = categoryFiles.filter(f => (f.path + ' ' + (f.display?.title || '')).toLowerCase().includes(query) && (category !== 'config' || !folder || f.path.slice(0, f.path.lastIndexOf('/')) === folder)).sort((a, b) => {
+        const priority = Number(availableUpdates.has(draft.id + ':' + b.path)) - Number(availableUpdates.has(draft.id + ':' + a.path))
+        return priority || (a.display?.title || a.path).localeCompare(b.display?.title || b.path)
+    })
     get('content').replaceChildren()
     if(!files.length) {
         const empty = document.createElement('div'); empty.className = 'empty'

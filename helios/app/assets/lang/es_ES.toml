@@ -138,3 +138,32 @@ checkingForUpdatesButton = "Buscando actualizaciones…"
 errorTitle = "Falló el inicio de sesión de Microsoft"
 errorMessage = "No se pudo autenticar tu cuenta de Microsoft. Vuelve a intentarlo."
 okButton = "Aceptar"
+
+[js.settings.msftLogout]
+errorTitle = "No se pudo cerrar sesión"
+errorMessage = "No se pudo cerrar la sesión de Microsoft. Vuelve a intentarlo."
+okButton = "Aceptar"
+
+[js.uicore.autoUpdate]
+checkingForUpdateButton = "Buscando actualizaciones…"
+installNowButton = "Instalar ahora"
+checkForUpdatesButton = "Buscar actualizaciones"
+
+[js.login]
+tryAgain = "Volver a intentarlo"
+
+[js.login.error.unknown]
+title = "Error al iniciar sesión"
+desc = "No se pudo iniciar sesión. Vuelve a intentarlo."
+
+[js.auth.microsoft.error]
+noProfileTitle = "Perfil de Minecraft sin configurar"
+noProfileDesc = "Configura tu perfil de Minecraft en <a href=\"https://minecraft.net/\">Minecraft.net</a> antes de iniciar sesión."
+noXboxAccountTitle = "Cuenta de Xbox sin configurar"
+noXboxAccountDesc = "Tu cuenta de Microsoft no tiene una cuenta de Xbox asociada."
+xblBannedTitle = "Xbox Live no disponible"
+xblBannedDesc = "Xbox Live no está disponible para esta cuenta o región."
+under18Title = "Se necesita autorización familiar"
+under18Desc = "Un adulto debe añadir la cuenta del menor a un grupo familiar de Microsoft."
+unknownTitle = "Error al iniciar sesión"
+unknownDesc = "No se pudo completar el inicio de sesión. Revisa la consola para obtener más detalles."

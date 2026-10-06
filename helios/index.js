@@ -241,7 +241,7 @@ let win
 if(!app.requestSingleInstanceLock()) app.quit()
 app.on('second-instance', (_event, argv) => {
     if(!win) return
-    if(argv.includes('--vortex-test')) win.webContents.reload()
+    if(argv.includes('--vortex-test')) { LangLoader.setupLanguage(); win.webContents.reload() }
     if(win.isMinimized()) win.restore()
     win.show(); win.focus()
 })

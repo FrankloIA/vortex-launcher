@@ -11,7 +11,7 @@ exports.REMOTE_DISTRO_URL = null
 // Catálogo mínimo local de desarrollo; nunca consulta la distribución de otra comunidad.
 fs.ensureDirSync(ConfigManager.getLauncherDirectory())
 const catalog = fs.readJsonSync(path.resolve(__dirname, '../../../vortex/distribution.json'))
-for(const server of catalog.servers) server.icon = 'assets/images/vortex-icon-pixel.png'
+for(const server of catalog.servers) server.icon = 'assets/images/vortex-logo-full.png'
 const testChannel = path.resolve(__dirname, '../../../.runtime/pack-admin/channels/test.json')
 const publishedTest = catalog.servers.find(server => server.id === 'vortex-published-test')
 if(publishedTest && fs.existsSync(testChannel)) {

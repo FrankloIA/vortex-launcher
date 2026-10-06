@@ -4,6 +4,8 @@ Este documento conserva los cambios desde la primera versión. No contiene crede
 
 ## Estado vigente y entrega entre agentes — 2026-10-07
 
+Entrega de contexto para lectura desde GitHub: repositorio `FrankloIA/vortex-launcher`, rama `main`. El usuario solicita compartir el prompt directamente con Claude y mantener los documentos en ese repositorio. La lectura de un repositorio público no demuestra que Claude tenga herramientas habilitadas ni permiso de escritura; debe verificar sus capacidades antes de prometer cambios o sincronización remota. No se incluyen los runtime, credenciales ni repositorios de mods todavía no identificados.
+
 Este resumen prevalece sobre decisiones anteriores sustituidas. Instrucciones obligatorias: AGENTS.md y CLAUDE.md. Contexto para Claude: PROMPT_CLAUDE_VORTEX.md. Coordinación de proyectos propios: docs/MODS_EN_DESARROLLO.md. No se garantiza acceso a los chats privados del otro agente; los hechos faltantes deben quedar registrados como pendientes.
 
 ### Estado comprobado

@@ -84,7 +84,7 @@ function startAdmin({ root = path.resolve(__dirname, '../.runtime/pack-admin'), 
                             file.protection=protection.status(file)
                         }
                     }
-                    return reply(200, { drafts, channels, workspace:store.workspace(), history:releases.slice(1,4).map(r=>({version:r.version,publishedAt:r.publishedAt,minecraft:r.minecraft,loader:r.loader || 'neoforge',files:r.files.length,notes:r.notes})), currentRelease:releases[0]?.version })
+                    return reply(200, { drafts, channels, workspace:store.workspace(), history:releases.filter((r,index)=>index>0 || r.version===store.workspace().baselineVersion).slice(0,3).map(r=>({version:r.version,publishedAt:r.publishedAt,minecraft:r.minecraft,loader:r.loader || 'neoforge',files:r.files.length,notes:r.notes})), currentRelease:releases[0]?.version })
                 }
                 if(req.method !== 'POST') return reply(404, { error: 'Ruta no encontrada' })
                 let result

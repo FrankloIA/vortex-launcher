@@ -81,7 +81,7 @@ function startAdmin({ root = path.resolve(__dirname, '../.runtime/pack-admin'), 
                     }
                     case '/api/test/prepare': {
                         const version = store.getDraft(body.id).version
-                        result = require('../vortex/test-release.cjs').prepareTestRelease(path.resolve(__dirname, '../.runtime/data/instances'), version)
+                        result = require('../vortex/test-release.cjs').prepareTestRelease(path.resolve(__dirname, '../../.runtime/data/instances'), version)
                         const configFile = path.resolve(__dirname, '../.runtime/launcher/config.json')
                         if(fs.existsSync(configFile)) {
                             const config = JSON.parse(fs.readFileSync(configFile))

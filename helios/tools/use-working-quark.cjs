@@ -21,5 +21,5 @@ let draft = store.edit(name, 0, d => { d.files = previous.files; d.notes = 'Quar
 draft = store.add(name, draft.revision, source, 'mods/' + addon.fileNameOnDisk, 'managed', old.path)
 draft = store.edit(name, draft.revision, d => { d.files.find(f => f.path === 'mods/' + addon.fileNameOnDisk).source = { provider: 'curseforge', projectId: addon.addonID, fileId: official.id, title: addon.name } })
 store.publish(name, draft.revision, 'test')
-const prepared = require('../vortex/test-release.cjs').prepareTestRelease(path.resolve(__dirname, '../.runtime/data/instances'), version)
+const prepared = require('../vortex/test-release.cjs').prepareTestRelease(path.resolve(__dirname, '../../.runtime/data/instances'), version)
 console.log(JSON.stringify({ version, replaced: old.path, installed: addon.fileNameOnDisk, mods: prepared.mods, published: 'test' }))

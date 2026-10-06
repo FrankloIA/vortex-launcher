@@ -15,7 +15,7 @@ const LangLoader                        = require('./app/assets/js/langloader')
 
 // Datos propios: el desarrollo queda dentro de esta copia del proyecto.
 const vortexRoot = process.env.VORTEX_DATA_DIRECTORY || (app.isPackaged
-    ? path.join(app.getPath('appData'), 'VortexLauncher', 'helios')
+    ? path.join(app.getPath('appData'), 'Vortex Launcher', '.runtime')
     : path.join(__dirname, '.runtime'))
 fs.mkdirSync(path.join(vortexRoot, 'launcher'), { recursive: true })
 app.setPath('userData', path.join(vortexRoot, 'launcher'))

@@ -14,7 +14,10 @@ function monitorResolution(){
     } catch { return {width:1280, height:720} }
 }
 const monitor = monitorResolution()
-const dataPath = path.resolve(launcherDir, '..', 'data')
+const legacyDataPath = path.resolve(launcherDir, '..', 'data')
+const dataPath = process.env.VORTEX_DATA_DIRECTORY || remote.app.isPackaged
+    ? legacyDataPath
+    : path.resolve(__dirname, '../../../../.runtime/data')
 
 /**
  * Retrieve the absolute path of the launcher directory.
@@ -164,6 +167,11 @@ exports.load = function(){
             java.maxRAM = '11G'
         }
         config.vortexRam11Applied = true
+        exports.save()
+    }
+    if(config.settings.launcher.dataDirectory === legacyDataPath && legacyDataPath !== dataPath){
+        if(fs.existsSync(legacyDataPath) && !fs.existsSync(dataPath)) fs.moveSync(legacyDataPath, dataPath)
+        config.settings.launcher.dataDirectory = dataPath
         exports.save()
     }
     logger.info('Successfully Loaded')

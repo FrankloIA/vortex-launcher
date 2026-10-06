@@ -94,7 +94,7 @@ async function api(route, data) {
 async function action(callback) {
     const buttons = [...document.querySelectorAll('button')]; buttons.forEach(b => { b.disabled = true })
     try { await callback() } catch(error) { message(error.message) }
-    finally { buttons.forEach(b => { b.disabled = false }) }
+    finally { buttons.forEach(b => { b.disabled = false }); get('cancelDraft').disabled = !current() }
 }
 async function refresh() {
     state = await api('state')
@@ -109,6 +109,7 @@ async function refresh() {
 }
 function render() {
     const draft = current()
+    get('cancelDraft').disabled = !draft
     get('emptyPack').hidden = !!draft; get('library').hidden = !draft
     if(!draft) return
     get('revision').textContent = `${draft.files.length} archivos · Cambios guardados en borrador`
@@ -232,14 +233,19 @@ renameDraftButton.onclick = () => action(async () => {
 const deleteDraftButton = document.createElement('button')
 deleteDraftButton.id = 'deleteDraft'; deleteDraftButton.className = 'secondary'; deleteDraftButton.textContent = 'Eliminar borrador'
 get('newDraft').after(deleteDraftButton)
-deleteDraftButton.onclick = () => action(async () => {
+async function discardCurrentDraft(cancel = false){
     const draft = current()
-    if(!draft) throw Error('Selecciona un borrador para eliminarlo')
-    if(!confirm(`¿Eliminar el borrador ${draft.version}? Se perderán sus cambios sin publicar. Las publicaciones existentes se conservan.`)) return
+    if(!draft) throw Error('Selecciona un borrador para cancelarlo')
+    const verb = cancel ? 'Cancelar' : 'Eliminar'
+    if(!confirm(verb + ' el borrador ' + draft.version + '? Se perderán sus cambios sin publicar. Las versiones publicadas se conservan.')) return
     await api('library/delete', { id: draft.id, revision: draft.revision })
     for(const key of [...availableUpdates.keys()]) if(key.startsWith(draft.id + ':')) availableUpdates.delete(key)
-    selected = undefined; editing = undefined; folder = ''; await refresh(); message('Borrador eliminado. Las publicaciones existentes se conservan.')
-})
+    selected = undefined; editing = undefined; folder = ''
+    await refresh()
+    message(cancel ? 'Borrador cancelado. Las versiones publicadas se conservan.' : 'Borrador eliminado. Las versiones publicadas se conservan.')
+}
+deleteDraftButton.onclick = () => action(() => discardCurrentDraft())
+get('cancelDraft').onclick = () => action(() => discardCurrentDraft(true))
 get('cancelVersion').onclick = () => get('versionDialog').close()
 get('versionForm').onsubmit = event => { event.preventDefault(); action(async () => {
     const version = get('version').value, source = current()?.id

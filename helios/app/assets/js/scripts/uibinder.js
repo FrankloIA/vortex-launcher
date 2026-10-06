@@ -51,6 +51,7 @@ function switchView(current, next, currentFadeTime = 500, nextFadeTime = 500, on
     $(`${current}`).fadeOut(currentFadeTime, async () => {
         await onCurrentFade()
         $(`${next}`).fadeIn(nextFadeTime, async () => {
+            if(next === VIEWS.landing) refreshServerStatus()
             await onNextFade()
         })
     })

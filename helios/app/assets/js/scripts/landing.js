@@ -242,6 +242,12 @@ const refreshServerStatus = async () => {
     const generation = ++serverStatusGeneration
     const selected = ConfigManager.getSelectedServer()
     const wrapper = document.getElementById('server_status_wrapper')
+    if(wrapper.dataset.state !== 'online') {
+        wrapper.dataset.state = 'checking'
+        document.getElementById('landingPlayerLabel').textContent = 'Servidor'
+        document.getElementById('player_count').textContent = 'Comprobando…'
+        wrapper.title = 'Consultando el estado del servidor'
+    }
     try {
         const serv = (await DistroAPI.getDistribution()).getServerById(selected)
         const key = serv.hostname + ':' + serv.port

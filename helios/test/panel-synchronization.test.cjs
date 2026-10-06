@@ -12,6 +12,8 @@ test('El historial de Crear incluye exclusivamente publicaciones oficiales',asyn
     const root=fs.mkdtempSync(path.join(os.tmpdir(),'vortex-history-')),store=new ReleaseStore(root),input=path.join(root,'input');fs.writeFileSync(input,'contenido')
     for(const [id,version] of [['official','1.0.1'],['trial','1.0.2']]) {store.create(id,version,'test');store.add(id,0,input,'mods/example.jar','managed');store.publish(id,1)}
     fs.writeFileSync(path.join(root,'official-releases.json'),JSON.stringify({'1.0.1':'registro'}))
+    store.edit('trial',1,d=>{d.notes='Últimos cambios del borrador'})
     const {server,url}=await startAdmin({root,port:0,syncVersion:null});t.after(async()=>{await new Promise(r=>server.close(r));fs.rmSync(root,{recursive:true,force:true})})
     const state=await(await fetch(url+'/api/state')).json();assert.deepEqual(state.history.map(r=>r.version),['1.0.1']);assert(state.drafts.some(d=>d.version==='1.0.2'))
+    const versions=state.drafts.filter(d=>d.version==='1.0.2');assert.equal(versions.length,1);assert.equal(versions[0].id,'trial');assert.equal(versions[0].notes,'Últimos cambios del borrador');assert.equal(versions[0].revision,2)
 })

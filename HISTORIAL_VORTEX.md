@@ -27,6 +27,8 @@ Contenido verificado históricamente: Quark 4.1-486 para NeoForge 21.1.250; corr
 
 ## Cronología verificable del código desde la primera versión
 
+- El selector de versiones muestra una sola entrada por versión cuando existe su borrador y una publicación anterior en pruebas. Conserva el borrador con los cambios actuales para continuar trabajando.
+
 - Cancelar esta versión pide confirmación con Sí, eliminar / No, conservar. Al aceptar retira el borrador y su publicación en pruebas de la lista, conserva una instantánea local de auditoría y vuelve a Crear. Las publicaciones oficiales siguen protegidas.
 
 - Añadir abre automáticamente el catálogo de Modrinth o CurseForge, ordenado por descargas y filtrado por Minecraft y loader, con buscador, páginas y exclusión de los proyectos ya vinculados o identificados por nombre en el pack. Los archivos de Jarvis permanecen protegidos.

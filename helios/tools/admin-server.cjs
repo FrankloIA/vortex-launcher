@@ -90,7 +90,7 @@ function startAdmin({ root = path.resolve(__dirname, '../.runtime/pack-admin'), 
                     const drafts = fs.existsSync(directory) ? fs.readdirSync(directory).filter(n => n.endsWith('.json')).map(n => ({ id: n.slice(0, -5), ...store.getDraft(n.slice(0, -5)) })) : []
                     const channels = Object.fromEntries(['test', 'stable'].map(channel => { const file = path.join(root, 'channels', channel + '.json'); return [channel, fs.existsSync(file) ? JSON.parse(fs.readFileSync(file)) : null] }))
                     const releases=store.releases()
-                    drafts.push(...releases.slice(0,4).map(r=>({...r,id:'release:'+r.version,published:true,readOnly:true})))
+                    drafts.push(...releases.filter(r=>!drafts.some(d=>d.version===r.version)).slice(0,4).map(r=>({...r,id:'release:'+r.version,published:true,readOnly:true})))
                     for(const draft of drafts) {
                         draft.published = store.isOfficial(draft)
                         draft.status = store.isOfficial(draft) ? 'stable' : releases.some(r=>r.version===draft.version && r.revision===draft.revision) ? 'test' : 'draft'

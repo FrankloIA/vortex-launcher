@@ -10,3 +10,5 @@ body[bkid]{background:#0c0e14!important;font-family:'Segoe UI',sans-serif}#main{
 #vortexUpdateProgress:not([hidden]){display:flex;align-items:center;gap:18px;padding:12px 0;color:#ddd;font-size:13px}#vortexUpdateProgress progress{flex:1;height:12px;accent-color:#a44bff}
 
 #loadSpinnerImage{width:220px;height:220px;object-fit:contain;transform-origin:center}#loadSpinnerImage.rotating{animation:rotating 3s linear infinite}
+
+#settingsAboutLogo{content:url('../images/vortex-icon-pixel.png');object-fit:contain}.serverListingImg{object-fit:contain}

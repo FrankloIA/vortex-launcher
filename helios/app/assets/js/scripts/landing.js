@@ -271,7 +271,7 @@ const refreshMojangStatuses = async function(){
     document.getElementById('mojang_status_icon').style.color = MojangRestAPI.statusToHex(status)
 }
 
-const { getServerStatus } = require('../vortex/server-status.cjs')
+const { launcherServerStatus: getServerStatus } = require('../vortex/launcher-server-status.cjs')
 const serverStatusRequests = new Map()
 let serverStatusGeneration = 0
 const refreshServerStatus = async () => {

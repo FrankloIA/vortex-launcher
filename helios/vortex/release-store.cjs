@@ -318,5 +318,5 @@ function applyRelease(instance, envelope, publicKey, blobReader, options = {}) {
     } catch(error) { recover(instance); throw error }
     finally { fs.closeSync(lock); fs.unlinkSync(lockFile) }
 }
-module.exports = { ReleaseStore, applyRelease, verify, hash, safe, validate }
+module.exports = { ReleaseStore, applyRelease, verify, hash, safe, validate, atomic }
 

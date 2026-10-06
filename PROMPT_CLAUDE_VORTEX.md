@@ -44,7 +44,7 @@ Publicar oficialmente distribuye archivos e instalador por GitHub Releases en `F
 
 Después de publicar, se registra el inventario y se limpian releases oficiales conocidas anteriores a las tres del historial, manteniendo canal, instalador vigente, tags y commits. No se borran publicaciones desconocidas/borradores remotos ni archivos locales del pack. La limpieza no se ha ejecutado contra versiones antiguas arbitrarias ni hay permiso para purgar todo GitHub. Un fallo no revoca publicación: se registra y se reintenta después.
 
-## Integración del servidor: acordada, todavía pendiente
+## Integración del servidor: implementada y comprobada por API
 
 El usuario quiere un selector **Launcher (cliente) / Servidor** en Biblioteca con las mismas funciones; una pestaña **Servidor** con cuadro de cambios; versiones coordinadas, dependencias, configuraciones separadas, pruebas de conexión cliente/servidor, backups y despliegue con recuperación.
 
@@ -56,9 +56,9 @@ Observado en el navegador autenticado el 2026-10-07:
 - Servidor Vortex online, dirección `ly06.astrolnodes.net:25622`.
 - Startup: Minecraft 1.21.1, Java 21, **Arclight con loader NeoForge**; el número exacto del NeoForge del servidor aún no se verificó.
 - SFTP en `ly06.astrolnodes.net:2022`, gestión de archivos, backups, consola y arranque/parada disponibles. No se documentan credenciales.
-- No se encontró una opción API en los ajustes revisados ni en Cuenta. **Acceso API permanente todavía sin confirmar.** No extraer cookies/tokens de la sesión como sustituto. No se alteró ni reinició el servidor.
+- La API Pterodactyl de cliente está confirmada. El panel lee VORTEX_PTERODACTYL_API_TOKEN del usuario Windows aunque el proceso no la haya heredado; también admite introducirla en Servidor y persistirla cifrada con DPAPI. No extraer cookies como sustituto. No se alteró ni reinició el servidor en la comprobación.
 
-Los módulos del nuevo sistema servidor y la doble clasificación **no están implementados**. No decir que ya sincronizan mods. Siguiente paso: confirmar acceso estable/API admitida, revisar inventario real sin modificar producción y diseñar modelo separado cliente/servidor sin romper el pack existente. No publicar, detener producción o enviar archivos solo para comprobar acceso.
+Lee docs/stage-3/server-integration.md: contiene módulos, arranque, pruebas y límites. Biblioteca ya permite elegir cliente/servidor; Servidor muestra cambios y operaciones. El inventario real de lectura contiene 932 archivos y 180 mods. La doble clasificación bloquea casos inciertos; los hashes conocidos de parches propios conservan su destino y sus bytes. Los cambios del servidor se preparan en el mismo borrador, se autoguardan y necesitan aplicación explícita con backup completado, hashes y recuperación. Las operaciones destructivas se comprobaron con una API simulada, no en producción. El estado del launcher obtiene un resumen del panel local sin clave, con respaldo Minecraft directo; API resources no aporta número de jugadores. No publicar, detener producción o enviar archivos solo para comprobar acceso.
 
 ## Mapa de código y herramientas
 
@@ -84,4 +84,4 @@ Información faltante: nombres/rutas/repositorios de los mods actualmente desarr
 
 Claude registró los proyectos en `docs/MODS_EN_DESARROLLO.md` (commit c02715b). Consulta esas fichas antes de tocar un mod o plugin. En este PC lee primero `D:\Vortex Server\MODS-DE-CLAUDE.md` y después `D:\Vortex Server\CLAUDE.md`; el AGENTS.md de esa carpeta es una copia antigua y el servidor aún no tiene Git. Consulta la auditoría del 2026-10-07 en HISTORIAL_VORTEX.md para hashes, limitaciones y pendientes. Los documentos extensos locales no están íntegros en GitHub: pide acceso si trabajas en otro equipo, sin inventar su contenido.
 
-La entrega reporta Arclight d8209dc/NeoForge 21.1.250, MusicPlayer V10 y parches con diferencias cliente/servidor. Faltan las fuentes originales de MobNames y VortexAdmin; existe un decompilado de este último. El ZIP nuevo declara 1.0.3 y conserva los hashes conocidos de MusicPlayer V10 y SecurityCraft v3; no ha sido importado, probado ni publicado por esta revisión. Mantén el estado del administrador independiente del nombre de un ZIP. La integración del servidor y su acceso API permanente siguen pendientes.
+La entrega reporta Arclight d8209dc/NeoForge 21.1.250, MusicPlayer V10 y parches con diferencias cliente/servidor. Faltan las fuentes originales de MobNames y VortexAdmin; existe un decompilado de este último. El ZIP nuevo declara 1.0.3 y conserva los hashes conocidos de MusicPlayer V10 y SecurityCraft v3; no ha sido importado, probado ni publicado por esta revisión. Mantén el estado del administrador independiente del nombre de un ZIP. El acceso API y la integración están implementados; sigue pendiente la prueba de despliegue real y una partida cliente/servidor.

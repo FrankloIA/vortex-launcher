@@ -5,11 +5,49 @@ let state, selected, category = 'mods', replacePath, editing, folder = '', origi
 let panel = 'library'
 let catalogOffset=0, catalogKey='', catalogRequest=0
 let actionActive=false
+let libraryScope='client',serverLibrary,serverRequest=0,lastServerJob
+const serverTab = document.createElement('button'); serverTab.id='serverTab'; serverTab.textContent='Servidor'; serverTab.setAttribute('aria-pressed','false'); get('publishTab').before(serverTab)
+const serverContent = document.createElement('section'); serverContent.id='serverContent'; serverContent.hidden=true
+serverContent.innerHTML='<h2>Servidor Vortex</h2><p id="serverState" role="status">Consultando el estado del servidor…</p><p id="serverPlayers"></p><p id="serverResources"></p><details id="hostingCredentials"><summary>Conectar o cambiar API del hosting</summary><label>Clave API<input id="hostingToken" type="password" autocomplete="off" spellcheck="false" placeholder="Pega aquí tu clave de AstrolNodes"></label><label class="inlineCheck"><input id="persistHostingToken" type="checkbox" checked> Guardar cifrada para este usuario de Windows</label><button id="connectHosting">Conectar</button><p>También se detecta la variable VORTEX_PTERODACTYL_API_TOKEN guardada en Windows</p></details><div class="dialogActions"><button id="serverRefresh" class="secondary">Actualizar estado</button><button id="serverImport" class="secondary">Cargar biblioteca del servidor</button><button id="serverBackup" class="secondary">Crear backup</button><button id="serverRestart" class="secondary">Reiniciar servidor</button></div><h3>Cambios de esta versión</h3><pre id="serverChanges" class="automaticNotes"></pre><p id="serverJob" role="status"></p><button id="serverDeploy">Aplicar cambios al servidor</button><p>Se avisa a los jugadores, se detiene el servidor y se crea un backup completo antes de sustituir archivos. Los archivos anteriores se conservan para recuperación</p><h3>Backups del hosting</h3><div id="serverBackups"></div>'
+get('publishContent').before(serverContent)
+const analyzeServer=document.createElement('button');analyzeServer.id='serverAnalyze';analyzeServer.className='secondary';analyzeServer.textContent='Vincular imágenes y actualizaciones';get('serverImport').after(analyzeServer)
+const rollbackServer=document.createElement('button');rollbackServer.id='serverRollback';rollbackServer.className='secondary';rollbackServer.textContent='Preparar recuperación del último despliegue';get('serverDeploy').after(rollbackServer)
+const scopeLabel=document.createElement('label');scopeLabel.textContent='Biblioteca'
+const scopeSelect=document.createElement('select');scopeSelect.id='libraryScope';scopeSelect.innerHTML='<option value="client">Launcher (cliente)</option><option value="server">Servidor</option>';scopeLabel.append(scopeSelect);get('search').closest('.toolbar').prepend(scopeLabel)
+scopeSelect.onchange=()=>{libraryScope=scopeSelect.value;folder='';if(category==='shaderpacks' && libraryScope==='server')category='mods';loadServerLibrary().then(render).catch(error=>message(error.message));render()}
+const addScopeLabel=document.createElement('label');addScopeLabel.textContent='Destino de los archivos locales'
+const addScope=document.createElement('select');addScope.id='addScope';addScope.innerHTML='<option value="client">Launcher (cliente)</option><option value="server">Servidor</option>';addScopeLabel.append(addScope);get('localCategory').closest('label').before(addScopeLabel)
+for(const [value,text] of [['plugins','Plugins Bukkit (servidor)'],['defaultconfigs','Configuraciones predeterminadas (servidor)']]){const o=document.createElement('option');o.value=value;o.textContent=text;get('localCategory').append(o)}
+extensions.plugins='.jar';extensions.defaultconfigs=extensions.config
+function serverPlanRender() {
+    get('serverChanges').textContent=serverLibrary?.changes?.length?serverLibrary.changes.map(c=>({add:'Añadir',replace:'Sustituir',remove:'Quitar'}[c.type])+' · '+c.path).join('\n'):'Sin cambios del servidor preparados en esta versión'
+    get('serverDeploy').disabled=!canEdit() || !serverLibrary?.changes?.length || serverLibrary?.job?.running
+    get('serverJob').textContent=serverLibrary?.job?serverLibrary.job.progress+(serverLibrary.job.error?' · '+serverLibrary.job.error:''):''
+}
+async function loadServerLibrary() {const seq=++serverRequest,id=selected;const data=await api('server/library'+(id?'?id='+encodeURIComponent(id):''));if(seq!==serverRequest || selected!==id)return;serverLibrary=data;serverPlanRender()}
+async function refreshServer() {
+    const result=await api('server/status?force=true'),labels={running:'Encendido',offline:'Apagado',starting:'Iniciando',stopping:'Deteniéndose',unknown:'Sin verificar'}
+    get('serverState').textContent=(result.online?'● ONLINE':'○ OFFLINE')+' · '+(labels[result.state] || result.state)+(result.apiError?' · '+result.apiError:'');get('serverState').dataset.online=String(result.online)
+    get('serverPlayers').textContent=result.players?`Jugadores: ${result.players.online}/${result.players.max}`:'El juego no responde a la consulta de jugadores'
+    get('serverResources').textContent=result.memory!==undefined?`RAM: ${(result.memory/1073741824).toFixed(1)} GB · CPU: ${Number(result.cpu).toFixed(1)}%`:''
+    get('hostingCredentials').open=!result.configured;await loadServerLibrary()
+    if(result.configured){try{const b=await api('server/backups');get('serverBackups').replaceChildren(...b.backups.map(item=>{const p=document.createElement('p');p.textContent=item.name+' · '+(item.completed_at?item.is_successful?'Completado':'Fallido':'En curso');return p}))}catch(error){get('serverBackups').textContent=error.message}}
+    return result
+}
 const availableUpdates = new Map()
 const createdThisSession = new Set()
 let targetEditing = false, identifying = false
 const updateChecks = new Map()
 async function checkLibraryUpdates(contentCategory = category, force = false) {
+    if(libraryScope==='server') {
+        const key='server:'+selected+':'+contentCategory
+        if(!force && updateChecks.has(key))return updateChecks.get(key)
+        get('updatesSummary').textContent='Buscando actualizaciones originales del servidor…'
+        const request=api('server/updates',{id:selected,category:contentCategory});updateChecks.set(key,request)
+        const results=await request;for(const [k]of availableUpdates)if(k.startsWith(key+':'))availableUpdates.delete(k)
+        for(const item of results)if(!item.error)availableUpdates.set(key+':'+item.path,item)
+        render();return results
+    }
     if(!current()) throw Error('Selecciona un borrador')
     const draftId = selected
     const draft=current(), key=JSON.stringify([draftId,contentCategory,draft.files.filter(f=>f.path.startsWith(contentCategory+'/')).map(f=>f.sha256)])
@@ -36,14 +74,15 @@ function cancellableDraft() {const draft=current();return draft && !draft.publis
 function requireEditable() { if(canEdit()) return true; get('lockedDialog').showModal(); return false }
 function switchPanel(next) {
     if(next === 'add' && !requireEditable()) return
-    panel = next; get('library').hidden = next !== 'library' || !current(); get('onlineContent').hidden = next !== 'add'
+    panel = next; get('library').hidden = next !== 'library' || !current(); get('onlineContent').hidden = next !== 'add'; serverContent.hidden = next !== 'server'
     get('publishContent').hidden = next !== 'publish'
     get('createContent').hidden = next !== 'create'
     get('renameVersion').hidden = next !== 'publish' || !canEdit()
     get('createTab').setAttribute('aria-pressed', String(next === 'create'))
     get('publishTab').setAttribute('aria-pressed', String(next === 'publish'))
-    get('libraryTab').setAttribute('aria-pressed', String(next === 'library')); get('addTab').setAttribute('aria-pressed', String(next === 'add'))
+    get('libraryTab').setAttribute('aria-pressed', String(next === 'library')); get('addTab').setAttribute('aria-pressed', String(next === 'add')); serverTab.setAttribute('aria-pressed', String(next === 'server'))
     if(next==='add' && get('provider').value!=='local') loadCatalog().catch(error=>message(error.message))
+    if(next==='server') refreshServer().catch(error=>message(error.message))
 }
 get('createTab').onclick = () => switchPanel('create')
 get('closeLocked').onclick = () => get('lockedDialog').close()
@@ -51,6 +90,15 @@ get('goCreate').onclick = () => { get('lockedDialog').close(); switchPanel('crea
 get('startVersion').onclick = () => get('versionDialog').showModal()
 get('libraryTab').onclick = () => switchPanel('library')
 get('addTab').onclick = () => switchPanel('add')
+serverTab.onclick = () => switchPanel('server')
+get('serverRefresh').onclick = () => refreshServer().catch(error=>message(error.message))
+get('connectHosting').onclick=()=>action(async()=>{const token=get('hostingToken').value;get('hostingToken').value='';await api('server/connect',{token,persist:get('persistHostingToken').checked});await refreshServer();message('Hosting conectado')})
+get('serverRestart').onclick = () => action(async () => { if(!confirm('¿Reiniciar el servidor con un aviso de 10 segundos a los jugadores?')) return; await api('server/power',{signal:'restart'});await loadServerLibrary();message('Reinicio iniciado con aviso a los jugadores') })
+get('serverImport').onclick=()=>action(async()=>{await api('server/import',{});await loadServerLibrary();message('Cargando la biblioteca real del servidor')})
+analyzeServer.onclick=()=>action(async()=>{await api('server/analyze',{});await loadServerLibrary();message('Identificando archivos por hash; las modificaciones Jarvis quedan protegidas')})
+get('serverBackup').onclick=()=>action(async()=>{await api('server/backup',{});await loadServerLibrary();message('Creación de backup solicitada')})
+get('serverDeploy').onclick=()=>action(async()=>{if(!requireEditable())return;if(!confirm('¿Aplicar estos cambios de la versión '+current().version+' al servidor? Se avisará a los jugadores y se creará un backup antes de modificar archivos.'))return;await api('server/deploy',{id:selected,revision:current().revision});await loadServerLibrary();message('Despliegue iniciado; puedes seguir su progreso en Servidor')})
+rollbackServer.onclick=()=>action(async()=>{if(!requireEditable())return;await api('server/rollback',{id:selected,revision:current().revision});await refresh();await loadServerLibrary();message('Recuperación preparada; revisa los cambios antes de aplicarla')})
 get('publishTab').onclick = () => switchPanel('publish')
 const testVersionButton = document.createElement('button'); testVersionButton.textContent = 'Probar versión'; testVersionButton.id = 'tryVersion'
 get('publish').after(testVersionButton)
@@ -77,6 +125,37 @@ const message = text => {
     if(text) messageTimer = setTimeout(() => { get('message').textContent = '' }, 6000)
 }
 const current = () => state?.drafts.find(d => d.id === selected)
+function renderServerLibrary() {
+    get('folders').hidden=true;get('categoryHint').textContent=!serverLibrary?.loaded?'Carga la biblioteca desde la pestaña Servidor':canEdit()?'Los cambios se guardan en esta versión; se aplican desde Servidor':'Biblioteca del servidor de solo lectura; crea una versión para modificar'
+    for(const tab of document.querySelectorAll('[data-category]')){const c=tab.dataset.category;tab.hidden=c==='shaderpacks';tab.textContent=(names[c] || c)+' ('+(serverLibrary?.files || []).filter(f=>f.path.startsWith(c+'/')).length+')';tab.setAttribute('aria-pressed',String(c===category))}
+    const query=get('search').value.toLowerCase(),updateKey='server:'+selected+':'+category+':',files=(serverLibrary?.files || []).filter(f=>f.path.startsWith(category+'/') && (f.path+' '+(f.display?.title || '')).toLowerCase().includes(query)).sort((a,b)=>Number(availableUpdates.has(updateKey+b.path))-Number(availableUpdates.has(updateKey+a.path)) || Number(!!b.editableText)-Number(!!a.editableText) || a.path.localeCompare(b.path))
+    get('content').replaceChildren()
+    for(const file of files) {
+        const row=document.createElement('article');row.className='fileRow';const info=document.createElement('div');info.className='fileInfo'
+        if(file.display?.icon || /\.jar$/.test(file.path) && file.sha256){const image=document.createElement('img');image.className='serverModIcon';image.src=file.display?.icon || '/api/icon/'+file.sha256;image.alt='';image.onerror=()=>{image.onerror=null;image.src='/vortex-logo.png'};row.append(image)}
+        const h=document.createElement('h3');h.textContent=file.display?.title || file.path.split('/').at(-1);const p=document.createElement('p');p.textContent=file.path+' · '+(file.size/1048576).toFixed(2)+' MiB'+(file.protection?.protected?' · Archivo local/Jarvis protegido':'');info.append(h,p)
+        const actions=document.createElement('div');actions.className='fileActions'
+        const button=(label,callback)=>{const b=document.createElement('button');b.textContent=label;b.className='secondary';b.disabled=!canEdit();b.onclick=()=>{if(requireEditable())action(callback)};actions.append(b)}
+        if(file.editableText)button('Editar',async()=>{
+            const result=await api('server/config/read',{id:selected,path:file.path});editing={id:selected,revision:current().revision,path:file.path,scope:'server'}
+            get('configTitle').textContent='Servidor · '+file.path;originalText=result.savedText;get('configText').value=result.text;get('formatJson').hidden=!file.path.endsWith('.json');get('editorMessage').textContent='';get('configDialog').showModal();updateEditor()
+        })
+        button('Sustituir',async()=>{replacePath=file.path;get('replacement').accept=category==='plugins'?'.jar':extensions[category];get('replacement').click()})
+        button('Quitar',async()=>{if(!confirm('¿Retirar '+file.path+' en esta versión del servidor?'))return;await api('server/remove',{id:selected,revision:current().revision,path:file.path});await refresh();await loadServerLibrary();render()})
+        const update=availableUpdates.get(updateKey+file.path)
+        if(update && !file.protection?.protected){const badge=document.createElement('p');badge.textContent='Actualización disponible · '+update.version;badge.className='pendingUpdateBadge';info.append(badge);row.classList.add('hasUpdate');button('Actualizar',async()=>{await api('server/update',{id:selected,revision:current().revision,path:file.path});availableUpdates.delete(updateKey+file.path);await refresh();await loadServerLibrary();render()})}
+        row.append(info,actions);get('content').append(row)
+    }
+    if(!files.length){const p=document.createElement('p');p.textContent=serverLibrary?.loaded?'No hay archivos que coincidan con la búsqueda':'La biblioteca del servidor todavía no se ha cargado';get('content').append(p)}
+    get('updatesSummary').textContent=(serverLibrary?.files || []).some(f=>f.source)?files.filter(f=>availableUpdates.has(updateKey+f.path)).length+' actualizaciones disponibles · Los parches Jarvis conservan sus bytes':'Pulsa Vincular imágenes y actualizaciones en Servidor para identificar los archivos originales'
+}
+const pluginCategory=document.createElement('button');pluginCategory.dataset.category='plugins';pluginCategory.textContent='Plugins';get('categories').append(pluginCategory);names.plugins='Plugins'
+const defaultCategory=document.createElement('button');defaultCategory.dataset.category='defaultconfigs';defaultCategory.textContent='Configuraciones predeterminadas';get('categories').append(defaultCategory);names.defaultconfigs='Configuraciones predeterminadas'
+const classifyDialog=document.createElement('dialog');classifyDialog.innerHTML='<h2>Destino del mod</h2><p id="modDestination"></p><pre id="modEvidence" class="automaticNotes"></pre><details><summary>Registrar revisión de documentación y código</summary><label>Destino verificado<select id="reviewDestination"><option value="client">Solo cliente</option><option value="server">Solo servidor</option><option value="both">Cliente y servidor</option></select></label><label>Evidencia de la documentación del proyecto<textarea id="reviewDocumentation" placeholder="Enlace y explicación que corroboran el destino tras revisar el JAR"></textarea></label><button id="saveModReview">Guardar revisión de este archivo</button></details><div class="dialogActions"><button id="closeModReview" class="secondary">Cerrar</button><button id="stageServerMod">Preparar en el servidor</button></div>';document.body.append(classifyDialog)
+let reviewedMod
+get('closeModReview').onclick=()=>classifyDialog.close()
+get('saveModReview').onclick=()=>action(async()=>{if(!requireEditable())return;await api('server/review/save',{id:selected,revision:current().revision,path:reviewedMod,destination:get('reviewDestination').value,documentation:get('reviewDocumentation').value});classifyDialog.close();await refresh();message('Revisión guardada para el hash exacto de este mod; vuelve a Revisar destino para prepararlo')})
+get('stageServerMod').onclick=()=>action(async()=>{await api('server/stage-client',{id:selected,revision:current().revision,path:reviewedMod});classifyDialog.close();await refresh();await loadServerLibrary();message('Mod preparado en el borrador del servidor')})
 function onlineRow(title, description, callback, label, item) {
     const row = document.createElement('article'); row.className = 'fileRow'
     if(item) {
@@ -156,7 +235,7 @@ const pendingSaves = new Map()
 let saveTimer, saveChain = Promise.resolve()
 function queueAutosave(kind, id, text, path) {
     const item = {kind,id,text,path}; const key = id + ':' + kind + ':' + (path || '')
-    pendingSaves.set(key,item); localStorage.setItem('vortexAutosave:' + key, JSON.stringify(item))
+    pendingSaves.set(key,item);if(kind!=='server-config')localStorage.setItem('vortexAutosave:' + key, JSON.stringify(item))
     clearTimeout(saveTimer); saveTimer = setTimeout(() => flushAutosave().catch(error => message('No se pudo guardar: ' + error.message)), 650)
 }
 function flushAutosave() {
@@ -166,8 +245,8 @@ function flushAutosave() {
             const draft = state?.drafts.find(d => d.id === item.id)
             if(!state) continue
             if(!draft || draft.published || item.id !== state.workspace?.activeId) { pendingSaves.delete(key); localStorage.removeItem('vortexAutosave:' + key); continue }
-            const result = await api(item.kind === 'notes' ? 'notes' : 'config/autosave', item.kind === 'notes' ? {id:item.id,revision:draft.revision,notes:item.text} : {id:item.id,revision:draft.revision,path:item.path,text:item.text})
-            Object.assign(draft,result)
+            const result = await api(item.kind === 'notes' ? 'notes' : item.kind==='server-config'?'server/config/autosave':'config/autosave', item.kind === 'notes' ? {id:item.id,revision:draft.revision,notes:item.text} : {id:item.id,revision:draft.revision,path:item.path,text:item.text})
+            if(item.kind==='server-config')draft.revision=result.revision;else Object.assign(draft,result)
             if(pendingSaves.get(key) === item) { pendingSaves.delete(key); localStorage.removeItem('vortexAutosave:' + key) }
             if(editing?.id === item.id) editing.revision = result.revision
             if(item.kind === 'config') get('dirtyStatus').textContent = 'Borrador guardado · Pendiente de aplicar'
@@ -197,6 +276,7 @@ async function refresh() {
     if(pendingSaves.size) { await flushAutosave(); render() }
     if(panel === 'add' && !canEdit()) panel = 'library'
     renderTargetAndHistory()
+    if(serverLibrary)await loadServerLibrary()
     if(current() && !identifying) { identifying = true; api('providers/identify',{id:selected}).then(result => { if(result.identified) refresh() }).catch(error => message('Identificación de contenido: ' + error.message)).finally(() => { identifying = false }) }
     switchPanel(panel)
 }
@@ -210,7 +290,7 @@ function render() {
     get('notes').disabled = !canEdit()
     get('saveNotes').disabled = !canEdit()
     get('publish').disabled = !canEdit()
-    get('publishOfficial').disabled = !canEdit() || !draft?.testResult?.eligible || !state.githubReady || state.publishing
+    get('publishOfficial').disabled = !canEdit() || !draft?.testResult?.eligible || !state.githubReady || state.publishing || !!serverLibrary?.changes?.length || !!serverLibrary?.job?.running
     get('approveTest').hidden = !canEdit() || draft?.testResult?.status !== 'awaitingApproval' || !draft.testResult.launcherClosedNormally
     get('rejectTest').hidden = !canEdit() || !['prepared','running','awaitingApproval','passed'].includes(draft?.testResult?.status)
     const statuses={untested:'Debes publicar y probar esta versión',prepared:'Prueba abierta con Mystwer · Pulsa Jugar en el launcher de pruebas',running:'Prueba en curso · Juega al menos un minuto y cierra el cliente normalmente',awaitingApproval:draft?.testResult?.launcherClosedNormally ? 'El cliente y el launcher cerraron sin fallos detectados · Confirma cómo fue la partida' : 'El cliente cerró correctamente · Cierra también el launcher de pruebas para confirmar el resultado',passed:'Prueba aprobada · Lista para publicar oficialmente',failed:'Prueba fallida · Corrige los problemas y vuelve a probar',outdated:'La versión cambió · Publica y prueba los últimos cambios'}
@@ -218,13 +298,17 @@ function render() {
     get('automaticNotes').textContent=(draft?.automaticNotes || []).map(n=>'- '+n.text).join('\n') || 'Los cambios se registrarán aquí automáticamente'
 
     get('emptyPack').hidden = !!draft; get('library').hidden = panel !== 'library' || !draft
+    serverPlanRender()
     if(!draft) return
+    if(libraryScope==='server'){renderServerLibrary();return}
+    if(['plugins','defaultconfigs'].includes(category))category='mods'
     if(category!=='config') checkLibraryUpdates(category).catch(error=>{get('updatesSummary').textContent='No se pudieron consultar las actualizaciones: ' + error.message})
     else get('updatesSummary').textContent=''
     get('revision').textContent = `${draft.files.length} archivos · Guardado`
     if(document.activeElement !== get('notes')) get('notes').value = draft.notes
     for(const button of document.querySelectorAll('[data-category]')) {
         const key = button.dataset.category
+        button.hidden=['plugins','defaultconfigs'].includes(key)
         button.textContent = `${names[key]} (${draft.files.filter(f => f.path.startsWith(key + '/')).length})`
         button.setAttribute('aria-pressed', String(key === category))
     }
@@ -282,6 +366,12 @@ function render() {
             get('configSearch').value = ''; get('editorMessage').textContent = ''
             get('formatJson').hidden = !file.path.endsWith('.json'); get('configDialog').showModal(); updateEditor(); get('configText').focus()
         }))
+        if(category==='mods') {
+            const inspect=document.createElement('button');inspect.className='secondary';inspect.textContent='Revisar destino';inspect.onclick=()=>action(async()=>{
+                const review=await api('server/review',{id:draft.id,path:file.path});reviewedMod=file.path;get('modDestination').textContent=({client:'Solo cliente',server:'Solo servidor',both:'Cliente y servidor',unknown:'Pendiente de verificar'}[review.destination])+' · '+review.reason
+                get('modEvidence').textContent=JSON.stringify(review.evidence,null,2);get('stageServerMod').disabled=!canEdit() || !review.verified || review.destination==='client';classifyDialog.showModal()
+            });actions.append(inspect)
+        }
         if(category !== 'config' && !file.protection?.jarvis) button('Marcar como Jarvis', () => action(async () => {
             if(!confirm('¿Confirmas que este archivo contiene modificaciones de Jarvis? Los catálogos no podrán sustituirlo.')) return
             await api('library/mark-jarvis',{id:draft.id,revision:current().revision,path:file.path});await refresh();message('Modificaciones de Jarvis protegidas')
@@ -313,12 +403,14 @@ async function upload(files, oldPath) {
     for(const file of files) {
         if(file.size > 64 * 1048576) throw Error('El archivo supera 64 MiB: ' + file.name)
         const base64 = await new Promise((resolve, reject) => { const reader = new FileReader(); reader.onload = () => resolve(reader.result.split(',')[1]); reader.onerror = reject; reader.readAsDataURL(file) })
-        await api('library/add', { id: draftId, revision: state.drafts.find(d => d.id === draftId).revision, category: uploadCategory, filename: file.name, base64, replacePath: oldPath })
+        const destination=oldPath?libraryScope:get('addScope').value
+        await api(destination==='server'?'server/add':'library/add', { id: draftId, revision: state.drafts.find(d => d.id === draftId).revision, category: uploadCategory, filename: file.name, base64, replacePath: oldPath })
         await refresh()
+        if(destination==='server')await loadServerLibrary()
     }
     message(oldPath ? 'Archivo sustituido. La versión anterior se ha retirado del borrador.' : `${files.length} archivo(s) añadido(s) al pack`)
 }
-get('draftSelect').onchange = () => { selected = get('draftSelect').value; folder = ''; render(); switchPanel('library') }
+get('draftSelect').onchange = () => { selected = get('draftSelect').value; folder = '';serverLibrary=undefined;loadServerLibrary().then(render).catch(error=>message(error.message));render(); switchPanel('library') }
 for(const button of document.querySelectorAll('[data-category]')) button.onclick = () => { category = button.dataset.category; get('search').value = ''; render() }
 get('search').oninput = render
 const providerLabel = document.createElement('label'); providerLabel.textContent = 'Proveedor'
@@ -422,15 +514,16 @@ function closeEditor() {
 }
 async function saveConfig() {
     editing.revision = current().revision
-    await api('config/save', { ...editing, text: get('configText').value })
+    await api(editing.scope==='server'?'server/config/save':'config/save', { ...editing, text: get('configText').value })
     originalText = get('configText').value; await refresh()
+    if(editing.scope==='server')await loadServerLibrary()
     editing.revision = state.drafts.find(d => d.id === editing.id).revision
     get('editorMessage').textContent = 'Configuración guardada'; updateEditor(); message('Configuración guardada en el borrador')
 }
 get('cancelConfig').onclick = closeEditor
 get('configDialog').oncancel = event => { event.preventDefault(); closeEditor() }
 get('saveConfig').onclick = () => action(async () => { try { await saveConfig() } catch(error) { get('editorMessage').textContent = error.message; throw error } })
-get('configText').oninput = () => { updateEditor(); queueAutosave('config', editing.id, get('configText').value, editing.path) }
+get('configText').oninput = () => { updateEditor(); queueAutosave(editing.scope==='server'?'server-config':'config', editing.id, get('configText').value, editing.path) }
 get('configText').onclick = updateEditor
 get('configText').onkeyup = updateEditor
 get('configText').onscroll = () => {
@@ -444,7 +537,7 @@ get('configDialog').onkeydown = event => {
     if((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'f') { event.preventDefault(); get('configSearch').focus() }
 }
 get('configText').onkeydown = event => {
-    if(event.key === 'Tab') { event.preventDefault(); const editor = get('configText'); editor.setRangeText('    ', editor.selectionStart, editor.selectionEnd, 'end'); updateEditor(); queueAutosave('config', editing.id, editor.value, editing.path) }
+    if(event.key === 'Tab') { event.preventDefault(); const editor = get('configText'); editor.setRangeText('    ', editor.selectionStart, editor.selectionEnd, 'end'); updateEditor(); queueAutosave(editing.scope==='server'?'server-config':'config', editing.id, editor.value, editing.path) }
 }
 get('findNext').onclick = () => {
     const editor = get('configText'), query = get('configSearch').value
@@ -457,7 +550,7 @@ get('findNext').onclick = () => {
     get('editorMessage').textContent = 'Coincidencia encontrada'; updateEditor()
 }
 get('formatJson').onclick = () => {
-    try { get('configText').value = JSON.stringify(JSON.parse(get('configText').value), null, 2) + '\n'; updateEditor(); queueAutosave('config', editing.id, get('configText').value, editing.path); get('editorMessage').textContent = 'JSON formateado; guarda para aplicar el cambio' }
+    try { get('configText').value = JSON.stringify(JSON.parse(get('configText').value), null, 2) + '\n'; updateEditor(); queueAutosave(editing.scope==='server'?'server-config':'config', editing.id, get('configText').value, editing.path); get('editorMessage').textContent = 'JSON formateado; guarda para aplicar el cambio' }
     catch { get('editorMessage').textContent = 'JSON inválido: revisa su sintaxis antes de formatearlo' }
 }
 get('notes').oninput = () => queueAutosave('notes', selected, get('notes').value)
@@ -477,7 +570,7 @@ get('publishOfficial').onclick=()=>action(async()=>{
 })
 get('publish').onclick = () => action(async () => { const draft = current(); if(!confirm(`¿Publicar la versión ${draft.version} en pruebas?`)) return; const result=await api('publish', { id: draft.id, revision: draft.revision }); await refresh(); get('publishSuccess').querySelector('h2').textContent='Versión de pruebas publicada';get('publishSuccessText').textContent='La versión ' + result.published + ' se publicó correctamente en pruebas. Puedes abrir el launcher exclusivo con Probar versión';get('publishSuccess').showModal();message('Versión publicada en el canal de pruebas') })
 setInterval(async()=>{
-    if(!state || actionActive || !current()) return
-    try {const result=await api('test/status');if(result.id===selected) current().testResult=result.testResult;state.githubReady=result.githubReady;state.publishing=result.publishing;render()} catch {}
+    if(!state || actionActive) return
+    try {const result=await api('test/status');if(current() && result.id===selected) current().testResult=result.testResult;state.githubReady=result.githubReady;state.publishing=result.publishing;if(panel==='server' || libraryScope==='server'){await loadServerLibrary();if(serverLibrary?.job && !serverLibrary.job.running && lastServerJob!==serverLibrary.job.id){lastServerJob=serverLibrary.job.id;if(serverLibrary.job.ok)message('Operación del servidor completada');else if(serverLibrary.job.error)message(serverLibrary.job.error)}if(panel==='server')await refreshServer()}render()} catch {}
 },5000)
 action(async () => { await refresh() })

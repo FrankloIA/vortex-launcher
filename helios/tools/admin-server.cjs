@@ -2,9 +2,10 @@ const http = require('http')
 const fs = require('fs')
 const path = require('path')
 const crypto = require('crypto')
+const { AstrolNodesApi } = require('../vortex/astrolnodes-api.cjs')
 const { ReleaseStore } = require('../vortex/release-store.cjs')
 const { Providers } = require('../vortex/providers.cjs')
-function startAdmin({ root = path.resolve(__dirname, '../.runtime/pack-admin'), port = 43117, password, syncVersion=()=>JSON.parse(fs.readFileSync(path.resolve(__dirname,'../package.json'))).version } = {}) {
+function startAdmin({ root = path.resolve(__dirname, '../.runtime/pack-admin'), port = 43117, password, hostingApi, syncVersion=()=>JSON.parse(fs.readFileSync(path.resolve(__dirname,'../package.json'))).version } = {}) {
     const store = new ReleaseStore(root)
     const gate=new (require('../vortex/test-gate.cjs').TestGate)(root)
     const publisher=new (require('../vortex/github-publisher.cjs').GithubPublisher)(root,undefined,undefined,{launcherBuild:require('../vortex/build-launcher.cjs').launcherBuild})
@@ -14,6 +15,31 @@ function startAdmin({ root = path.resolve(__dirname, '../.runtime/pack-admin'), 
     const metadata = new (require('../vortex/content-metadata.cjs').ContentMetadata)(root, providers)
     const protection = new (require('../vortex/jarvis-protection.cjs').JarvisProtection)(root)
     const updateCache = new Map()
+    const hostingCredentials=new (require('../vortex/hosting-credentials.cjs').HostingCredentials)(root)
+    const astrol=hostingApi || new AstrolNodesApi({token:()=>hostingCredentials.token()})
+    const hostingStatus=new (require('../vortex/hosting-status.cjs').HostingStatus)(astrol)
+    const serverWorkspace=new (require('../vortex/server-workspace.cjs').ServerWorkspace)(root,astrol)
+    const hostPlan = body => {store.draftFile(body.id);return serverWorkspace.current(body.id)}
+    const inspectDestination=async (data,source) => {
+        let catalog
+        if(source?.provider==='modrinth'){try{catalog=await providers.request('modrinth','project/'+encodeURIComponent(source.projectId))}catch{}}
+        const review=require('../vortex/mod-destination.cjs').inspectMod(data,catalog && {client_side:catalog.client_side,server_side:catalog.server_side})
+        const saved=path.join(root,'server','reviews',review.sha256+'.json')
+        if(fs.existsSync(saved) && review.evidence.maxJava<=21){const manual=JSON.parse(fs.readFileSync(saved));return {...review,verified:true,destination:manual.destination,reason:'Doble revisión registrada para este hash: '+manual.documentation,evidence:{...review.evidence,manual}}}
+        return review
+    }
+    const prepareRouting=async (body,data,source) => {
+        if(body.category!=='mods')return null
+        const review=await inspectDestination(data,source)
+        if(review.verified && ['both','server'].includes(review.destination)) {
+            serverWorkspace.editable(body.id,body.revision)
+            if(!serverWorkspace.baseline().loaded)await serverWorkspace.inventory()
+            review.serverReplace=await serverWorkspace.replacementFor(body.id,'mods/'+body.filename,data,source)
+            const previous=serverWorkspace.view(body.id).files.find(f=>f.path===review.serverReplace)
+            if(source?.provider && previous?.protection?.protected)throw Error('El servidor conserva una variante Jarvis o sin identificar; no puede sustituirse desde el catálogo')
+        }
+        return review
+    }
     const configTextCache = new Map()
     const canEditConfig = file => {
         const key=file?.path+':'+file?.sha256
@@ -41,6 +67,7 @@ function startAdmin({ root = path.resolve(__dirname, '../.runtime/pack-admin'), 
         const reply = (status, body) => { res.writeHead(status, { 'Content-Type': 'application/json' }); res.end(JSON.stringify(body)) }
         try {
             const origin = `http://127.0.0.1:${server.address().port}`
+            const requestUrl=new URL(req.url,origin),route=requestUrl.pathname
             if(req.headers.host !== `127.0.0.1:${server.address().port}`) return reply(403, { error: 'Host no permitido' })
             if(req.method === 'POST' && (req.headers.origin !== origin || req.headers['content-type'] !== 'application/json')) return reply(403, { error: 'Origen no permitido' })
             let body = {}
@@ -69,6 +96,25 @@ function startAdmin({ root = path.resolve(__dirname, '../.runtime/pack-admin'), 
                 if(req.url === '/api/test/status' && req.method==='GET') {
                     const id=store.workspace().activeId
                     return reply(200,{id,testResult:id ? gate.status(id) : null,githubReady,publishing})
+                }
+                if(route === '/api/server/status' && req.method === 'GET') {
+                    return reply(200, await hostingStatus.get(requestUrl.searchParams.get('force')==='true'))
+                }
+                if(route === '/api/server/files' && req.method === 'GET') {
+                    if(!astrol.configured()) return reply(200, { configured:false, data:[] })
+                    const directory = requestUrl.searchParams.get('directory') || '/'
+                    if(!/^\/(mods|resourcepacks|config|defaultconfigs|plugins)(\/|$)/.test(directory) && directory!=='/')throw Error('Carpeta fuera de la biblioteca')
+                    return reply(200, { configured:true, data:await astrol.list(directory) })
+                }
+                if(route==='/api/server/library' && req.method==='GET') {
+                    const id=requestUrl.searchParams.get('id');if(id && !id.startsWith('release:'))store.getDraft(id)
+                    return reply(200,serverWorkspace.view(id))
+                }
+                if(route==='/api/server/backups' && req.method==='GET') {
+                    return reply(200,{backups:await astrol.backups()})
+                }
+                if(route==='/api/server/job' && req.method==='GET') {
+                    return reply(200,{job:serverWorkspace.job})
                 }
                 if(req.method === 'GET' && /^\/api\/icon\/[a-f0-9]{64}$/.test(req.url)) {
                     try {
@@ -103,19 +149,103 @@ function startAdmin({ root = path.resolve(__dirname, '../.runtime/pack-admin'), 
                             file.protection=protection.status(file)
                         }
                     }
-                    return reply(200, { drafts, channels, githubReady, publishing, workspace:store.workspace(), history:releases.filter(r=>store.isOfficial(r)).slice(0,3).map(r=>({version:r.version,publishedAt:r.publishedAt,minecraft:r.minecraft,loader:r.loader || 'neoforge',files:r.files.length,notes:r.notes})), currentRelease:releases[0]?.version })
+                    return reply(200, { drafts, channels, githubReady, publishing, workspace:store.workspace(), hosting:{configured:astrol.configured(),job:serverWorkspace.job}, history:releases.filter(r=>store.isOfficial(r)).slice(0,3).map(r=>({version:r.version,publishedAt:r.publishedAt,minecraft:r.minecraft,loader:r.loader || 'neoforge',files:r.files.length,notes:r.notes})), currentRelease:releases[0]?.version })
                 }
                 if(req.method !== 'POST') return reply(404, { error: 'Ruta no encontrada' })
                 let result
                 if(publishing || preparingTest) throw Error('Espera a que termine la publicación o la preparación de la prueba antes de modificar')
                 const mutations=['/api/library/rename','/api/library/delete','/api/library/mark-jarvis','/api/providers/install','/api/remove','/api/notes','/api/add','/api/library/add','/api/config/save','/api/config/autosave','/api/publish']
+                if(serverWorkspace.job?.running && (mutations.includes(req.url) || ['/api/library/start','/api/library/cancel','/api/publish/official','/api/test/prepare','/api/library/restore'].includes(req.url)))throw Error('Espera a que termine la operación del servidor')
                 if(mutations.includes(req.url) && store.workspace().activeId !== body.id) throw Error('Biblioteca de solo lectura: crea una nueva versión para modificar contenido')
                 switch(req.url) {
+                    case '/api/server/connect': {
+                        const previous=hostingCredentials.session;hostingCredentials.set(body.token,false)
+                        try{await astrol.details();result=hostingCredentials.set(body.token,body.persist===true);hostingStatus.cached=null}catch(error){hostingCredentials.session=previous;throw error}break
+                    }
+                    case '/api/server/power': {
+                        if(body.signal!=='restart')throw Error('Este panel solo permite reiniciar con aviso o arrancar el servidor detenido')
+                        result=serverWorkspace.start('Reinicio del servidor con aviso de 10 segundos',()=>astrol.restart());break
+                    }
+                    case '/api/server/import': {
+                        if(store.workspace().activeId && serverWorkspace.current(store.workspace().activeId)?.changes.length)throw Error('Hay cambios preparados; aplícalos o cancela la versión antes de recargar la base')
+                        result=serverWorkspace.start('Cargando biblioteca del servidor',()=>serverWorkspace.inventory());break
+                    }
+                    case '/api/server/analyze': result=serverWorkspace.start('Identificando imágenes y actualizaciones',job=>serverWorkspace.analyze(metadata,job));break
+                    case '/api/server/backup': result=serverWorkspace.start('Creando backup',()=>astrol.backup('Vortex manual '+new Date().toISOString()));break
+                    case '/api/server/deploy': {
+                        serverWorkspace.editable(body.id,body.revision)
+                        result=serverWorkspace.start('Preparando despliegue del servidor',job=>serverWorkspace.deploy(body.id,body.revision,job));break
+                    }
+                    case '/api/server/rollback': result=await serverWorkspace.prepareRollback(body.id,body.revision);break
+                    case '/api/server/remove': result=await serverWorkspace.remove(body.id,body.revision,body.path);break
+                    case '/api/server/config/read': result=await serverWorkspace.config(body.id,body.path);break
+                    case '/api/server/config/save': {
+                        if(typeof body.text!=='string' || Buffer.byteLength(body.text)>1048576 || body.text.includes('\0'))throw Error('Configuración de texto inválida')
+                        if(body.path.endsWith('.json'))JSON.parse(body.text)
+                        const plan=hostPlan(body);if(!(plan?.files || serverWorkspace.baseline().files).some(f=>f.path===body.path && f.editableText))throw Error('Configuración inexistente')
+                        result=await serverWorkspace.add(body.id,body.revision,body.path,Buffer.from(body.text))
+                        const nextPlan=hostPlan(body);if(nextPlan?.editorDrafts){delete nextPlan.editorDrafts[body.path];require('../vortex/release-store.cjs').atomic(serverWorkspace.planFile(body.id),JSON.stringify(nextPlan,null,2))}break
+                    }
+                    case '/api/server/config/autosave': {
+                        if(typeof body.text!=='string' || Buffer.byteLength(body.text)>1048576 || body.text.includes('\0'))throw Error('Texto inválido')
+                        result=serverWorkspace.autosave(body.id,body.revision,body.path,body.text);break
+                    }
+                    case '/api/server/updates': {
+                        const files=serverWorkspace.view(body.id).files.filter(f=>f.path.startsWith(body.category+'/') && f.source && !f.protection?.protected)
+                        result=[]
+                        for(const file of files)try{const latest=await providers.latest(file.source.provider,file.source.projectId,body.category,targetFor(body.id));if(String(latest.fileId)!==String(file.source.fileId))result.push({path:file.path,source:file.source,version:latest.version})}catch(error){result.push({path:file.path,error:error.message})}break
+                    }
+                    case '/api/server/update': {
+                        serverWorkspace.editable(body.id,body.revision)
+                        const file=serverWorkspace.view(body.id).files.find(f=>f.path===body.path);if(!file?.source || file.protection?.protected)throw Error('El archivo del servidor está protegido o sin identidad exacta')
+                        const category=file.path.split('/')[0],latest=await providers.latest(file.source.provider,file.source.projectId,category,targetFor(body.id)),data=await providers.download(latest)
+                        require('../vortex/local-compatibility.cjs').checkLocal(data,category,targetFor(body.id))
+                        if(latest.dependencies.length)throw Error('Revisa las dependencias requeridas antes de actualizar este mod del servidor')
+                        const review=category==='mods'?await inspectDestination(data,file.source):null;if(review && (!review.verified || review.destination==='client'))throw Error('Revisa el destino de esta versión antes de actualizar el servidor')
+                        result=await serverWorkspace.add(body.id,body.revision,category+'/'+latest.filename,data,file.path,{provider:file.source.provider,projectId:file.source.projectId,fileId:latest.fileId,version:latest.version});break
+                    }
+                    case '/api/server/add': {
+                        serverWorkspace.editable(body.id,body.revision)
+                        if(typeof body.base64!=='string')throw Error('Archivo inválido');const data=Buffer.from(body.base64,'base64')
+                        if(data.length>64*1048576)throw Error('Máximo 64 MiB por archivo')
+                        if(typeof body.filename!=='string' || path.basename(body.filename)!==body.filename)throw Error('Nombre inválido')
+                        const category=body.category;if(!['mods','resourcepacks','config','plugins','defaultconfigs'].includes(category))throw Error('Categoría de servidor inválida')
+                        if(category==='mods') {
+                            require('../vortex/local-compatibility.cjs').checkLocal(data,category,targetFor(body.id))
+                            const review=await inspectDestination(data)
+                            if(!review.verified || review.destination==='client')throw Error(review.reason+' · Revisa el destino desde Biblioteca del launcher')
+                        }
+                        if(category==='plugins' && (!/\.jar$/i.test(body.filename) || !new Zip(data).getEntry('plugin.yml')))throw Error('Se necesita un plugin Bukkit compatible con Arclight')
+                        if(category==='resourcepacks')require('../vortex/local-compatibility.cjs').checkLocal(data,category,targetFor(body.id))
+                        result=await serverWorkspace.add(body.id,body.revision,category+'/'+body.filename,data,body.replacePath);break
+                    }
+                    case '/api/server/review': {
+                        const draft=store.getDraft(body.id),file=draft.files.find(f=>f.path===body.path && f.path.startsWith('mods/'));if(!file)throw Error('Mod inexistente')
+                        result=await inspectDestination(fs.readFileSync(path.join(root,'blobs',file.sha256)),file.source || metadata.get(file)?.source);break
+                    }
+                    case '/api/server/review/save': {
+                        serverWorkspace.editable(body.id,body.revision)
+                        if(!['client','server','both'].includes(body.destination) || typeof body.documentation!=='string' || body.documentation.trim().length<20 || body.documentation.length>3000)throw Error('Registra el destino y la evidencia de la documentación del proyecto')
+                        const file=store.getDraft(body.id).files.find(f=>f.path===body.path && f.path.startsWith('mods/'));if(!file)throw Error('Mod inexistente')
+                        const review=await inspectDestination(fs.readFileSync(path.join(root,'blobs',file.sha256)),file.source || metadata.get(file)?.source)
+                        if(review.evidence.maxJava>21)throw Error('Este JAR requiere una versión de Java superior a la del servidor')
+                        require('../vortex/release-store.cjs').atomic(path.join(root,'server','reviews',file.sha256+'.json'),JSON.stringify({destination:body.destination,documentation:body.documentation.trim(),evidence:review.evidence,sha256:file.sha256,reviewedAt:new Date().toISOString()}))
+                        serverWorkspace.note(body.id,body.revision,'Destino revisado para '+file.path+': '+body.destination);result={saved:true};break
+                    }
+                    case '/api/server/stage-client': {
+                        serverWorkspace.editable(body.id,body.revision)
+                        const file=store.getDraft(body.id).files.find(f=>f.path===body.path && f.path.startsWith('mods/'));if(!file)throw Error('Mod inexistente')
+                        const data=fs.readFileSync(path.join(root,'blobs',file.sha256)),review=await inspectDestination(data,file.source || metadata.get(file)?.source)
+                        if(!review.verified || review.destination==='client')throw Error(review.reason)
+                        const replace=body.replacePath || await serverWorkspace.replacementFor(body.id,file.path,data)
+                        result=await serverWorkspace.add(body.id,body.revision,file.path,data,replace);break
+                    }
                     case '/api/library/start': result = store.createNext(body.mode, body.source); break
                     case '/api/library/cancel': result=store.cancel(body.id,body.revision);break
                     case '/api/library/restore': {
                         if(store.workspace().activeId) throw Error('Cancela o publica la versión actual antes de recuperar una anterior')
-                        result=store.restore(body.version);break
+                        result=store.restore(body.version)
+                        result.server=await serverWorkspace.prepareRestore(result.id,store.getDraft(result.id).revision,body.version);break
                     }
                     case '/api/target/save': {
                         if(store.workspace().activeId) throw Error('Termina o cancela la versión actual antes de cambiar Minecraft o loader')
@@ -173,9 +303,10 @@ function startAdmin({ root = path.resolve(__dirname, '../.runtime/pack-admin'), 
                     }
                     case '/api/publish/official': {
                         if(store.workspace().activeId!==body.id) throw Error('Selecciona la versión activa')
+                        serverWorkspace.assertOfficial(body.id)
                         store.syncLauncherNotes(body.id);gate.assertPassed(body.id)
                         publishing=true
-                        try {result=await publisher.publish(body.id,body.revision)} finally {publishing=false}
+                        try {const serverSnapshot=await serverWorkspace.archiveOfficial(body.id);result=await publisher.publish(body.id,body.revision);serverWorkspace.saveOfficial(serverSnapshot)} finally {publishing=false}
                         break
                     }
                     case '/api/providers/search': result = await providers.search(body.provider, String(body.query || '').slice(0,200), body.category,targetFor(body.id)); break
@@ -200,10 +331,16 @@ function startAdmin({ root = path.resolve(__dirname, '../.runtime/pack-admin'), 
                         if(file.dependencies.length) throw Error('Esta versión requiere dependencias: instalación automática pendiente. Usa Añadir archivo tras revisar las dependencias.')
                         if(path.basename(file.filename) !== file.filename || !({ mods: '.jar', resourcepacks: '.zip', shaderpacks: '.zip' }[body.category]) || path.extname(file.filename).toLowerCase() !== { mods: '.jar', resourcepacks: '.zip', shaderpacks: '.zip' }[body.category]) throw Error('Archivo incompatible')
                         const temp = path.join(root, 'download-' + crypto.randomUUID())
-                        fs.writeFileSync(temp, await providers.download(file))
+                        const bytes=await providers.download(file),routing=await prepareRouting({...body,filename:file.filename},bytes,{provider:body.provider,projectId:body.projectId})
+                        fs.writeFileSync(temp, bytes)
                         try {
+                            if(routing?.verified && routing.destination==='server') {
+                                await serverWorkspace.add(body.id,body.revision,body.category+'/'+file.filename,bytes,routing.serverReplace,{provider:file.provider,projectId:file.projectId,fileId:file.fileId,version:file.version})
+                                result=store.getDraft(body.id);break
+                            }
                             result = store.add(body.id, body.revision, temp, body.category + '/' + file.filename, 'managed', body.replacePath, 'catalog')
                             result = store.edit(body.id, result.revision, d => { d.files.find(f => f.path === body.category + '/' + file.filename).source = { provider: file.provider, projectId: file.projectId, fileId: file.fileId, version: file.version } })
+                            if(routing?.verified && routing.destination==='both'){await serverWorkspace.add(body.id,result.revision,body.category+'/'+file.filename,bytes,routing.serverReplace,{provider:file.provider,projectId:file.projectId,fileId:file.fileId,version:file.version});result=store.getDraft(body.id)}
                         } finally { fs.unlinkSync(temp) }
                         break
                     }
@@ -265,8 +402,15 @@ function startAdmin({ root = path.resolve(__dirname, '../.runtime/pack-admin'), 
                         }
                         if(body.replacePath && !store.getDraft(body.id).files.some(f => f.path === body.replacePath && f.path.startsWith(body.category + '/'))) throw Error('El archivo a sustituir no existe en esta categoría')
                         const upload = path.join(root, 'upload-' + crypto.randomUUID())
+                        const routing=await prepareRouting(body,data,metadata.get({sha256:crypto.createHash('sha256').update(data).digest('hex')})?.source)
                         fs.writeFileSync(upload, data)
-                        try { result = store.add(body.id, body.revision, upload, body.category + '/' + body.filename, body.category === 'config' ? 'seed' : 'managed', body.replacePath) }
+                        try {
+                            if(routing?.verified && routing.destination==='server'){await serverWorkspace.add(body.id,body.revision,body.category+'/'+body.filename,data,routing.serverReplace);result=store.getDraft(body.id)}
+                            else {
+                                result = store.add(body.id, body.revision, upload, body.category + '/' + body.filename, body.category === 'config' ? 'seed' : 'managed', body.replacePath)
+                                if(routing?.verified && routing.destination==='both'){await serverWorkspace.add(body.id,result.revision,body.category+'/'+body.filename,data,routing.serverReplace);result=store.getDraft(body.id)}
+                            }
+                        }
                         finally { fs.unlinkSync(upload) }
                         break
                     }

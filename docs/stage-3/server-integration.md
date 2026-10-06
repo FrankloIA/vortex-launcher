@@ -2,6 +2,8 @@
 
 ## Dirección dinámica (2026-10-07)
 
+Migración confirmada por soporte: 209.222.97.184:25622, 2026-10-07 11:00 Europe/Madrid = 09:00 UTC. El registro firmado incluye next con effectiveAt; el launcher evalúa la activación también en caché. El publicador conserva la programación mientras la API todavía muestre la asignación anterior. El estado usa la nueva dirección en el siguiente sondeo; servers.dat se adapta antes de arrancar Minecraft. No cambia una partida que ya esté abierta ni garantiza disponibilidad durante el traslado del hosting.
+
 El usuario autorizó guardar la clave del hosting como secreto de GitHub Actions para consultar la asignación predeterminada incluso con su PC apagado. El workflow raíz `.github/workflows/server-address.yml` consulta cada cinco minutos y permite ejecución manual. GitHub puede retrasar las ejecuciones programadas; no es tiempo real garantizado.
 
 Última comprobación: 209.222.97.103:25622. Se prioriza la IP asignada por la API frente al alias DNS y se evita la caché negativa de GitHub con un parámetro temporal. Token de hosting configurado; guardado del secreto de firma pendiente de autorización específica. El registro inicial está publicado y firmado localmente; el workflow no debe considerarse operativo hasta configurar ambos secretos y comprobar una ejecución satisfactoria.

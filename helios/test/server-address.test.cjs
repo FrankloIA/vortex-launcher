@@ -1,6 +1,12 @@
 const test=require('node:test'),assert=require('node:assert/strict'),fs=require('fs'),os=require('os'),path=require('path'),zlib=require('zlib')
 const {updateServersDat,parse,encode,str}=require('../vortex/servers-dat.cjs')
 const {verify,validate}=require('../vortex/server-address.cjs')
+test('la migración se activa a las 11:00 peninsulares del 7 de octubre, incluso desde caché',()=>{
+    const {activeAddress}=require('../vortex/server-address.cjs'),settings=require('../vortex/server-address.json'),next=settings.migration
+    assert.equal(new Date(next.effectiveAt).toISOString(),'2026-10-07T09:00:00.000Z')
+    const record={hostname:next.fromHostname,port:25622,next}
+    assert.equal(activeAddress(record,next.effectiveAt-1).hostname,'209.222.97.103');assert.equal(activeAddress(record,next.effectiveAt).hostname,'209.222.97.184');assert.equal(record.hostname,'209.222.97.103')
+})
 function string(name,value){return {name,type:8,value}}
 test('servers.dat actualiza Vortex preservando iconos, etiquetas desconocidas y servidores ajenos, sin duplicar',t=>{
     const directory=fs.mkdtempSync(path.join(os.tmpdir(),'vortex-nbt-'));t.after(()=>fs.rmSync(directory,{recursive:true,force:true}))

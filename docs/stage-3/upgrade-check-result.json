@@ -1,0 +1,14 @@
+{
+  "baseVersion": "1.0.3-quark486",
+  "baseFiles": 726,
+  "mods": 199,
+  "initialChanges": 727,
+  "upgradeChanges": 2,
+  "repeatedChanges": 0,
+  "preservedPreferences": true,
+  "preservedWorldMarker": true,
+  "allManagedHashesVerified": true,
+  "rollbackVerified": true,
+  "liveChannelUnchanged": true,
+  "gameLaunchTested": false
+}

@@ -2,3 +2,5 @@ body[bkid]{background:#0c0e14!important;font-family:'Segoe UI',sans-serif}#main{
 .vortexAccount #user_text{position:static!important;max-width:115px;overflow:hidden;text-overflow:ellipsis}.vortexAccount #avatarContainer{position:relative!important;flex:0 0 40px}.vortexAccount #avatarOverlay{position:absolute;inset:0}.vortexSide{background:#0c0e15!important}#landingContainer{background-position:right center!important}
 
 .vortexBrand img.vortexWordmark{width:166px;height:36px;object-fit:contain;margin:8px auto 0;display:block}@media(max-height:650px){.vortexBrand img.vortexWordmark{width:142px;height:30px}}
+
+.vortexBrand img.vortexWordmark{width:174px;height:48px;object-fit:contain}.vortexAccount #user_content{width:100%;justify-content:flex-end;gap:12px}.vortexAccount #user_text{min-width:0!important;flex:1;text-align:left!important;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;letter-spacing:0!important}.vortexAccount #avatarContainer{border-radius:8px!important;background-size:cover!important;image-rendering:pixelated}.vortexAccount #avatarOverlay{border-radius:8px!important}

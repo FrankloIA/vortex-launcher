@@ -13,6 +13,20 @@ document.addEventListener('DOMContentLoaded', () => {
     byId('vortexLaunchSlot').append(byId('launch_content'))
     byId('vortexProgress').append(byId('launch_details'))
     byId('launch_button').textContent = '▶  JUGAR'
+    const versionButton = byId('server_selection_button')
+    const showVersion = async () => {
+        const selected = ConfigManager.getSelectedServer()
+        const server = (await DistroAPI.getDistribution()).getServerById(selected)
+        if(selected !== ConfigManager.getSelectedServer()) return
+        const raw = server?.rawServer
+        const numeric = String(raw?.version || '').match(/\d+\.\d+\.\d+(?:\.\d+)?/)
+        const label = numeric ? 'Versión: ' + numeric[0] : 'Seleccionar versión'
+        versionButton.title = raw?.name || 'Seleccionar versión'
+        if(versionButton.textContent !== label) versionButton.textContent = label
+    }
+    const refreshVersion = () => showVersion().catch(() => {})
+    refreshVersion()
+    new MutationObserver(refreshVersion).observe(versionButton, { childList: true, characterData: true, subtree: true })
     const status = byId('player_count')
     const normalizeStatus = () => {
         const value = status.textContent.trim()

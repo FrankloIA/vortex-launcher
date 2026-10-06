@@ -14,7 +14,7 @@ async function resolveAddress({fetcher=fetch,cacheFile,force=false}={}) {
     if(pending)return pending
     pending=(async()=>{
         let envelope,value
-        try {const r=await fetcher(settings.url,{headers:{'Cache-Control':'no-cache'},signal:AbortSignal.timeout(5000)});if(!r.ok)throw Error('Dirección no disponible');const text=await r.text();if(text.length>8192)throw Error('Registro demasiado grande');envelope=JSON.parse(text);value=verify(envelope);if(cached?.updatedAt>value.updatedAt)throw Error('Registro anterior');if(cacheFile){fs.mkdirSync(path.dirname(cacheFile),{recursive:true});const temp=cacheFile+'.tmp';fs.writeFileSync(temp,JSON.stringify(envelope));fs.renameSync(temp,cacheFile)}}catch{
+        try {const r=await fetcher(settings.url+'?checked='+Date.now(),{headers:{'Cache-Control':'no-cache'},signal:AbortSignal.timeout(5000)});if(!r.ok)throw Error('Dirección no disponible');const text=await r.text();if(text.length>8192)throw Error('Registro demasiado grande');envelope=JSON.parse(text);value=verify(envelope);if(cached?.updatedAt>value.updatedAt)throw Error('Registro anterior');if(cacheFile){fs.mkdirSync(path.dirname(cacheFile),{recursive:true});const temp=cacheFile+'.tmp';fs.writeFileSync(temp,JSON.stringify(envelope));fs.renameSync(temp,cacheFile)}}catch{
             if(cached)return cached
             if(cacheFile)try{value=verify(JSON.parse(fs.readFileSync(cacheFile,'utf8')))}catch{}
             if(!value)value={serverId:settings.serverId,...settings.fallback}

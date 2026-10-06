@@ -4,6 +4,8 @@
 
 El usuario autorizó guardar la clave del hosting como secreto de GitHub Actions para consultar la asignación predeterminada incluso con su PC apagado. El workflow raíz `.github/workflows/server-address.yml` consulta cada cinco minutos y permite ejecución manual. GitHub puede retrasar las ejecuciones programadas; no es tiempo real garantizado.
 
+Última comprobación: 209.222.97.103:25622. Se prioriza la IP asignada por la API frente al alias DNS y se evita la caché negativa de GitHub con un parámetro temporal. Token de hosting configurado; guardado del secreto de firma pendiente de autorización específica. El registro inicial está publicado y firmado localmente; el workflow no debe considerarse operativo hasta configurar ambos secretos y comprobar una ejecución satisfactoria.
+
 `tools/publish-server-address.cjs` publica únicamente dirección/puerto e identificador en `vortex-server-address/address.json`, con firma Ed25519 exclusiva de direcciones, independiente de la clave del pack. El cliente verifica la clave pública incluida en `server-address.json`, conserva una copia firmada para fallos de red y usa la dirección tanto para estado como para conexión. No se genera una nueva versión oficial del pack por cambiar la IP.
 
 Antes de arrancar Minecraft, `servers-dat.cjs` actualiza la entrada Vortex de la instancia seleccionada, conserva otras entradas, iconos y etiquetas NBT desconocidas, soporta compresión gzip y crea una copia local de seguridad. Un archivo corrupto no se sobrescribe. El `servers.dat` firmado del pack no se altera; la dirección es una adaptación de la instancia instalada. Minecraft ya abierto necesita cerrarse y volver a arrancarse para cargar el cambio.

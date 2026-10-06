@@ -4,8 +4,8 @@ async function main(){
     const token=process.env.VORTEX_PTERODACTYL_API_TOKEN,key=process.env.VORTEX_ADDRESS_SIGNING_KEY;if(!token || !key)throw Error('Faltan secretos de la sincronización')
     const response=await fetch('https://gamedash.astrolnodes.net/api/client/servers/'+settings.serverId,{headers:{Authorization:'Bearer '+token,Accept:'application/json'},redirect:'error',signal:AbortSignal.timeout(30000)});if(!response.ok)throw Error('Consulta del hosting fallida: HTTP '+response.status)
     const data=await response.json(),allocation=data.attributes?.relationships?.allocations?.data?.find(a=>a.attributes.is_default)?.attributes;if(!allocation)throw Error('No hay asignación predeterminada')
-    const value=validate({schema:1,serverId:settings.serverId,hostname:allocation.ip_alias || allocation.ip,port:allocation.port,updatedAt:Date.now()})
-    try{const old=await fetch(settings.url,{signal:AbortSignal.timeout(10000)});if(old.ok){const last=verify(await old.json());if(last.hostname===value.hostname && last.port===value.port){console.log('La dirección no cambió');return}}}catch{}
+    const value=validate({schema:1,serverId:settings.serverId,hostname:allocation.ip || allocation.ip_alias,port:allocation.port,updatedAt:Date.now()})
+    try{const old=await fetch(settings.url+'?checked='+Date.now(),{signal:AbortSignal.timeout(10000)});if(old.ok){const last=verify(await old.json());if(last.hostname===value.hostname && last.port===value.port){console.log('La dirección no cambió');return}}}catch{}
     const envelope={payload:JSON.stringify(value),signature:crypto.sign(null,Buffer.from(JSON.stringify(value)),key).toString('base64')};verify(envelope)
     const directory=fs.mkdtempSync(path.join(os.tmpdir(),'vortex-address-')),file=path.join(directory,'address.json');fs.writeFileSync(file,JSON.stringify(envelope))
     const gh=args=>execFileSync(process.env.VORTEX_GH_PATH || 'gh',args,{encoding:'utf8',windowsHide:true,stdio:['ignore','pipe','pipe']})

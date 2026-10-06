@@ -84,6 +84,17 @@ class ReleaseStore {
         const draft=this.getDraft(name)
         if(draft.revision!==revision) throw Error('Recarga la versión antes de cancelarla')
         if(this.isOfficial(draft)) throw Error('La publicación se conserva; crea otra versión')
+        const releaseFile=path.join(this.root,'releases',draft.version+'.json')
+        if(fs.existsSync(releaseFile)) {
+            const history=path.join(this.root,'release-history');fs.mkdirSync(history,{recursive:true})
+            fs.renameSync(releaseFile,path.join(history,'cancelled-'+crypto.randomUUID()+'.json'))
+            const channelFile=path.join(this.root,'channels/test.json'),channel=json(channelFile)
+            if(channel?.version===draft.version) {
+                const previous=this.releases()[0]
+                if(previous) save(channelFile,{version:previous.version,releaseSha256:hash(fs.readFileSync(path.join(this.root,'releases',previous.version+'.json'))),publishedAt:previous.publishedAt})
+                else fs.unlinkSync(channelFile)
+            }
+        }
         fs.unlinkSync(this.draftFile(name));this.setWorkspace({activeId:null});return {cancelled:name}
     }
     restore(version) {

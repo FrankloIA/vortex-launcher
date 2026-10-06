@@ -32,6 +32,7 @@ async function checkLibraryUpdates(contentCategory = category, force = false) {
     return results
 }
 function canEdit() { return !!current() && !current().published && selected === state.workspace?.activeId }
+function cancellableDraft() {const active=state?.drafts.find(d=>d.id===state.workspace?.activeId);return active && !active.published && current()?.version===active.version ? active : null}
 function requireEditable() { if(canEdit()) return true; get('lockedDialog').showModal(); return false }
 function switchPanel(next) {
     if(next === 'add' && !requireEditable()) return
@@ -205,7 +206,7 @@ function render() {
     get('workingStatus').textContent = (draft?.status === 'stable' ? 'Publicada' : draft?.status === 'test' ? 'En prueba' : 'Sin publicar')
     get('workingStatus').dataset.status = draft?.status || 'draft'
     get('draftNotice').hidden = !canEdit() || draft.status === 'test'
-    get('cancelDraft').disabled = !draft || draft.published
+    get('cancelDraft').disabled = !cancellableDraft()
     get('notes').disabled = !canEdit()
     get('saveNotes').disabled = !canEdit()
     get('publish').disabled = !canEdit()
@@ -342,19 +343,24 @@ get('renameVersion').onclick = () => action(async () => {
     if(name===null || name.trim()===draft.version) return
     await api('library/rename',{id:draft.id,revision:draft.revision,version:name.trim()});await refresh();message('Versión actualizada')
 })
-async function discardCurrentDraft(cancel = false){
-    const draft = current()
+async function discardCurrentDraft(draft){
     if(!draft) throw Error('Selecciona un borrador para cancelarlo')
-    const verb = 'Cancelar esta versión'
-    if(!requireEditable()) return
-    if(!confirm(verb + ' el borrador ' + draft.version + '? Se perderán sus cambios sin publicar. Las versiones publicadas se conservan.')) return
     await api('library/cancel', { id: draft.id, revision: draft.revision })
     for(const key of [...availableUpdates.keys()]) if(key.startsWith(draft.id + ':')) availableUpdates.delete(key)
     selected = undefined; editing = undefined; folder = ''; panel = 'create'; localStorage.removeItem('vortexWorkingDraft')
     await refresh()
-    message(cancel ? 'Borrador cancelado. Las versiones publicadas se conservan.' : 'Borrador eliminado. Las versiones publicadas se conservan.')
+    message('Versión '+draft.version+' eliminada')
 }
-get('cancelDraft').onclick = () => action(() => discardCurrentDraft(true))
+const cancelDialog=document.createElement('dialog');cancelDialog.id='cancelVersionDialog'
+const cancelTitle=document.createElement('h2');cancelTitle.textContent='¿Eliminar esta versión?'
+const cancelDescription=document.createElement('p'),cancelButtons=document.createElement('div');cancelButtons.className='dialogActions'
+const keepVersion=document.createElement('button');keepVersion.textContent='No, conservar';keepVersion.className='secondary'
+const deleteVersion=document.createElement('button');deleteVersion.textContent='Sí, eliminar'
+cancelButtons.append(keepVersion,deleteVersion);cancelDialog.append(cancelTitle,cancelDescription,cancelButtons);document.body.append(cancelDialog)
+let cancelTarget
+keepVersion.onclick=()=>cancelDialog.close()
+get('cancelDraft').onclick=()=>{cancelTarget=cancellableDraft();if(!cancelTarget)return;cancelDescription.textContent='Se eliminará la versión '+cancelTarget.version+' y sus cambios de trabajo de la lista. Volverás a Crear';cancelDialog.showModal()}
+deleteVersion.onclick=()=>{const draft=cancelTarget;cancelDialog.close();action(()=>discardCurrentDraft(draft))}
 get('cancelVersion').onclick = () => get('versionDialog').close()
 const loaderNames = {neoforge:'NeoForge',forge:'Forge',fabric:'Fabric',quilt:'Quilt'}
 function renderTargetAndHistory() {

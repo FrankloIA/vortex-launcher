@@ -1,15 +1,17 @@
 {
   "name": "vortex-launcher",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Launcher personalizado para Minecraft con sincronizacion centralizada via GitHub",
   "main": "src/main/main.js",
   "author": "Vortex",
   "license": "MIT",
   "scripts": {
-    "start": "electron .",
-    "dev": "electron . --dev",
-    "build": "electron-builder",
-    "build:win": "electron-builder --win",
+    "start": "npm --prefix helios start",
+    "dev": "npm --prefix helios start",
+    "test:helios": "npm --prefix helios test",
+    "admin": "node helios/tools/admin-server.cjs",
+    "build": "npm --prefix helios run dist:win -- --publish never",
+    "build:win": "npm --prefix helios run dist:win -- --publish never",
     "build:linux": "electron-builder --linux",
     "build:mac": "electron-builder --mac",
     "postinstall": "electron-builder install-app-deps"

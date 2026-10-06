@@ -3,6 +3,19 @@ const names = { mods: 'Mods', resourcepacks: 'Resourcepacks', shaderpacks: 'Shad
 const extensions = { mods: '.jar', resourcepacks: '.zip', shaderpacks: '.zip', config: '.json,.toml,.properties,.txt,.cfg,.yaml,.yml,.conf,.ini' }
 let state, selected, category = 'mods', replacePath, editing, folder = '', originalText = ''
 let panel = 'library'
+const availableUpdates = new Map()
+async function checkLibraryUpdates(contentCategory = category) {
+    if(!current()) throw Error('Selecciona un borrador')
+    const draftId = selected
+    message('Buscando actualizaciones compatibles…')
+    const results = await api('providers/updates', { id: draftId, category: contentCategory })
+    for(const key of [...availableUpdates.keys()]) if(key.startsWith(draftId + ':' + contentCategory + '/')) availableUpdates.delete(key)
+    for(const item of results) if(!item.error) availableUpdates.set(draftId + ':' + item.path, item)
+    if(selected === draftId) render()
+    const errors = results.filter(item => item.error)
+    message(`${results.length - errors.length} actualizaciones disponibles.${errors.length ? ' No se pudieron consultar ' + errors.length + ' archivos; CurseForge necesita su clave API.' : ''}`)
+    return results
+}
 function switchPanel(next) {
     panel = next; get('library').hidden = next !== 'library' || !current(); get('onlineContent').hidden = next !== 'add'
     get('libraryTab').setAttribute('aria-pressed', String(next === 'library')); get('addTab').setAttribute('aria-pressed', String(next === 'add'))
@@ -55,7 +68,7 @@ get('onlineUpdates').onclick = () => action(async () => {
     if(!current()) throw Error('Selecciona un borrador')
     message('Consultando versiones; puede tardar unos minutos…')
     const contentCategory = category, draftId = selected
-    const results = await api('providers/updates', { id: draftId, category: contentCategory })
+    const results = await checkLibraryUpdates(contentCategory)
     get('onlineResults').replaceChildren()
     for(const item of results) onlineRow(item.path, item.error || 'Versión disponible: ' + item.version, item.error ? null : async () => {
         if(selected !== draftId) throw Error('Vuelve al borrador consultado')
@@ -144,6 +157,16 @@ function render() {
             get('formatJson').hidden = !file.path.endsWith('.json'); get('configDialog').showModal(); updateEditor(); get('configText').focus()
         }))
         button('Sustituir', () => { replacePath = file.path; get('replacement').click() })
+        const update = availableUpdates.get(draft.id + ':' + file.path)
+        if(update) {
+            button('Actualizar', () => action(async () => {
+                await api('providers/install', { id: draft.id, revision: current().revision, provider: update.source.provider, projectId: update.source.projectId, category, replacePath: file.path })
+                availableUpdates.delete(draft.id + ':' + file.path)
+                await refresh(); message('Mod actualizado en el borrador')
+            }))
+            actions.lastElementChild.className = 'updateButton'
+            actions.lastElementChild.title = 'Actualizar a ' + update.version
+        }
         button('Quitar', () => action(async () => {
             if(!confirm(`¿Quitar ${title.textContent} de este borrador? Las versiones publicadas se conservan.`)) return
             await api('remove', { id: draft.id, revision: draft.revision, path: file.path }); await refresh(); message('Archivo quitado del borrador')
@@ -166,6 +189,10 @@ get('draftSelect').onchange = () => { selected = get('draftSelect').value; rende
 for(const button of document.querySelectorAll('[data-category]')) button.onclick = () => { category = button.dataset.category; get('search').value = ''; render() }
 get('search').oninput = render
 get('addButton').onclick = () => get('upload').click()
+const checkUpdatesButton = document.createElement('button')
+checkUpdatesButton.id = 'libraryUpdates'; checkUpdatesButton.className = 'secondary'; checkUpdatesButton.textContent = 'Buscar actualizaciones'
+checkUpdatesButton.onclick = () => action(() => checkLibraryUpdates())
+get('addButton').before(checkUpdatesButton)
 get('upload').onchange = () => { const files = [...get('upload').files]; if(files.length) action(() => upload(files)); get('upload').value = '' }
 get('replacement').onchange = () => { const files = [...get('replacement').files]; if(files.length) action(() => upload(files, replacePath)); get('replacement').value = '' }
 function newVersion() { get('versionHint').textContent = current() ? 'El contenido actual se copiará para que puedas seguir editándolo.' : 'Crea una versión y empieza a añadir contenido.'; get('versionDialog').showModal() }

@@ -6,3 +6,5 @@ body[bkid]{background:#0c0e14!important;font-family:'Segoe UI',sans-serif}#main{
 .vortexBrand img.vortexWordmark{width:174px;height:48px;object-fit:contain}.vortexAccount #user_content{width:100%;justify-content:flex-end;gap:12px}.vortexAccount #user_text{min-width:0!important;flex:1;text-align:left!important;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;letter-spacing:0!important}.vortexAccount #avatarContainer{border-radius:8px!important;background-size:cover!important;image-rendering:pixelated}.vortexAccount #avatarOverlay{border-radius:8px!important}
 
 .vortexServer #server_status_wrapper{display:flex;gap:8px;align-items:center}.vortexServer #landingPlayerLabel{font-size:11px;color:#bcb9ca}.vortexServer #player_count{font-size:12px}
+
+#vortexUpdateProgress:not([hidden]){display:flex;align-items:center;gap:18px;padding:12px 0;color:#ddd;font-size:13px}#vortexUpdateProgress progress{flex:1;height:12px;accent-color:#a44bff}

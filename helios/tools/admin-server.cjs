@@ -9,6 +9,7 @@ function startAdmin({ root = path.resolve(__dirname, '../.runtime/pack-admin'), 
     const providers = new Providers(root)
     const metadata = new (require('../vortex/content-metadata.cjs').ContentMetadata)(root, providers)
     const protection = new (require('../vortex/jarvis-protection.cjs').JarvisProtection)(root)
+    const updateCache = new Map()
     const getCatalog = name => name?.startsWith('release:') ? store.releases().find(r => 'release:' + r.version === name) : store.getDraft(name)
     const targetFor = name => { const d=name ? getCatalog(name) : null;return d ? {minecraft:d.minecraft,loader:d.loader || 'neoforge'} : store.workspace().target }
     const Zip = require('adm-zip')
@@ -156,10 +157,23 @@ function startAdmin({ root = path.resolve(__dirname, '../.runtime/pack-admin'), 
                         const draft = getCatalog(body.id), updates = []
                         await metadata.identify(draft.files)
                         for(const file of draft.files) file.source ||= metadata.get(file)?.source
-                        for(const file of draft.files.filter(f => f.source && !protection.status(f).protected && f.path.startsWith(body.category + '/'))) {
-                            try { const latest = await providers.latest(file.source.provider, file.source.projectId, body.category,targetFor(body.id)); if(String(latest.fileId) !== String(file.source.fileId) && !Object.entries(latest.hashes).some(([algo,h])=>crypto.createHash(algo).update(fs.readFileSync(path.join(root,'blobs',file.sha256))).digest('hex')===h.toLowerCase())) updates.push({ path: file.path, source: file.source, version: latest.version }) }
-                            catch(error) { updates.push({ path: file.path, error: error.message }) }
-                        }
+                        const files=draft.files.filter(f => f.source && !protection.status(f).protected && f.path.startsWith(body.category + '/'))
+                        let cursor=0
+                        await Promise.all(Array.from({length:Math.min(6,files.length)},async()=>{
+                            while(cursor<files.length) {
+                                const file=files[cursor++], target=targetFor(body.id)
+                                try {
+                                    const key=JSON.stringify([file.source.provider,file.source.projectId,body.category,target])
+                                    let cached=updateCache.get(key)
+                                    if(!cached || cached.expires<Date.now() || body.force) {
+                                        cached={expires:Date.now()+300000,promise:providers.latest(file.source.provider,file.source.projectId,body.category,target)}
+                                        updateCache.set(key,cached);cached.promise.catch(()=>updateCache.delete(key))
+                                    }
+                                    const latest=await cached.promise
+                                    if(String(latest.fileId)!==String(file.source.fileId) && !Object.entries(latest.hashes).some(([algo,h])=>crypto.createHash(algo).update(fs.readFileSync(path.join(root,'blobs',file.sha256))).digest('hex')===h.toLowerCase())) updates.push({path:file.path,source:file.source,version:latest.version})
+                                } catch(error) { updates.push({path:file.path,error:error.message}) }
+                            }
+                        }))
                         result = updates; break
                     }
                     case '/api/library/create': {

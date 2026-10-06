@@ -6,16 +6,27 @@ let panel = 'library'
 const availableUpdates = new Map()
 const createdThisSession = new Set()
 let targetEditing = false, identifying = false
-async function checkLibraryUpdates(contentCategory = category) {
+const updateChecks = new Map()
+async function checkLibraryUpdates(contentCategory = category, force = false) {
     if(!current()) throw Error('Selecciona un borrador')
     const draftId = selected
-    message('Buscando actualizaciones compatibles…')
-    const results = await api('providers/updates', { id: draftId, category: contentCategory })
+    const draft=current(), key=JSON.stringify([draftId,contentCategory,draft.files.filter(f=>f.path.startsWith(contentCategory+'/')).map(f=>f.sha256)])
+    if(!force && updateChecks.has(key)) {
+        const results=await updateChecks.get(key)
+        if(selected===draftId && category===contentCategory) get('updatesSummary').textContent=`${results.filter(item=>!item.error).length} actualizaciones disponibles`
+        return results
+    }
+    get('updatesSummary').textContent='Buscando actualizaciones compatibles…'
+    const request=api('providers/updates', { id: draftId, category: contentCategory, force })
+    updateChecks.set(key,request)
+    const results = await request
     for(const key of [...availableUpdates.keys()]) if(key.startsWith(draftId + ':' + contentCategory + '/')) availableUpdates.delete(key)
     for(const item of results) if(!item.error) availableUpdates.set(draftId + ':' + item.path, item)
-    if(selected === draftId) render()
     const errors = results.filter(item => item.error)
-    message(`${results.length - errors.length} actualizaciones disponibles.${errors.length ? ' No se pudieron consultar ' + errors.length + ' archivos. Revisa los errores de cada archivo.' : ''}`)
+    if(selected === draftId && category===contentCategory) {
+        get('updatesSummary').textContent=`${results.length-errors.length} actualizaciones disponibles${errors.length ? ' · ' + errors.length + ' consultas fallidas' : ''}`
+        render()
+    }
     return results
 }
 function canEdit() { return !!current() && !current().published && selected === state.workspace?.activeId }
@@ -165,6 +176,8 @@ function render() {
 
     get('emptyPack').hidden = !!draft; get('library').hidden = !draft
     if(!draft) return
+    if(category!=='config') checkLibraryUpdates(category).catch(error=>{get('updatesSummary').textContent='No se pudieron consultar las actualizaciones: ' + error.message})
+    else get('updatesSummary').textContent=''
     get('revision').textContent = `${draft.files.length} archivos · Guardado`
     if(document.activeElement !== get('notes')) get('notes').value = draft.notes
     for(const button of document.querySelectorAll('[data-category]')) {
@@ -231,14 +244,15 @@ function render() {
         }))
         button('Sustituir', () => { replacePath = file.path; get('replacement').click() })
         const update = availableUpdates.get(draft.id + ':' + file.path)
-        if(update && canEdit() && !file.protection?.protected) {
-            button('Actualizar', () => action(async () => {
+        if(update && !file.protection?.protected) {
+            const badge=document.createElement('p');badge.className='pendingUpdateBadge';badge.textContent='Actualización disponible · ' + update.version;info.append(badge);row.classList.add('hasUpdate')
+            const updateButton=document.createElement('button');updateButton.textContent='Actualizar';updateButton.className='updateButton';updateButton.title='Actualizar a ' + update.version
+            updateButton.onclick = () => { if(!requireEditable()) return; action(async () => {
                 await api('providers/install', { id: draft.id, revision: current().revision, provider: update.source.provider, projectId: update.source.projectId, category, replacePath: file.path })
                 availableUpdates.delete(draft.id + ':' + file.path)
                 await refresh(); message('Mod actualizado en el borrador')
-            }))
-            actions.lastElementChild.className = 'updateButton'
-            actions.lastElementChild.title = 'Actualizar a ' + update.version
+            }) }
+            actions.append(updateButton)
         }
         button('Quitar', () => action(async () => {
             if(!confirm(`¿Quitar ${title.textContent} de este borrador? Las versiones publicadas se conservan.`)) return
@@ -271,7 +285,8 @@ providerSelect.onchange = () => { folder = ''; render() }
 
 const checkUpdatesButton = document.createElement('button')
 checkUpdatesButton.id = 'libraryUpdates'; checkUpdatesButton.className = 'secondary'; checkUpdatesButton.textContent = 'Buscar actualizaciones'
-checkUpdatesButton.onclick = () => action(() => checkLibraryUpdates())
+checkUpdatesButton.onclick = () => checkLibraryUpdates(category,true).catch(error=>message(error.message))
+const updatesSummary=document.createElement('p');updatesSummary.id='updatesSummary';updatesSummary.setAttribute('role','status');get('categoryHint').before(updatesSummary)
 get('search').closest('.toolbar').append(checkUpdatesButton)
 get('upload').onchange = () => { const files = [...get('upload').files]; if(files.length) action(() => upload(files)); get('upload').value = '' }
 get('replacement').onchange = () => { const files = [...get('replacement').files]; if(files.length) action(() => upload(files, replacePath)); get('replacement').value = '' }

@@ -1,5 +1,5 @@
 <div id="settingsContainer" style="display: none;">
-    <p class="vortexSettingsSubtitle">Personaliza tu experiencia en Vortex.</p>
+    <p class="vortexSettingsSubtitle">Personaliza tu experiencia en Vortex</p>
     <div id="settingsContainerLeft">
         <div id="settingsNavContainer">
             <div id="settingsNavHeader">
@@ -41,11 +41,8 @@
                         </svg>
                         <span><%- lang('settings.microsoftAccount') %></span>
                     </div>
-                    <div class="settingsAuthAccountTypeHeaderRight">
-                        <button class="settingsAddAuthAccount" id="settingsAddMicrosoftAccount"><%- lang('settings.addMicrosoftAccount') %></button>
-                    </div>
                 </div>
-                
+
                 <div class="settingsCurrentAccounts" id="settingsCurrentMicrosoftAccounts">
                     <!-- Microsoft auth accounts populated here. -->
                 </div>
@@ -61,14 +58,13 @@
                         </svg>
                         <span><%- lang('settings.mojangAccount') %></span>
                     </div>
-                    <div class="settingsAuthAccountTypeHeaderRight">
-                        <button class="settingsAddAuthAccount" id="settingsAddMojangAccount"><%- lang('settings.addMojangAccount') %></button>
-                    </div>
+
                 </div>
-                
+
                 <div class="settingsCurrentAccounts" id="settingsCurrentMojangAccounts">
                     <!-- Mojang auth accounts populated here. -->
                 </div>
+                <div class="vortexMojangAdd"><button class="settingsAddAuthAccount" id="settingsAddMojangAccount">Añadir cuenta de Mojang</button><p id="vortexSingleAccountHint">Cierra sesión antes de añadir otra cuenta.</p></div>
             </div>
         </div>
         <div id="settingsTabMinecraft" class="settingsTab" style="display: none;">
@@ -143,7 +139,7 @@
                 <div id="settingsOptModsContainer">
                     <div class="settingsModsHeader"><%- lang('settings.optionalMods') %></div>
                     <div id="settingsOptModsContent">
-                        
+
                     </div>
                 </div>
                 <div id="settingsReqModsContainer">
@@ -156,7 +152,7 @@
                     <div class="settingsModsHeader"><%- lang('settings.dropinMods') %></div>
                     <button id="settingsDropinFileSystemButton"><%- lang('settings.addMods') %> <span id="settingsDropinRefreshNote"><%- lang('settings.dropinRefreshNote') %></span></button>
                     <div id="settingsDropinModsContent">
-                        
+
                     </div>
                 </div>
 

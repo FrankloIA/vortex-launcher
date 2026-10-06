@@ -344,17 +344,11 @@ const msftLogoutLogger = LoggerUtil.getLogger('Microsoft Logout')
 
 // Bind the add mojang account button.
 document.getElementById('settingsAddMojangAccount').onclick = (e) => {
+    if(Object.keys(ConfigManager.getAuthAccounts()).length) return
     switchView(getCurrentView(), VIEWS.login, 500, 500, () => {
         loginViewOnCancel = VIEWS.settings
         loginViewOnSuccess = VIEWS.settings
         loginCancelEnabled(true)
-    })
-}
-
-// Bind the add microsoft account button.
-document.getElementById('settingsAddMicrosoftAccount').onclick = (e) => {
-    switchView(getCurrentView(), VIEWS.waiting, 500, 500, () => {
-        ipcRenderer.send(MSFT_OPCODE.OPEN_LOGIN, VIEWS.settings, VIEWS.settings)
     })
 }
 
@@ -627,6 +621,8 @@ const settingsCurrentMojangAccounts = document.getElementById('settingsCurrentMo
 function populateAuthAccounts(){
     const authAccounts = ConfigManager.getAuthAccounts()
     const authKeys = Object.keys(authAccounts)
+    document.getElementById('settingsAddMojangAccount').disabled = authKeys.length > 0
+    document.getElementById('vortexSingleAccountHint').hidden = authKeys.length === 0
     if(authKeys.length === 0){
         return
     }
@@ -640,7 +636,7 @@ function populateAuthAccounts(){
 
         const accHtml = `<div class="settingsAuthAccount" uuid="${acc.uuid}">
             <div class="settingsAuthAccountLeft">
-                <img class="settingsAuthAccountImage" alt="${acc.displayName}" src="https://mc-heads.net/avatar/${acc.uuid}/80">
+                <img class="settingsAuthAccountImage" alt="${acc.displayName}" src="https://mc-heads.net/avatar/${acc.uuid}/256">
             </div>
             <div class="settingsAuthAccountRight">
                 <div class="settingsAuthAccountDetails">

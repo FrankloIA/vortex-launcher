@@ -29,7 +29,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const avatar = byId('avatarContainer')
     const showHead = () => {
         const current = avatar.style.backgroundImage
-        const head = current.replace(/mc-heads\.net\/body\/([^/'")]+)\/right/, 'mc-heads.net/avatar/$1/64')
+        const head = current.replace(/mc-heads\.net\/body\/([^/'")]+)\/right/, 'mc-heads.net/avatar/$1/256').replace(/mc-heads\.net\/avatar\/([^/'")]+)\/\d+/, 'mc-heads.net/avatar/$1/256')
         if(head !== current) avatar.style.backgroundImage = head
     }
     showHead()

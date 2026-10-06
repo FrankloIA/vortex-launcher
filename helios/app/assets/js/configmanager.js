@@ -174,6 +174,13 @@ exports.load = function(){
         config.settings.launcher.dataDirectory = dataPath
         exports.save()
     }
+    const accounts = Object.keys(config.authenticationDatabase)
+    if(accounts.length > 1){
+        const keep = config.authenticationDatabase[config.selectedAccount] ? config.selectedAccount : accounts[0]
+        config.authenticationDatabase = {[keep]:config.authenticationDatabase[keep]}
+        config.selectedAccount = keep
+        exports.save()
+    }
     logger.info('Successfully Loaded')
 }
 
@@ -361,6 +368,7 @@ exports.updateMojangAuthAccount = function(uuid, accessToken){
  * @returns {Object} The authenticated account object created by this action.
  */
 exports.addMojangAuthAccount = function(uuid, accessToken, username, displayName){
+    if(Object.keys(config.authenticationDatabase).some(key => key !== uuid)) throw Error('Cierra sesión antes de añadir otra cuenta.')
     config.selectedAccount = uuid
     config.authenticationDatabase[uuid] = {
         type: 'mojang',
@@ -407,6 +415,7 @@ exports.updateMicrosoftAuthAccount = function(uuid, accessToken, msAccessToken, 
  * @returns {Object} The authenticated account object created by this action.
  */
 exports.addMicrosoftAuthAccount = function(uuid, accessToken, name, mcExpires, msAccessToken, msRefreshToken, msExpires) {
+    if(Object.keys(config.authenticationDatabase).some(key => key !== uuid)) throw Error('Cierra sesión antes de añadir otra cuenta.')
     config.selectedAccount = uuid
     config.authenticationDatabase[uuid] = {
         type: 'microsoft',

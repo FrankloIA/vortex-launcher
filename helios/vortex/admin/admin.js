@@ -18,10 +18,13 @@ async function checkLibraryUpdates(contentCategory = category) {
 }
 function switchPanel(next) {
     panel = next; get('library').hidden = next !== 'library' || !current(); get('onlineContent').hidden = next !== 'add'
+    get('publishContent').hidden = next !== 'publish'
+    get('publishTab').setAttribute('aria-pressed', String(next === 'publish'))
     get('libraryTab').setAttribute('aria-pressed', String(next === 'library')); get('addTab').setAttribute('aria-pressed', String(next === 'add'))
 }
 get('libraryTab').onclick = () => switchPanel('library')
 get('addTab').onclick = () => switchPanel('add')
+get('publishTab').onclick = () => switchPanel('publish')
 for(const button of document.querySelectorAll('[data-provider]')) button.onclick = () => {
     get('provider').value = button.dataset.provider; get('onlineResults').replaceChildren()
     for(const tab of document.querySelectorAll('[data-provider]')) tab.setAttribute('aria-pressed', String(tab === button))

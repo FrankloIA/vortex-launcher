@@ -49,7 +49,7 @@ function startAdmin({ root = path.resolve(__dirname, '../.runtime/pack-admin'), 
         return configTextCache.get(key)
     }
     const getCatalog = name => name?.startsWith('release:') ? store.releases().find(r => 'release:' + r.version === name) : store.getDraft(name)
-    const targetFor = name => { const d=name ? getCatalog(name) : null;return d ? {minecraft:d.minecraft,loader:d.loader || 'neoforge'} : store.workspace().target }
+    const targetFor = name => { const d=name ? getCatalog(name) : null;return d ? {minecraft:d.minecraft,loader:d.loader || 'neoforge',neoforge:d.neoforge} : store.workspace().target }
     const Zip = require('adm-zip')
     const libraryMetadata = new Map()
     const instances = path.join(process.env.USERPROFILE, 'curseforge/minecraft/Instances')
@@ -343,7 +343,7 @@ function startAdmin({ root = path.resolve(__dirname, '../.runtime/pack-admin'), 
                         if(path.basename(file.filename) !== file.filename || !({ mods: '.jar', resourcepacks: '.zip', shaderpacks: '.zip' }[body.category]) || path.extname(file.filename).toLowerCase() !== { mods: '.jar', resourcepacks: '.zip', shaderpacks: '.zip' }[body.category]) throw Error('Archivo incompatible')
                         const temp = path.join(root, 'download-' + crypto.randomUUID())
                         if(body.replacePath){const installed=draft.files.find(f=>f.path===body.replacePath);if(!await providers.isNewer(file,installed.source || metadata.get(installed)?.source))throw Error('No hay una actualización estable más reciente que tu archivo instalado')} 
-                        const bytes=await providers.download(file),routing=await prepareRouting({...body,filename:file.filename},bytes,{provider:body.provider,projectId:body.projectId})
+                        const bytes=await providers.download(file);require('../vortex/local-compatibility.cjs').checkLocal(bytes,body.category,targetFor(body.id),{gameVersions:[targetFor(body.id).minecraft,{neoforge:'NeoForge',forge:'Forge',fabric:'Fabric',quilt:'Quilt'}[targetFor(body.id).loader]]});const routing=await prepareRouting({...body,filename:file.filename},bytes,{provider:body.provider,projectId:body.projectId})
                         if(!routing?.verified || routing.destination!=='server') await require('../vortex/catalog-dependencies.cjs').assertDependencies(file,draft.files,metadata,providers,body.replacePath,bytes)
                         if(routing?.verified && ['both','server'].includes(routing.destination)) await require('../vortex/catalog-dependencies.cjs').assertDependencies(file,serverWorkspace.view(body.id).files,metadata,providers,routing.serverReplace,bytes)
                         fs.writeFileSync(temp, bytes)

@@ -18,6 +18,14 @@ function matches(version, ranges) {
 }
 function checkLocal(data, category, target, metadata) {
     if(category === 'config') return
+    if(category==='mods' && target.loader==='neoforge' && target.neoforge) {
+        const entry=new Zip(data).getEntry('META-INF/neoforge.mods.toml')
+        for(const block of entry?.getData().toString('utf8').split(/(?=\[\[dependencies\.)/) || []) {
+            if(!/modId\s*=\s*["']neoforge["']/.test(block) || /type\s*=\s*["'](?:optional|discouraged|incompatible)["']/.test(block))continue
+            const range=block.match(/versionRange\s*=\s*["']([^"']+)["']/)?.[1]
+            if(range && !matches(target.neoforge,range))throw Error('Este mod requiere NeoForge '+range+'; tu versión configurada es '+target.neoforge)
+        }
+    }
     if(metadata?.gameVersions) {
         const loader = {neoforge:'NeoForge',forge:'Forge',fabric:'Fabric',quilt:'Quilt'}[target.loader]
         if(!metadata.gameVersions.includes(target.minecraft) || (category==='mods' && !metadata.gameVersions.includes(loader))) throw Error('El archivo no es compatible con Minecraft ' + target.minecraft + ' y ' + target.loader)

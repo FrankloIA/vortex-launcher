@@ -1868,3 +1868,9 @@ El usuario pide revisar los 199 mods actuales del launcher, incluidos catálogos
 - launcher-protection exime al administrador verificado antes de leer autoridad o escanear. Fallos de identidad Microsoft o preparación de perfil se informan como error de verificación, no como rol Jugador; no conceden permisos. La interfaz solo muestra Instalación modificada para errores VORTEX_INTEGRITY de jugadores, y elimina un bloqueo anterior cuando se confirma administración.
 - Cuenta Mystwer verificada por la API con UUID autorizado, sin exponer tokens. Nueve pruebas pasaron: alcance de tres carpetas, configs preservadas, separación de perfiles, identidad real y DPAPI. Compilación 1.0.2 nueva completada; no se reparó ni borró contenido del usuario. Falta su prueba del juego; no publicado oficialmente.
 
+
+### Decisión NeoForge 250 y Quark compatible — 2026-10-07
+- Usuario rechaza subir NeoForge: anulados cambios provisionales a 21.1.252 mediante git restore de sus tres archivos. Borrador vuelve a 21.1.250. Sustituido únicamente Quark 4.1-487 por 4.1-486 con SHA-256 79da8f3bbd2d5d5748441203268913c711ee3d11bb327c741a22933bf299fcb3, copia original del pack, comprobada contra metadata exacta y requisito NeoForge.
+- Servidor ya conserva ese mismo Quark 486 y no tenía cambios de Quark pendientes. Publicación de pruebas 1.0.2 sincronizada, revisión 253; compilación compatible completada. No se aprobó el juego ni se publicó oficialmente. La excepción de bajar versión es exclusivamente Quark por petición explícita del usuario.
+- Conservada comprobación del requisito exacto NeoForge al importar/actualizar, además de Minecraft/loader; targetFor incluye neoforge. Evita aceptar Quark 487 con loader250. Nueva solicitud: concept art de barra de instalación galáctica más larga y texto legible; pendiente imagen, no implementación todavía.
+

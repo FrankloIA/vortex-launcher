@@ -1853,3 +1853,6 @@ El usuario pide revisar los 199 mods actuales del launcher, incluidos catálogos
 - Causa reproducida en Electron con copia aislada del perfil: uicore.js y landing.js requerían dependency-alias.cjs relativo a su carpeta de scripts, pero require en scripts del renderer se resuelve respecto a app/app.ejs. Resultado: Cannot find module y posteriores ipcRenderer/LoggerUtil no definidos; carga infinita.
 - Corregidas ambas rutas a ../vortex/dependency-alias.cjs. Reproducción tras arreglo: ready complete, loading none, main block y sin errores de módulos. Sintaxis correcta. Compilación 1.0.2 de pruebas en preparación; no se declara aprobada la prueba del juego ni se publica oficialmente. Cuenta y archivos originales intactos.
 
+
+- Compilación corregida 1.0.2 completada correctamente mediante ensureLauncherBuild; disponible para Probar versión. La ventana abierta anteriormente sigue usando la compilación antigua: cerrar antes de abrir la nueva prueba.
+

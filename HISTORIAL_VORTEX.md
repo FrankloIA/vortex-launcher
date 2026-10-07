@@ -1735,3 +1735,6 @@ Se mueve el control debajo del cuadro Mojang en Ajustes > Cuenta con tarjeta, es
 
 ## 2026-10-07 — Biblioteca personal: sustituir y acabado visual (ChatGPT)
 Configs añade Sustituir, conservando ruta y nombre de destino y verificando permisos en proceso principal; incluye archivos binarios y rechaza cambios de cuenta durante el selector. Los cuatro tabs tienen iconos, buscador separado de su descripción y scroll violeta del launcher. Se elimina Administrador de la descripción de biblioteca. La identidad lateral coloca el rol debajo del nombre y la vista de jugador dice únicamente Jugador. Tests de sustitución, permisos e interfaz; recompilación de pruebas 1.0.2, sin publicación oficial.
+
+## 2026-10-07 — Selección única de navegación (ChatGPT)
+La navegación de la biblioteca personal informa al sincronizador lateral para desmarcar Inicio/Ajustes mientras está abierta. Al salir restituye únicamente el tab visible. Se evita que Ajustes y Mods aparezcan seleccionados simultáneamente. Verificación de interfaz y nueva compilación de pruebas; sin publicación oficial.

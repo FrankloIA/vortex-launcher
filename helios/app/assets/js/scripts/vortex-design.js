@@ -7,10 +7,12 @@ document.addEventListener('DOMContentLoaded', () => {
         const settings = getComputedStyle(byId('settingsContainer')).display !== 'none'
         const home = getComputedStyle(byId('landingContainer')).display !== 'none'
         sidebar.style.display = settings || home ? 'flex' : 'none'
-        byId('vortexHome').classList.toggle('is-active', !settings)
-        byId('vortexSettings').classList.toggle('is-active', settings)
+        const personal=byId('administratorLibrary') && !byId('administratorLibrary').hidden
+        byId('vortexHome').classList.toggle('is-active', !settings && !personal)
+        byId('vortexSettings').classList.toggle('is-active', settings && !personal)
     }
     for(const id of ['settingsContainer','landingContainer']) new MutationObserver(syncSidebar).observe(byId(id), {attributes:true,attributeFilter:['style']})
+    window.addEventListener('vortex:personal-navigation',syncSidebar)
     syncSidebar()
     const icons = {
         Account:'<circle cx="12" cy="7" r="4"/><path d="M4 22v-3a8 8 0 0 1 16 0v3"/>',

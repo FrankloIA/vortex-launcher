@@ -31,6 +31,9 @@ nsis:
   perMachine: false
   allowElevation: true
   allowToChangeInstallationDirectory: true
+  createDesktopShortcut: true
+  createStartMenuShortcut: true
+  shortcutName: 'Vortex Launcher'
 
 # macOS Configuration
 mac:

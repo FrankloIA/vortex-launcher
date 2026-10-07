@@ -575,7 +575,9 @@ get('publishOfficial').onclick=()=>action(async()=>{
     get('testStatus').textContent='Publicando oficialmente en GitHub…'
     const result=await api('publish/official',{id:selected,revision:current().revision});await refresh()
     get('publishSuccess').querySelector('h2').textContent='Versión publicada oficialmente'
-    get('publishSuccessText').textContent='Vortex '+result.published+' se publicó en GitHub. Los jugadores con el nuevo launcher recibirán esta actualización';get('publishSuccess').showModal()
+    get('publishSuccessText').textContent='Vortex '+result.published+' se publicó en GitHub. Los jugadores con el nuevo launcher recibirán esta actualización.'
+    if(result.installerUrl){const link=document.createElement('a');link.href=result.installerUrl;link.textContent=' Descargar instalador de Windows';link.target='_blank';link.rel='noopener';get('publishSuccessText').append(link)}
+    get('publishSuccess').showModal()
 })
 get('publish').onclick = () => action(async () => { const draft = current(); if(!confirm(`¿Publicar la versión ${draft.version} en pruebas?`)) return; const result=await api('publish', { id: draft.id, revision: draft.revision }); await refresh(); get('publishSuccess').querySelector('h2').textContent='Versión de pruebas publicada';get('publishSuccessText').textContent='La versión ' + result.published + ' se publicó correctamente en pruebas. Puedes abrir el launcher exclusivo con Probar versión';get('publishSuccess').showModal();message('Versión publicada en el canal de pruebas') })
 setInterval(async()=>{

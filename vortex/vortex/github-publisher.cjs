@@ -49,10 +49,10 @@ class GithubPublisher {
         if(build) await this.gh(['release','edit',installerTag,'--repo',REPOSITORY,'--draft=false','--latest=true','--notes-file',notesFile])
         const promoted=gate.store.promote(name,revision)
         let cleanup
-        try {cleanup=await require('./release-retention.cjs').cleanup(gate.store,this.gh,this.options.historyFile)}
+        try {cleanup=await require('./release-retention.cjs').cleanup(gate.store,this.gh,this.options.historyFile);Object.assign(cleanup,require('./test-cleanup.cjs').cleanupTests(gate.store))}
         catch(error) {cleanup={deleted:[],pending:true,error:error.message}}
         fs.writeFileSync(path.join(this.root,'github-cleanup.json'),JSON.stringify({at:new Date().toISOString(),...cleanup},null,2))
-        return {...promoted,url:'https://github.com/'+REPOSITORY+'/releases/tag/'+tag,cleanup}
+        return {...promoted,url:'https://github.com/'+REPOSITORY+'/releases/tag/'+tag,installerUrl:build ? 'https://github.com/'+REPOSITORY+'/releases/download/'+installerTag+'/'+encodeURIComponent(path.basename(build.installer)) : null,cleanup}
     }
 }
 module.exports={GithubPublisher,REPOSITORY,CHANNEL_TAG}

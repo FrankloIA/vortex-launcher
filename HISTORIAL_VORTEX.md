@@ -1729,3 +1729,6 @@ Se implementan perfiles locales separados por UUID, rol Microsoft verificado, bi
 
 ## 2026-10-07 — Probar versión sin publicación previa (ChatGPT)
 Se detectó que Probar versión permanecía habilitado sin channels/test.json. Se desactiva hasta publicar en pruebas la versión seleccionada y se sustituye ENOENT por un mensaje con el paso necesario. No se publica automáticamente ni se alteran los archivos del borrador. Prueba de regresión en official-publication.test.cjs.
+
+## 2026-10-07 — Vista de jugador en Cuenta (ChatGPT)
+Se mueve el control debajo del cuadro Mojang en Ajustes > Cuenta con tarjeta, estado y errores visibles. Se evita el doble clic y se descartan respuestas de rol antiguas para que no reviertan el cambio de vista. La verificación Microsoft se comparte entre consultas simultáneas y conserva por 60 segundos exclusivamente una identidad verificada para el mismo token; no concede roles por nombre ni por datos locales. Pendiente validación de partida; no publicación oficial.

@@ -125,6 +125,14 @@ Al cerrar cada tarea registrar aquí: fecha/agente, motivo, archivos o mods afec
 - **Límites:** no se ha probado en el juego. Necesita el mismo jar en el servidor (lógica) y en los clientes (interfaz); un cliente con la V10 no ve los botones, y un servidor con la V10 ignora las instrucciones nuevas. La sincronía no es al milisegundo y una radio colocada en un chunk sin cargar no suena.
 - **Siguiente paso para ChatGPT:** importar el jar verificando el SHA-256, marcarlo como Jarvis y publicarlo como actualización de pruebas. El despliegue en el servidor y su reinicio requieren confirmación del usuario.
 
+### Entrega de Claude — 2026-10-07 (5): Vortex MusicPlayer V12
+
+- **Qué cambió y por qué:** el usuario probó la V11 y vio que con la radio colocada en el suelo no salía «Buscar canción». Causa: el objeto solo se puede colocar apagado, así que la radio colocada empieza apagada, el monitor queda en negro y el botón solo se mostraba con una canción en marcha. La V12 muestra Buscar también con la radio apagada: la enciende en modo radio (sin antena avisa) y abre el buscador. Solo cambia `BoomboxSearchButton`.
+- **Artefacto:** `vortex-musicplayer-3.24.4-1.21.1-vortex12.jar`, SHA-256 `cfc68f3f4b63bb0647b5a1aeaf8546fab455ac683df5ba287e51a5fba36d7706`. Versión del mod `3.24.4-1.21.1-vortex12`. Repositorio `vortex-musicplayer`, commit a025354.
+- **Comprobaciones:** compila y las 22 clases pasan la verificación ASM. No probado en el juego.
+- **Dato observado:** la interfaz de la V11 se dibuja bien en el cliente del usuario (botones, rótulo y «En bolsillo»); ese cliente confirmó el diseño.
+- **Siguiente paso para ChatGPT:** importar la V12 verificando el SHA-256 en lugar de la V11.
+
 ### Código posterior a la primera recopilación del historial
 
 - 3d59a0b Conservar inventarios y cambios antes de retirar publicaciones antiguas para limitar el almacenamiento de GitHub
@@ -1910,3 +1918,15 @@ Captura Failed to fetch: consulta real /api/state responde HTTP200, GitHub dispo
 
 ## 2026-10-07 — Desbloqueo de publicación: despliegue Clean Swing ya realizado
 Usuario reclama que solo ve Encontré problemas y quiere publicar. Consulta real: prueba passed y elegible, borrador revisión261; plan servidor conserva una adición Clean Swing antigua. Verificación hosting de solo lectura: servidor running, JAR Clean Swing SHA256 2e4120e52ccd8a920f8dce5361ec98c21ebd4a1dc49f2501bc97c877800813aa exacto. Recibo privado del despliegue coincide con borrador y hash. Se finaliza ese recibo started=true/phase=verified, plan.base=plan.files, changes=[], lastDeployment comprobado, baseline incorpora solo Clean Swing. assertOfficial pasa y prueba sigue passed/eligible revisión261. No se concede aprobación, no se modifica servidor, no se reinicia ni publica por el usuario. No se edita código del launcher/panel para no invalidar la prueba ya aprobada. Acceso guiado adicional a Servidor/Publicar y ocultar Encontré problemas se mencionaron en commentary pero no se implementaron en esta tarea: el bloqueo era el registro pendiente, no la falta del botón Publicar oficialmente ya existente. Recargar panel muestra plan sin cambios y permite el botón existente. No publicar rutas operativas privadas en historial.
+
+## 2026-10-07 — Publicación bloqueada por origen localhost/127.0.0.1
+El usuario pulsó Publicar oficialmente sin recibir confirmación. Estado real: prueba passed/eligible, GitHub listo, canal stable vacío. La petición POST devolvía HTTP403 Origen no permitido: admin-server comparaba Origin únicamente con http://127.0.0.1:43117, mientras la interfaz puede abrirse como http://localhost:43117. Se permite ahora el par equivalente local localhost/127.0.0.1 en el mismo puerto, manteniendo rechazo de otros orígenes y Content-Type JSON. No se reintentó publicación después del 403; falta reiniciar panel y pulsar de nuevo. No se ha publicado 1.0.2 oficialmente ni se ejecutó limpieza.
+
+## 2026-10-07 — Diagnóstico del crash 08:04:12
+El último crash no procede del launcher ni de Iris como causa primaria. FML reporta fallo de carga de Supplementaries 3.9.9 durante FMLCommonSetup, con `ArrayIndexOutOfBoundsException: Index 128 out of bounds for length 65` en fastutil, llamada por Zeta 1.1-40 desde `quark@4.1-486` `MapWashingModule.setup`. La combinación Quark486/Supplementaries399/Zeta provoca el fallo al registrar opciones/entradas. Iris 1.8.14 y Sodium 0.8.12 muestran después `Mod with id iris not found in ModList`, efecto secundario de la carga abortada. NeoForge sigue 21.1.250. No se cambiaron archivos ni versiones. Pendiente decidir una combinación compatible; no volver a bajar NeoForge ni aplicar un downgrade no autorizado.
+### 2026-10-07 — Desactivado Map Washing de Quark
+
+- Se desactivó únicamente `"Map Washing"` en `config/quark-common.toml` del cliente y del servidor.
+- Motivo: Quark 4.1-486 provocaba `ArrayIndexOutOfBoundsException` en `MapWashingModule` al cargar Supplementaries con NeoForge 21.1.250.
+- La revisión se publicó de nuevo en el canal de pruebas como Vortex 1.0.2 (revisión 264). No se modificaron NeoForge, Sodium, Iris ni el resto de ajustes de Quark.
+

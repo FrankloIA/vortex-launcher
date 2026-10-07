@@ -1833,3 +1833,8 @@ El usuario pide revisar los 199 mods actuales del launcher, incluidos catálogos
 - Nuevo catalog-dependencies.cjs y pruebas; integración en admin-server.cjs. Cuatro pruebas pasaron, incluida API privada. Reiniciado solo el panel para cargar el arreglo. No se actualizaron mods en nombre del usuario y falta comprobar su selección real.
 - Las mejoras de clasificación por hash y política Distant Horizons de la auditoría en curso se registran junto al backend para mantener sus imports coherentes; la auditoría y sincronización final siguen pendientes.
 
+
+### Descargas redirigidas de CurseForge — 2026-10-07
+- Causa real de fetch failed en Giselle Addon: unexpected redirect de edge.forgecdn.net. Providers ahora sigue hasta tres redirecciones manuales, validando HTTPS y CDN permitida en cada salto, sin credenciales y con un único límite de tiempo. Conserva validación de tamaño y hashes.
+- Verificada descarga oficial 8.5: 494842 bytes, hashes correctos, sin instalar. Prueba automatizada comprueba redirección oficial, bloqueo de destino externo antes de solicitarlo y límite de redirecciones. Reiniciado solo el admin panel. Pendiente actualización elegida por el usuario.
+

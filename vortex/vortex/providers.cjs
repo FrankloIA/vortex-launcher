@@ -49,9 +49,17 @@ class Providers {
     }
     async download(file) {
         if(!file.url) throw Error('El autor no permite esta descarga externa')
-        const url = new URL(file.url)
-        if(url.protocol !== 'https:' || !['cdn.modrinth.com', 'edge.forgecdn.net', 'mediafilez.forgecdn.net', 'media.forgecdn.net'].includes(url.hostname)) throw Error('Servidor de descarga no permitido')
-        const response = await fetch(url, { redirect: 'error', signal: AbortSignal.timeout(60000), headers: { 'User-Agent': 'VortexLauncher/1.0' } })
+        let url = new URL(file.url), response
+        const signal = AbortSignal.timeout(60000)
+        for(let redirects=0; ; redirects++) {
+            if(url.protocol !== 'https:' || url.username || url.password || (url.port && url.port!=='443') || !['cdn.modrinth.com', 'edge.forgecdn.net', 'mediafilez.forgecdn.net', 'media.forgecdn.net'].includes(url.hostname)) throw Error('Servidor de descarga no permitido')
+            response = await fetch(url, { redirect: 'manual', signal, headers: { 'User-Agent': 'VortexLauncher/1.0' } })
+            if(![301,302,303,307,308].includes(response.status)) break
+            const location=response.headers.get('location')
+            await response.body?.cancel()
+            if(!location || redirects>=3) throw Error('Redirección de descarga inválida o excesiva')
+            url=new URL(location,url)
+        }
         if(!response.ok) throw Error('Descarga: HTTP ' + response.status)
         const chunks = []; let size = 0
         for await(const chunk of response.body) { size += chunk.length; if(size > 64 * 1048576) throw Error('Descarga supera 64 MiB'); chunks.push(chunk) }

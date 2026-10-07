@@ -51,6 +51,7 @@ const loggerLanding = LoggerUtil.getLogger('Landing')
  * @param {boolean} loading True if the loading area should be shown, otherwise false.
  */
 function toggleLaunchArea(loading){
+    window.VortexInstallation?.toggle(loading)
     if(loading){
         launch_details.style.display = 'flex'
         launch_content.style.display = 'none'
@@ -66,7 +67,7 @@ function toggleLaunchArea(loading){
  * @param {string} details The new text for the loading details.
  */
 function setLaunchDetails(details){
-    launch_details_text.innerHTML = details
+    launch_details_text.textContent = details; window.VortexInstallation?.task(details)
 }
 
 /**
@@ -77,7 +78,7 @@ function setLaunchDetails(details){
 function setLaunchPercentage(percent){
     launch_progress.setAttribute('max', 100)
     launch_progress.setAttribute('value', percent)
-    launch_progress_label.innerHTML = percent + '%'
+    launch_progress_label.innerHTML = percent + '%'; window.VortexInstallation?.progress(percent)
 }
 
 /**
@@ -144,11 +145,13 @@ async function checkOfficialPackUpdate() {
 }
 setInterval(()=>checkOfficialPackUpdate().catch(error=>loggerLanding.warn('Actualización del pack',error.message)),600000)
 document.getElementById('launch_button').addEventListener('click', async e => {
+    window.VortexInstallation?.arm()
     loggerLanding.info('Launching game..')
     try {
         if(integrityBlocked)return
-        try{await refreshAccountRole();require('../vortex/launcher-protection.cjs').check(ConfigManager.getInstanceDirectory(),ConfigManager.getSelectedServer(),{administrator:administratorSession})}catch(error){showIntegrityFailure(error);return}
-        if(await checkRequiredLauncherUpdate(true)) return
+        window.VortexInstallation?.toggle(true)
+        try{await refreshAccountRole();window.VortexInstallation?.arm();require('../vortex/launcher-protection.cjs').check(ConfigManager.getInstanceDirectory(),ConfigManager.getSelectedServer(),{administrator:administratorSession})}catch(error){showIntegrityFailure(error);return}
+        if(await checkRequiredLauncherUpdate(true)){window.VortexInstallation?.toggle(false);return}
         const server = (await DistroAPI.getDistribution()).getServerById(ConfigManager.getSelectedServer())
         const jExe = ConfigManager.getJavaExecutable(ConfigManager.getSelectedServer())
         if(jExe == null){
@@ -545,12 +548,12 @@ async function dlAsync(login = true) {
     if(isNeoForge(serv)) {
         try {
             setLaunchDetails('Verificando archivos del pack Vortex')
-            await require('./assets/js/pack-snapshot').verifyPackSnapshot(serv, ConfigManager.getInstanceDirectory(),{administrator:await refreshAccountRole()})
+            await require('./assets/js/pack-snapshot').verifyPackSnapshot(serv, ConfigManager.getInstanceDirectory(),{administrator:await refreshAccountRole(),onProgress:event=>window.VortexInstallation?.event({...event,message:'Instalando y verificando el contenido de Vortex'})})
             const prepared = await prepareNeoForge({
                 commonDir: ConfigManager.getCommonDirectory(),
                 server: serv,
                 javaExecutable: ConfigManager.getJavaExecutable(serv.rawServer.id),
-                onProgress: event => {
+                onProgress: event => { window.VortexInstallation?.event(event);
                     setLaunchDetails(event.message)
                     setLaunchPercentage(event.percent)
                 }
@@ -661,7 +664,7 @@ async function dlAsync(login = true) {
                 DiscordWrapper.updateDetails(Lang.queryJS('landing.discord.loading'))
                 proc.stdout.on('data', gameStateChange)
             }
-            proc.stdout.removeListener('data', tempListener)
+            window.VortexInstallation?.complete();proc.stdout.removeListener('data', tempListener)
             proc.stderr.removeListener('data', gameErrorListener)
         }
         const start = Date.now()

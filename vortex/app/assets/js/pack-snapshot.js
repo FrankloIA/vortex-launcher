@@ -10,7 +10,7 @@ async function verifyPackSnapshot(server, instancesRoot, options={}) {
         const result=await require('../../../vortex/official-release.cjs').prepareOfficialRelease(instancesRoot,undefined,options);require('../../../vortex/launcher-protection.cjs').check(instancesRoot,server.rawServer.id,options);return result
     }
     if(server.rawServer.id === 'vortex-published-test') {
-        const result=await require('../../../vortex/test-release.cjs').prepareTestRelease(instancesRoot,undefined,undefined,options);require('../../../vortex/launcher-protection.cjs').check(instancesRoot,server.rawServer.id);return result
+        const result=await require('../../../vortex/test-release.cjs').prepareTestRelease(instancesRoot,undefined,options.onProgress,options);require('../../../vortex/launcher-protection.cjs').check(instancesRoot,server.rawServer.id,options);return result
     }
     if(!server.rawServer.vortexPackSnapshot) return
     if(server.rawServer.id !== 'vortex-pack-test') throw new Error('Instancia de pack de pruebas desconocida')

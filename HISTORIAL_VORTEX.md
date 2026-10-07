@@ -1877,3 +1877,9 @@ El usuario pide revisar los 199 mods actuales del launcher, incluidos catálogos
 
 - Concept art completado: docs/concepts/barra-instalacion-galactica.png. Barra ancha cian/violeta con textura galáctica, vórtice al frente y texto de instalación separado sin recortar, porcentaje/archivo/progreso y pasos Java/NeoForge/Mods. Solo propuesta visual; no se implementó aún. Mantiene NeoForge 21.1.250 en el ejemplo.
 
+
+### Pantalla galáctica de primera instalación implementada — 2026-10-07
+- Implementado el concept art con los recursos reales del launcher: fondo Vortex, panel amplio oscuro, degradado cian/violeta con partículas animadas y vórtice giratorio al frente, texto completo con ajuste de línea, porcentaje, bytes cuando se conocen, archivo cuando el evento lo informa e indicadores Java/NeoForge/contenido. installation.css e installation-design.js; integrado en app.ejs y funciones de progreso de landing.js.
+- Aparece al pulsar Jugar para la primera instalación y oculta/inactiva la interfaz anterior. La marca se guarda por instancia del perfil seleccionado solo cuando Minecraft termina de cargar. Ante error se cierra y permite reintentar; posteriores arranques completados conservan el progreso compacto. Movimiento reducido del sistema respetado. No se fabrican tamaños ni conteos.
+- NeoForge informa bytes reales de descarga de Minecraft. pack-snapshot transmite el progreso y también la excepción administrador a launcher-protection (antes omitida en esa llamada). Compilación 1.0.2 preparada; verificación visual del ejecutable y cinco comprobaciones reales de DOM: primera vista, porcentaje, ocultación al fallar, no mostrar tras completar y sin desbordamiento horizontal, todas correctas. Captura privada con valores de demostración en .runtime/installation-design.png. No se ejecutó una descarga completa ni se aprobó el juego; prueba del usuario pendiente.
+

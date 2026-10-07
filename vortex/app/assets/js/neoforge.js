@@ -97,7 +97,7 @@ async function install({ commonDir, server, javaExecutable, onProgress = () => {
     const invalid = Object.values(await mojang.validate(async () => {})).flat()
     if(invalid.length) {
         const size = getExpectedDownloadSize(invalid)
-        await downloadQueue(invalid, received => onProgress({ phase: 'downloading', message: 'Descargando archivos oficiales de Minecraft', percent: Math.min(100, Math.floor(received / size * 100)) }))
+        await downloadQueue(invalid, received => onProgress({ phase: 'downloading', message: 'Descargando archivos oficiales de Minecraft', received, total:size, percent: Math.min(100, Math.floor(received / size * 100)) }))
         // Verificar el contenido, incluso cuando el tamaño recibido coincide.
         for(const asset of invalid) {
             if(!await validateLocalFile(asset.path, asset.algo, asset.hash)) {

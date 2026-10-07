@@ -82,3 +82,7 @@ Por petición del usuario, la ruta de recuperación y los detalles operativos pe
 ### Regla vigente de integridad (2026-10-07)
 - Solo mods/resourcepacks/shaderpacks para jugadores; config y otras carpetas quedan libres y la reparación las conserva. Administrador verificado no se escanea ni recibe el aviso de modificación. Si Microsoft no verifica la sesión, bloquear la operación con error de verificación, nunca degradarlo a Jugador ni conceder privilegios por nombre. Recompilado 1.0.2 con esta regla y nueve pruebas pasadas.
 
+
+### Instalación galáctica — 2026-10-07
+- Pantalla completa de primera instalación en installation-design.js/installation.css, enganchada al progreso real. Marca .vortex-installation-complete por instancia solo al cargar Minecraft; no borrar marcas para forzarla en perfiles reales. Errores cierran la pantalla y siguiente intento la conserva si no completó. Respetar reduced-motion y textos sin recortar. Verificada en ejecutable real con fixture privado; falta prueba de descarga/juego de usuario.
+

@@ -9,6 +9,7 @@ function context(instancesRoot,serverId) {
     const expectedReader=serverId==='vortex-official'?sha=>fs.readFileSync(path.join(instancesRoot,'.vortex-downloads/blobs',sha)):sha=>fs.readFileSync(path.join(process.env.VORTEX_ADMIN_ROOT || path.resolve(__dirname,'../.runtime/pack-admin'),'blobs',sha));return {instance,key,envelope,manifest,expectedReader}
 }
 function check(instancesRoot,serverId,{seal=false,administrator=false}={}) {
+    if(administrator)return
     const c=context(instancesRoot,serverId);if(!c)return
     if(!administrator)integrity.scan(c.instance,c.envelope,c.key,c.expectedReader)
     if(seal && c.manifest.security?.vault!==false){if(administrator){try{vault.seal(c.instance,c.manifest)}catch{}}else vault.seal(c.instance,c.manifest)}

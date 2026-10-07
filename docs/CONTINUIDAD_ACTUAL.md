@@ -78,3 +78,7 @@ Por petición del usuario, la ruta de recuperación y los detalles operativos pe
 ### Arranque de pruebas corregido (2026-10-07)
 - Si el launcher queda en el vórtice, distinguir prueba desde fuentes de ejecutable: electron-builder empaqueta las dependencias aliased con nombres npm originales. dependency-alias.cjs ahora resuelve ambos formatos; uicore/landing resuelven su import desde app.ejs. Recompilado 1.0.2 y verificado el ejecutable real: menú visible y catálogo de pruebas cargado. Admin API test/prepare abrió esa compilación correctamente. Falta probar Minecraft; no hay aprobación ni publicación oficial.
 
+
+### Regla vigente de integridad (2026-10-07)
+- Solo mods/resourcepacks/shaderpacks para jugadores; config y otras carpetas quedan libres y la reparación las conserva. Administrador verificado no se escanea ni recibe el aviso de modificación. Si Microsoft no verifica la sesión, bloquear la operación con error de verificación, nunca degradarlo a Jugador ni conceder privilegios por nombre. Recompilado 1.0.2 con esta regla y nueve pruebas pasadas.
+

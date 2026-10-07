@@ -1862,3 +1862,9 @@ El usuario pide revisar los 199 mods actuales del launcher, incluidos catálogos
 - dependency-alias.cjs conserva resolución por alias en desarrollo y añade alternativa limitada a esos dos paquetes y submódulos cuando el alias no existe. Nueva prueba de resolución en ambos entornos; API privada sigue pasando.
 - Recompilación 1.0.2 terminada. Verificación del ejecutable real en perfil aislado con diagnóstico de Electron: sin excepciones de módulos, loading none, main block, catálogo con vortex-published-test. Probar versión vía API del panel respondió 200, launcherOpened true, versión 1.0.2 y abrió la compilación nueva para el usuario. No se inició Minecraft ni se aprobó la prueba ni se publicó oficialmente.
 
+
+### Alcance de integridad y excepción de administrador — 2026-10-07
+- Nueva decisión del usuario sustituye la regla anterior de bloquear configuraciones: comprobar únicamente mods, resourcepacks y shaderpacks. instance-integrity ya no incluye config/defaultconfigs/kubejs/scripts ni runtime Iris. Reparar conserva esas carpetas, Java, mundos y el resto; restaura solo contenido protegido y sus metadatos/almacén cifrado en el perfil afectado.
+- launcher-protection exime al administrador verificado antes de leer autoridad o escanear. Fallos de identidad Microsoft o preparación de perfil se informan como error de verificación, no como rol Jugador; no conceden permisos. La interfaz solo muestra Instalación modificada para errores VORTEX_INTEGRITY de jugadores, y elimina un bloqueo anterior cuando se confirma administración.
+- Cuenta Mystwer verificada por la API con UUID autorizado, sin exponer tokens. Nueve pruebas pasaron: alcance de tres carpetas, configs preservadas, separación de perfiles, identidad real y DPAPI. Compilación 1.0.2 nueva completada; no se reparó ni borró contenido del usuario. Falta su prueba del juego; no publicado oficialmente.
+

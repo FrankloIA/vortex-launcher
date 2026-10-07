@@ -1,11 +1,10 @@
 const fs=require('fs'),path=require('path')
 const {verify,safe}=require('./release-store.cjs'),{fileHash}=require('./pack-bundles.cjs')
-const roots=['mods','resourcepacks','shaderpacks','config','defaultconfigs','kubejs','scripts']
+const roots=['mods','resourcepacks','shaderpacks']
 class IntegrityError extends Error {constructor(files){super('Has realizado modificaciones a los archivos del juego. Debes reparar o descargar nuevamente la instalación para continuar');this.code='VORTEX_INTEGRITY';this.files=files}}
 function scan(instance,envelope,key,expectedReader) {
     const manifest=verify(envelope,key),expected=new Map(),issues=[]
     for(const f of manifest.files){if(!roots.includes(f.path.split('/')[0]))continue;const entry={...f};if(f.path==='config/iris.properties'&&!entry.integrityHash&&expectedReader){const original=expectedReader(f.sha256);if(require('./release-store.cjs').hash(original)!==f.sha256)throw Error('Configuración original alterada');entry.integrityHash=require('./release-store.cjs').hash(original.toString('utf8').split(/\r?\n/).filter(line=>!/^\s*(shaderPack|enableShaders)\s*=/.test(line)).join('\n').trim())}expected.set(f.path.toLowerCase(),entry)}
-    if(manifest.security?.runtimeIris || (!expected.has('config/iris.properties') && fs.existsSync(path.join(instance,'config/iris.properties'))))expected.set('config/iris.properties',{path:'config/iris.properties',integrityHash:require('./release-store.cjs').hash(Buffer.alloc(0))})
     for(const f of expected.values()) {
         let target
         try{target=safe(instance,f.path);if(!fs.existsSync(target) && /^mods\/DistantHorizons/i.test(f.path))target=safe(instance,f.path+'.disabled')

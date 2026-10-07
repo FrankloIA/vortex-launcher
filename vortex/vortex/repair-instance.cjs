@@ -1,5 +1,5 @@
 const fs=require('fs'),path=require('path'),crypto=require('crypto')
-const roots=['mods','resourcepacks','shaderpacks','config','defaultconfigs','kubejs','scripts','.vortex-vault']
+const roots=['mods','resourcepacks','shaderpacks','.vortex-vault']
 async function repair(instancesRoot,serverId,onProgress=()=>{}) {
     if(!['vortex-official','vortex-published-test'].includes(serverId))throw Error('Instancia no reparable')
     const instance=path.resolve(instancesRoot,serverId),work=path.resolve(instancesRoot,'.vortex-repair-'+crypto.randomUUID()),stage=path.join(work,serverId),backup=path.join(work,'previous'),moved=[]

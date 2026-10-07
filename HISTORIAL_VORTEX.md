@@ -1820,3 +1820,6 @@ El usuario pide revisar los 199 mods actuales del launcher, incluidos catálogos
 ### Título de la pestaña del panel — 2026-10-07
 - Título solicitado: Vortex . Admin Panel. Cambiado en admin.html y verificado en el HTML servido por el panel activo. Conserva el favicon del vórtice.
 
+
+- Corrección solicitada del título: Vortex Admin Panel, sin punto. Verificado en el HTML servido.
+

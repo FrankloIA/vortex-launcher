@@ -50,6 +50,9 @@ Comprobación posterior: API y DNS muestran 209.222.97.103:25622. Se publicó es
 
 ### Coordinación con Claude y próxima acción
 
+Ajustes de navegación — ChatGPT, 2026-10-07: Crear es la pestaña inicial. Biblioteca cliente y servidor muestran todas las filas mediante desplazamiento continuo, sustituyendo la paginación de cuatro filas. Actualizar estado está en Estatus; Crear backup está en Publicar; se ocultan Cargar biblioteca y Vincular imágenes/actualizaciones. Se ocultan las líneas duplicadas de estado/jugadores. Los trabajos previos exitosos ya no generan un aviso genérico; solo el despliegue recién completado muestra confirmación en Publicar durante seis segundos, sin ocultar errores. No se cambian archivos del pack ni del hosting; misma versión 1.0.2. Fuente: admin.js, server-tabs.js, design.js; verificación UI adaptada.
+
+
 Servidor organizado — ChatGPT, 2026-10-07: se implementaron Estatus, Consola y Publicar; métricas reales de juego/jugadores/RAM/CPU, siete controles de consola con descripciones y Arrancar/Apagar con validación de estado y aviso previo al apagado. Los controles de API quedan ocultos y sustituyen la alternativa visible antes documentada. Publicar conserva cambios y recuperación e incluye el backup. Backup manual y despliegue verifican una copia nueva antes de borrar la anterior; queda una única copia al terminar. API real confirma límite de dos plazas temporales. Si falla el backup o su limpieza no se aplican archivos. Fuente: server-tabs.js, design.css, admin.html, console.js, astrolnodes-api, server-backup, server-workspace y admin-server; pruebas de backup, integración e interfaz. Pasaron 20 pruebas, incluida conservación del backup anterior, quota y borrado fallido. No se modificaron mods/configs del pack ni producción; no se ejecutaron backup, borrado o power reales. Panel local recargado. Se mantiene 1.0.2 sin publicación oficial; detalle en docs/stage-3/server-integration.md.
 
 

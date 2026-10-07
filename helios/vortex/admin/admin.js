@@ -2,7 +2,7 @@ const get = id => document.getElementById(id)
 const names = { mods: 'Mods', resourcepacks: 'Resourcepacks', shaderpacks: 'Shaders', config: 'Configuraciones' }
 const extensions = { mods: '.jar', resourcepacks: '.zip', shaderpacks: '.zip', config: '.json,.toml,.properties,.txt,.cfg,.yaml,.yml,.conf,.ini' }
 let state, selected, category = 'mods', replacePath, editing, folder = '', originalText = ''
-let panel = 'library'
+let panel = 'create'
 let catalogOffset=0, catalogKey='', catalogRequest=0
 let actionActive=false
 let libraryScope='client',serverLibrary,serverRequest=0,lastServerJob
@@ -22,7 +22,7 @@ extensions.plugins='.jar';extensions.defaultconfigs=extensions.config
 function serverPlanRender() {
     get('serverChanges').textContent=serverLibrary?.changes?.length?serverLibrary.changes.map(c=>({add:'Añadir',replace:'Sustituir',remove:'Quitar'}[c.type])+' · '+c.path).join('\n'):'Sin cambios del servidor preparados en esta versión'
     get('serverDeploy').disabled=!canEdit() || !serverLibrary?.changes?.length || serverLibrary?.job?.running
-    get('serverJob').textContent=serverLibrary?.job?serverLibrary.job.progress+(serverLibrary.job.error?' · '+serverLibrary.job.error:''):''
+    const job=serverLibrary?.job;get('serverJob').textContent=job?.running?job.progress:job?.error?job.error:job?.ok && job.label==='Preparando despliegue del servidor' && Date.now()-job.finishedAt<6000?'Cambios del servidor guardados correctamente':''
 }
 async function loadServerLibrary() {const seq=++serverRequest,id=selected;const data=await api('server/library'+(id?'?id='+encodeURIComponent(id):''));if(seq!==serverRequest || selected!==id)return;serverLibrary=data;serverPlanRender()}
 async function refreshServer() {
@@ -571,6 +571,6 @@ get('publishOfficial').onclick=()=>action(async()=>{
 get('publish').onclick = () => action(async () => { const draft = current(); if(!confirm(`¿Publicar la versión ${draft.version} en pruebas?`)) return; const result=await api('publish', { id: draft.id, revision: draft.revision }); await refresh(); get('publishSuccess').querySelector('h2').textContent='Versión de pruebas publicada';get('publishSuccessText').textContent='La versión ' + result.published + ' se publicó correctamente en pruebas. Puedes abrir el launcher exclusivo con Probar versión';get('publishSuccess').showModal();message('Versión publicada en el canal de pruebas') })
 setInterval(async()=>{
     if(!state || actionActive) return
-    try {const result=await api('test/status');if(current() && result.id===selected) current().testResult=result.testResult;state.githubReady=result.githubReady;state.publishing=result.publishing;if(panel==='server' || libraryScope==='server'){await loadServerLibrary();if(serverLibrary?.job && !serverLibrary.job.running && lastServerJob!==serverLibrary.job.id){lastServerJob=serverLibrary.job.id;if(serverLibrary.job.ok)message('Operación del servidor completada');else if(serverLibrary.job.error)message(serverLibrary.job.error)}if(panel==='server')await refreshServer()}render()} catch {}
+    try {const result=await api('test/status');if(current() && result.id===selected) current().testResult=result.testResult;state.githubReady=result.githubReady;state.publishing=result.publishing;if(panel==='server' || libraryScope==='server'){await loadServerLibrary();if(serverLibrary?.job && !serverLibrary.job.running && lastServerJob!==serverLibrary.job.id){lastServerJob=serverLibrary.job.id;if(serverLibrary.job.error)message(serverLibrary.job.error)}if(panel==='server')await refreshServer()}render()} catch {}
 },5000)
 action(async () => { await refresh() })

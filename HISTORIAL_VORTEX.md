@@ -1765,3 +1765,6 @@ Se completan también los nombres de archivos de pruebas y documentos auxiliares
 
 ## 2026-10-07 — Entrega documental completa para Claude (ChatGPT)
 Se actualizan todos los Markdown rastreados con enlace a docs/CONTINUIDAD_ACTUAL.md, corrigiendo estados antiguos, rutas, administrador, biblioteca personal, sustitución, navegación, editor, integridad, reparación aislada, cifrado y límites. AGENTS/CLAUDE/PROMPT remiten a la entrega vigente. No se afirma edición única con colores, sincronización cloud, cifrado total ni partida real aprobada. Panel consultado: borrador 1.0.2 revisión 20, 726 archivos; canal test 1.0.2, stable ausente. Solo documentación; no se modifica ni publica el pack. README ajeno conservado.
+
+## 2026-10-07 — Plan de addon SecurityCraft (ChatGPT)
+El usuario solicita listar compatibilidades de refuerzo empezando por Biomes O Plenty y Macaw’s Biomes O Plenty. Se consulta el inventario cliente actual y se propone el orden en docs/SECURITYCRAFT_ADDON_PLAN.md. La API pública permite addons, pero la versión modificada exige revisión. No se ha creado repositorio, compilado addon, cambiado JAR ni desplegado nada. Pendiente cotejar inventario servidor, IDs de bloques, API y familias seguras; publicar únicamente mediante Admin Panel.

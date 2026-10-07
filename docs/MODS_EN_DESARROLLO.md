@@ -76,3 +76,6 @@ Los bytes originales de los JAR no se modifican. El launcher introduce un almac�
 
 ### Entrega vigente de launcher — 7 de octubre de 2026
 La protección local no identifica ni cifra automáticamente todos los parches propios: conserva los hashes registrados y sus bytes. No se editaron mods en esta entrega documental. Los repositorios de mods de Claude se consultan por su registro real; no suponer sincronía de chats. Fuente del launcher: vortex/. Reglas de perfiles, pruebas y limitaciones: CONTINUIDAD_ACTUAL.md.
+
+### Addon de refuerzo SecurityCraft — planificación
+Estado: lista propuesta, sin fuentes ni artefacto. Responsable/repositorio por asignar. Prioridad obligatoria: Biomes O Plenty, después Macaw’s Biomes O Plenty. Plan y condiciones: SECURITYCRAFT_ADDON_PLAN.md. No sustituir el SecurityCraft modificado; confirmar versión/API y presencia cliente-servidor. La compatibilidad de todos los bloques no está garantizada.

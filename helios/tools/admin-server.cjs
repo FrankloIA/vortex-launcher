@@ -166,15 +166,21 @@ function startAdmin({ root = path.resolve(__dirname, '../.runtime/pack-admin'), 
                         try{await astrol.details();result=hostingCredentials.set(body.token,body.persist===true);hostingStatus.cached=null}catch(error){hostingCredentials.session=previous;throw error}break
                     }
                     case '/api/server/power': {
-                        if(body.signal!=='restart')throw Error('Este panel solo permite reiniciar con aviso o arrancar el servidor detenido')
-                        result=serverWorkspace.start('Reinicio del servidor con aviso de 10 segundos',()=>astrol.restart());break
+                        if(!['start','stop','restart'].includes(body.signal))throw Error('Operación de encendido inválida')
+                        result=serverWorkspace.start({start:'Arrancando servidor',stop:'Apagando servidor con aviso de 10 segundos',restart:'Reiniciando servidor con aviso de 10 segundos'}[body.signal],async()=>{
+                            if(body.signal==='restart')return astrol.restart()
+                            const status=await astrol.status()
+                            if(body.signal==='start'){if(status.state!=='offline')throw Error('El servidor debe estar apagado para arrancarlo');await astrol.power('start')}
+                            else{if(status.state!=='running')throw Error('El servidor debe estar encendido para apagarlo');await astrol.warn();await astrol.power('stop');await astrol.waitOffline()}
+                            return {requested:true}
+                        });break
                     }
                     case '/api/server/import': {
                         if(store.workspace().activeId && serverWorkspace.current(store.workspace().activeId)?.changes.length)throw Error('Hay cambios preparados; aplícalos o cancela la versión antes de recargar la base')
                         result=serverWorkspace.start('Cargando biblioteca del servidor',()=>serverWorkspace.inventory());break
                     }
                     case '/api/server/analyze': result=serverWorkspace.start('Identificando imágenes y actualizaciones',job=>serverWorkspace.analyze(metadata,job));break
-                    case '/api/server/backup': result=serverWorkspace.start('Creando backup',()=>astrol.backup('Vortex manual '+new Date().toISOString()));break
+                    case '/api/server/backup': result=serverWorkspace.start('Creando backup',job=>require('../vortex/server-backup.cjs').createServerBackup(astrol,'Vortex manual '+new Date().toISOString(),job));break
                     case '/api/server/deploy': {
                         serverWorkspace.editable(body.id,body.revision)
                         result=serverWorkspace.start('Preparando despliegue del servidor',job=>serverWorkspace.deploy(body.id,body.revision,job));break
@@ -449,7 +455,7 @@ function startAdmin({ root = path.resolve(__dirname, '../.runtime/pack-admin'), 
             }
             if(req.url === '/vortex-logo.png' && req.method==='GET') {res.writeHead(200,{'Content-Type':'image/png'});return res.end(fs.readFileSync(path.resolve(__dirname,'../app/assets/images/vortex-icon-pixel.png')))}
             if(req.url==='/vortex-background.png' && req.method==='GET'){res.writeHead(200,{'Content-Type':'image/png'});return res.end(fs.readFileSync(path.resolve(__dirname,'../app/assets/images/vortex-night.png')))}
-            const assets = { '/console.js': ['console.js','text/javascript'], '/design.js': ['design.js','text/javascript'], '/design.css': ['design.css','text/css'], '/': ['admin.html', 'text/html; charset=utf-8'], '/admin.js': ['admin.js', 'text/javascript'], '/syntax.js': ['syntax.js', 'text/javascript'], '/admin.css': ['admin.css', 'text/css'] }
+            const assets = { '/server-tabs.js': ['server-tabs.js','text/javascript'], '/console.js': ['console.js','text/javascript'], '/design.js': ['design.js','text/javascript'], '/design.css': ['design.css','text/css'], '/': ['admin.html', 'text/html; charset=utf-8'], '/admin.js': ['admin.js', 'text/javascript'], '/syntax.js': ['syntax.js', 'text/javascript'], '/admin.css': ['admin.css', 'text/css'] }
             if(req.method !== 'GET' || !assets[req.url]) return reply(404, { error: 'Ruta no encontrada' })
             const [file, type] = assets[req.url]
             res.writeHead(200, { 'Content-Type': type }); res.end(fs.readFileSync(path.join(__dirname, '../vortex/admin', file)))

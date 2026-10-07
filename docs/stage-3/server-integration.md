@@ -18,7 +18,7 @@ Entrega ChatGPT, 2026-10-07. Fuente: `helios`; el runtime es privado e ignorado 
 
 ## Conexión y uso
 
-Arrancar `helios/tools/admin-server.cjs` con Node 22. El panel está en http://127.0.0.1:43117. La variable de usuario Windows `VORTEX_PTERODACTYL_API_TOKEN` se consulta aunque no esté heredada en el proceso. Alternativa: Servidor → clave de acceso → Conectar; guardar en este PC cifra la clave mediante DPAPI del usuario actual. No incluir claves en comandos públicos, repositorios o instaladores.
+Arrancar `helios/tools/admin-server.cjs` con Node 22. El panel está en http://127.0.0.1:43117. La variable de usuario Windows `VORTEX_PTERODACTYL_API_TOKEN` se consulta aunque no esté heredada en el proceso. Los controles de API se retiraron de la interfaz por petición del usuario; la credencial se administra fuera del navegador mediante variable Windows o el almacenamiento DPAPI existente. No incluir claves en comandos públicos, repositorios o instaladores.
 
 Servidor fijado: `gamedash.astrolnodes.net`, identificador `d2c7637e`. No se envía Bearer a URLs de transferencia firmadas; se restringen a HTTPS del hosting. La consulta real confirmó online, 0/20 jugadores y 932 archivos: 180 mods, 356 config, 1 defaultconfigs y 395 archivos de plugins. El inventario omite mundos, librerías, logs, backups y enlaces simbólicos.
 
@@ -51,3 +51,11 @@ Preparar recuperación genera otro conjunto de cambios para revisión; no despli
 - `tools/verify-hosting-ui.cjs`: interfaz Electron con fixture; edición de config de servidor sin mezclar biblioteca cliente.
 
 Las pruebas simuladas y la interfaz pasaron. La conexión e inventario se comprobaron contra el hosting real. No se ensayó despliegue, reinicio ni restauración en producción; ejecutar esas operaciones exige una versión revisada y la acción explícita del administrador. No se publicó oficialmente ninguna versión durante esta tarea.
+
+## Pestañas y backup único — 2026-10-07
+
+Servidor contiene Estatus (juego online, jugadores reales, RAM y CPU), Consola (lectura/comandos y siete controles con descripciones) y Publicar (cambios, aplicación, preparación de recuperación y backup). Arrancar requiere offline; Apagar avisa 10 segundos y espera offline. No se añade kill forzado. La gestión de API queda oculta al usuario.
+
+Backup manual y despliegue comparten server-backup.cjs: consultan límite, rechazan backups en curso, conservan el último exitoso, crean una copia completa, esperan finalización satisfactoria, borran las anteriores y comprueban que queda exactamente una. El hosting confirmó dos plazas: temporalmente pueden existir dos mientras se verifica la nueva. Fallar la copia, la eliminación o la comprobación bloquea aplicar archivos. Si el hosting reduce a una plaza y existe una copia, se bloquea la operación para conservarla. Un timeout conserva la copia en curso y la anterior hasta comprobar su resultado; no se borra un backup todavía activo.
+
+Verificación: fixtures cubren éxito, fallo, cuota insuficiente, bloqueo por borrado fallido y despliegue; interfaz Electron consulta consola real de solo lectura. No se crearon ni eliminaron backups reales ni se arrancó o apagó producción para probar esta entrega.

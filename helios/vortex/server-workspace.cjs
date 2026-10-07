@@ -1,5 +1,6 @@
 const fs=require('fs'),path=require('path'),crypto=require('crypto')
 const {hash,safe,atomic,ReleaseStore}=require('./release-store.cjs')
+const {createServerBackup}=require('./server-backup.cjs')
 const roots=['mods','resourcepacks','config','defaultconfigs','plugins']
 const binary=name=>/\.(jar|zip|db|sqlite|dat|gz|log|disabled|bak)$/i.test(name)
 function serverFile(value) {safe(path.resolve('.'),value);if(!roots.includes(value.split('/')[0]))throw Error('Archivo fuera de la biblioteca del servidor');return value}
@@ -131,10 +132,7 @@ class ServerWorkspace {
         const stamp=hash(Buffer.from(JSON.stringify(plan)));job.progress='Avisando a los jugadores y deteniendo el servidor'
         const state=await this.api.status();if(state.state==='running'){await this.api.warn();await this.api.power('stop')}else if(state.state!=='offline')throw Error('Espera a que el servidor esté encendido o detenido')
         await this.api.waitOffline();job.progress='Creando backup completo del servidor'
-        const backup=await this.api.backup('Vortex '+draft.version+' '+new Date().toISOString());job.backupId=backup.uuid
-        let complete=false
-        for(let i=0;i<300;i++){const b=await this.api.backupStatus(backup.uuid);if(b.completed_at){if(!b.is_successful)throw Error('El backup falló; no se cambiaron archivos');complete=true;break}await this.api.sleep(2000)}
-        if(!complete)throw Error('El backup no terminó a tiempo; no se cambiaron archivos')
+        const backup=await createServerBackup(this.api,'Vortex '+draft.version+' '+new Date().toISOString(),job)
         if(this.store.getDraft(id).revision!==revision || hash(Buffer.from(JSON.stringify(this.current(id))))!==stamp)throw Error('La versión cambió; no se aplicaron archivos')
         job.progress='Comparando hashes con el servidor'
         for(const change of plan.changes) {

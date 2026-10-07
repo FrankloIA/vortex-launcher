@@ -47,6 +47,7 @@ class AstrolNodesApi {
     async restart() {const s=await this.status();if(s.state==='running'){await this.warn();await this.power('restart')}else if(s.state==='offline')await this.power('start');else throw Error('Espera a que el servidor termine de arrancar o detenerse');return {requested:true}}
     async backups() {return (await this.request('/backups?per_page=50')).data.map(e=>e.attributes)}
     async backup(name) {return (await this.request('/backups',{method:'POST',body:{name,is_locked:true}})).attributes}
+    async deleteBackup(uuid) {const backup=await this.backupStatus(uuid);if(!backup.completed_at)throw Error('No se puede borrar un backup en curso');if(backup.is_locked)await this.request('/backups/'+uuid+'/lock',{method:'POST'});return this.request('/backups/'+uuid,{method:'DELETE'})}
     async backupStatus(uuid) {if(!/^[a-f0-9-]{36}$/.test(uuid))throw Error('Backup inválido');return (await this.request('/backups/'+uuid)).attributes}
     async waitOffline() {for(let i=0;i<90;i++){if((await this.status()).state==='offline')return;await this.sleep(2000)}throw Error('El servidor no se detuvo; no se cambiaron archivos')}
 }

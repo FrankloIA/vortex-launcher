@@ -9,10 +9,10 @@ const Zip=require('adm-zip')
 function fixture(t) {
     const root=fs.mkdtempSync(path.join(os.tmpdir(),'vortex-hosting-'));t.after(()=>fs.rmSync(root,{recursive:true,force:true}))
     const api={files:new Map([['/config/settings.json',Buffer.from('{"enabled":true}')],['/mods/base.jar',Buffer.from('old')]]),calls:[],state:'running',backupOk:true,corrupt:false,failApply:false,
-        configured:()=>true,details:async()=>({name:'Fixture'}),status:async()=>({state:api.state}),sleep:async()=>{},warn:async()=>api.calls.push('warn'),power:async signal=>{api.calls.push(signal);api.state=signal==='stop'?'offline':'running'},waitOffline:async()=>assert.equal(api.state,'offline'),
+        configured:()=>true,details:async()=>({name:'Fixture',feature_limits:{backups:2}}),status:async()=>({state:api.state}),sleep:async()=>{},warn:async()=>api.calls.push('warn'),power:async signal=>{api.calls.push(signal);api.state=signal==='stop'?'offline':'running'},waitOffline:async()=>assert.equal(api.state,'offline'),
         list:async directory=>{const prefix=directory==='/'?'/':directory+'/';const result=new Map();for(const [name,data]of api.files){if(!name.startsWith(prefix))continue;const rest=name.slice(prefix.length),first=rest.split('/')[0];result.set(first,{name:first,is_file:!rest.includes('/'),size:rest.includes('/')?0:data.length,modified_at:'fixture'})}return [...result.values()]},
         download:async name=>{if(!api.files.has(name))throw Error('HTTP 404');return api.files.get(name)},
-        backup:async()=>{api.calls.push('backup');return {uuid:'11111111-1111-1111-1111-111111111111'}},backupStatus:async()=>({completed_at:'now',is_successful:api.backupOk}),
+        backups:async()=>api.calls.includes('backup')?[{uuid:'11111111-1111-1111-1111-111111111111',completed_at:'now',is_successful:api.backupOk}]:[],deleteBackup:async()=>{},backup:async()=>{api.calls.push('backup');return {uuid:'11111111-1111-1111-1111-111111111111'}},backupStatus:async()=>({completed_at:'now',is_successful:api.backupOk}),
         mkdir:async name=>api.calls.push('mkdir:'+name),upload:async(dir,name,data)=>{api.calls.push('upload');api.files.set(dir+'/'+name,api.corrupt?Buffer.from('corrupt'):data)},
         rename:async(from,to)=>{if(api.failApply && from.includes('vortex-stage') && to==='/mods/base.jar')throw Error('Falló la aplicación');if(!api.files.has(from))throw Error('Missing '+from);api.files.set(to,api.files.get(from));api.files.delete(from);api.calls.push('rename')}
     }

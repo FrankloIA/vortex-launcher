@@ -33,3 +33,20 @@ button{border-radius:6px;background:linear-gradient(110deg,#7134ef,#9147ef);colo
 #changesPreview{max-height:140px;overflow:auto;scrollbar-width:thin}.fileRow{min-height:82px;padding-top:12px;padding-bottom:12px}.libraryFooter{display:flex;align-items:center;justify-content:space-between;gap:15px}.libraryPager{display:flex;align-items:center;gap:12px}.libraryPager button{padding:6px 11px;font-size:18px}.libraryPager span{font-size:12px}.summaryGrid{margin-top:20px}.inspectorCard{padding:16px}.inspectorCard h2{font-size:15px;margin-bottom:12px;padding-bottom:11px}
 
 .serverConsole{margin:20px 0;border:1px solid #405475;border-radius:9px;overflow:hidden;background:#07111f}.consoleHeader{display:flex;align-items:center;gap:15px;padding:12px 16px;background:#14243b}.consoleHeader h3{margin:0;flex:1;font-size:15px}#consoleState{font-size:11px;color:#a5b8d5}#consoleState[data-state=connected]{color:#52df98}#consoleOutput{height:340px;overflow:auto;margin:0;padding:16px;font:12px/1.7 Consolas,monospace;color:#c8d9f1;white-space:pre-wrap;overflow-wrap:anywhere;scrollbar-width:thin}#consoleCommand{padding:12px 16px;border-top:1px solid #293e59}#consoleCommand label{margin:0 0 7px}#consoleCommand>div{display:flex;gap:10px}#consoleInput{flex:1;margin:0;font-family:Consolas,monospace}#consoleMessage{margin:8px 0 0;font-size:12px}@media(max-width:560px){.consoleHeader{flex-wrap:wrap;gap:8px}#consoleOutput{height:270px}#consoleCommand>div{flex-wrap:wrap}}
+
+/* Server workspace: status, live console and deployment */
+.serverSubtabs{display:flex;gap:8px;border-bottom:1px solid #34334d;padding:8px 0 18px;margin-bottom:24px}
+.serverSubtabs button{background:transparent;color:#aeb6ce;border:1px solid transparent;border-radius:10px;padding:11px 24px}
+.serverSubtabs button[aria-pressed="true"]{background:#7939cf33;color:#e7d5ff;border-color:#9c5ee9}
+.serverPane{min-width:0}.serverIntro{color:#a8b2ca;margin:0 0 22px}
+.serverMetrics{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:16px;margin-bottom:24px}
+.serverMetrics article,.serverBackupCard{border:1px solid #3a3853;background:#101525a6;border-radius:16px;padding:22px}
+.serverMetrics span{display:block;color:#a8b2ca;font-size:13px;margin-bottom:14px}.serverMetrics strong{font-size:25px;color:#e9e7ff}
+.serverMetrics [data-online="true"]{color:#55db91}.serverMetrics [data-online="false"]{color:#9da5b8}
+.serverActions{display:flex;flex-wrap:wrap;gap:10px;margin:18px 0 24px}.serverActions button{border-radius:10px;padding:11px 16px;transition:background .16s,border-color .16s}
+.serverActions button:hover:not(:disabled){border-color:#ab7df2;background:#7540b94d}
+#serverStop{color:#ff8e9d;border-color:#9d475a}#serverStart{color:#77e6ae;border-color:#377c5d}
+.serverBackupCard{margin-top:26px}.serverBackupCard p{color:#a8b2ca;line-height:1.6}#serverBackups p{padding:14px;border-radius:9px;background:#22273d}
+#serverJob:empty{display:none}#serverJob{border-left:3px solid #ad70fa;padding:14px;background:#221c364d;border-radius:6px}
+@media(max-width:1000px){.serverMetrics{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:560px){.serverMetrics{grid-template-columns:1fr}.serverSubtabs button{padding:10px 15px}.serverActions button{width:100%}.serverMetrics strong{font-size:22px}}

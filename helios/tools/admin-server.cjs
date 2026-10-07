@@ -18,6 +18,7 @@ function startAdmin({ root = path.resolve(__dirname, '../.runtime/pack-admin'), 
     const hostingCredentials=new (require('../vortex/hosting-credentials.cjs').HostingCredentials)(root)
     const astrol=hostingApi || new AstrolNodesApi({token:()=>hostingCredentials.token()})
     const hostingStatus=new (require('../vortex/hosting-status.cjs').HostingStatus)(astrol)
+    const serverConsole=new (require('../vortex/server-console.cjs').ServerConsole)(astrol)
     const serverWorkspace=new (require('../vortex/server-workspace.cjs').ServerWorkspace)(root,astrol)
     const hostPlan = body => {store.draftFile(body.id);return serverWorkspace.current(body.id)}
     const inspectDestination=async (data,source) => {
@@ -97,6 +98,7 @@ function startAdmin({ root = path.resolve(__dirname, '../.runtime/pack-admin'), 
                     const id=store.workspace().activeId
                     return reply(200,{id,testResult:id ? gate.status(id) : null,githubReady,publishing})
                 }
+                if(route==='/api/server/console' && req.method==='GET')return reply(200,await serverConsole.read(Math.max(0,Number(requestUrl.searchParams.get('since')) || 0)))
                 if(route === '/api/server/status' && req.method === 'GET') {
                     return reply(200, await hostingStatus.get(requestUrl.searchParams.get('force')==='true'))
                 }
@@ -158,6 +160,7 @@ function startAdmin({ root = path.resolve(__dirname, '../.runtime/pack-admin'), 
                 if(serverWorkspace.job?.running && (mutations.includes(req.url) || ['/api/library/start','/api/library/cancel','/api/publish/official','/api/test/prepare','/api/library/restore'].includes(req.url)))throw Error('Espera a que termine la operación del servidor')
                 if(mutations.includes(req.url) && store.workspace().activeId !== body.id) throw Error('Biblioteca de solo lectura: crea una nueva versión para modificar contenido')
                 switch(req.url) {
+                    case '/api/server/command': {if(serverWorkspace.job?.running)throw Error('Espera a que termine la operación del servidor');result=await serverConsole.command(body.command);break}
                     case '/api/server/connect': {
                         const previous=hostingCredentials.session;hostingCredentials.set(body.token,false)
                         try{await astrol.details();result=hostingCredentials.set(body.token,body.persist===true);hostingStatus.cached=null}catch(error){hostingCredentials.session=previous;throw error}break
@@ -446,12 +449,13 @@ function startAdmin({ root = path.resolve(__dirname, '../.runtime/pack-admin'), 
             }
             if(req.url === '/vortex-logo.png' && req.method==='GET') {res.writeHead(200,{'Content-Type':'image/png'});return res.end(fs.readFileSync(path.resolve(__dirname,'../app/assets/images/vortex-icon-pixel.png')))}
             if(req.url==='/vortex-background.png' && req.method==='GET'){res.writeHead(200,{'Content-Type':'image/png'});return res.end(fs.readFileSync(path.resolve(__dirname,'../app/assets/images/vortex-night.png')))}
-            const assets = { '/design.js': ['design.js','text/javascript'], '/design.css': ['design.css','text/css'], '/': ['admin.html', 'text/html; charset=utf-8'], '/admin.js': ['admin.js', 'text/javascript'], '/syntax.js': ['syntax.js', 'text/javascript'], '/admin.css': ['admin.css', 'text/css'] }
+            const assets = { '/console.js': ['console.js','text/javascript'], '/design.js': ['design.js','text/javascript'], '/design.css': ['design.css','text/css'], '/': ['admin.html', 'text/html; charset=utf-8'], '/admin.js': ['admin.js', 'text/javascript'], '/syntax.js': ['syntax.js', 'text/javascript'], '/admin.css': ['admin.css', 'text/css'] }
             if(req.method !== 'GET' || !assets[req.url]) return reply(404, { error: 'Ruta no encontrada' })
             const [file, type] = assets[req.url]
             res.writeHead(200, { 'Content-Type': type }); res.end(fs.readFileSync(path.join(__dirname, '../vortex/admin', file)))
         } catch(error) { reply(400, { error: error.message }) }
     })
+    server.on('close',()=>serverConsole.close())
     return new Promise(resolve => server.listen(port, '127.0.0.1', () => resolve({ server, credentialsFile, url: `http://127.0.0.1:${server.address().port}` })))
 }
 if(require.main === module) startAdmin().then(({ url, credentialsFile }) => console.log(`Panel: ${url}\nContraseña local: ${credentialsFile}\nSolo canal de pruebas; no expuesto a Internet.`)).catch(e => { console.error(e.message); process.exitCode = 1 })

@@ -10,6 +10,7 @@ app.whenReady().then(async()=>{
         const paging=await window.webContents.executeJavaScript(`(()=>{const first=get('content').querySelector('.fileRow:not([hidden]) h3').textContent;document.querySelector('[aria-label="Página siguiente"]').click();const second=get('content').querySelector('.fileRow:not([hidden]) h3').textContent;document.querySelector('[aria-label="Página anterior"]').click();return first!==second})()`);if(!paging)throw Error('La paginación no funciona');
         fs.writeFileSync(path.join(output,'desktop.png'),(await window.webContents.capturePage()).toPNG())
         await window.webContents.executeJavaScript(`switchPanel('create');window.VortexDesign.sync()`);await wait(5200)
+        await window.webContents.executeJavaScript(`get('serverTab').click()`);await wait(3500);const consoleView=await window.webContents.executeJavaScript(`({visible:!!document.querySelector('.serverConsole'),state:document.getElementById('consoleState').textContent,lines:document.getElementById('consoleOutput').children.length,input:!!document.getElementById('consoleInput')})`);if(!consoleView.visible || !consoleView.input || !consoleView.lines)throw Error('La consola no recibió registros');await window.webContents.executeJavaScript(`switchPanel('create')`);
         const stays=await window.webContents.executeJavaScript(`panel==='create' && !get('createContent').hidden`);if(!stays)throw Error('La pestaña Crear no conserva la selección')
         await window.webContents.executeJavaScript(`switchPanel('library');get('search').value='distant';render();window.VortexDesign.sync()`);await wait(200)
         const search=await window.webContents.executeJavaScript(`get('content').querySelectorAll('.fileRow').length`)
@@ -19,6 +20,6 @@ app.whenReady().then(async()=>{
         window.setSize(420,900);await wait(200);const mobile=await window.webContents.executeJavaScript(`document.documentElement.scrollWidth<=innerWidth`)
         fs.writeFileSync(path.join(output,'mobile.png'),(await window.webContents.capturePage()).toPNG())
         if(!medium || !mobile || errors.length)throw Error('Revisión responsive o consola: '+JSON.stringify({medium,mobile,errors}))
-        const result={desktop,staysOnCreate:stays,pagination:paging,searchResults:search,medium,mobile,errors};fs.writeFileSync(path.join(output,'result.json'),JSON.stringify(result,null,2));console.log(JSON.stringify(result));app.exit(0)
+        const result={desktop,staysOnCreate:stays,pagination:paging,console:consoleView,searchResults:search,medium,mobile,errors};fs.writeFileSync(path.join(output,'result.json'),JSON.stringify(result,null,2));console.log(JSON.stringify(result));app.exit(0)
     }catch(error){console.error(error.message);app.exit(1)}
 })

@@ -1,0 +1,8 @@
+const test=require('node:test'),assert=require('node:assert/strict'),{ServerConsole}=require('../vortex/server-console.cjs')
+class Socket extends EventTarget{constructor(url){super();this.url=url;this.sent=[];Socket.last=this}send(text){this.sent.push(JSON.parse(text))}close(){this.dispatchEvent(new Event('close'))}message(value){this.dispatchEvent(new MessageEvent('message',{data:JSON.stringify(value)}))}}
+test('puente autentica sin exponer token, lee logs y elimina controles ANSI',async t=>{
+    const console=new ServerConsole({request:async()=>({data:{socket:'wss://ly06.astrolnodes.net/ws',token:'private-token'}})},{Socket});t.after(()=>console.close());await console.read();Socket.last.dispatchEvent(new Event('open'));assert.equal(Socket.last.sent[0].event,'auth');Socket.last.message({event:'auth success'});assert.equal(Socket.last.sent[1].event,'send logs');Socket.last.message({event:'console output',args:['\u001b[31mtexto\u001b[0m']});const result=await console.read();assert.equal(result.state,'connected');assert.equal(result.lines[0].text,'texto');assert.ok(!JSON.stringify(result).includes('private-token'));assert.equal((await console.read(result.cursor)).lines.length,0)
+})
+test('rechaza WebSocket ajeno y comandos multilínea; envía solo el comando válido',async t=>{
+    let sent;const console=new ServerConsole({request:async()=>({data:{socket:'wss://outside.example/ws',token:'private'}}),command:async value=>{sent=value}},{Socket});t.after(()=>console.close());assert.equal((await console.read()).state,'error');await assert.rejects(console.command('say hola\nstop'),/sola línea/);await console.command('/list');assert.equal(sent,'list')
+})

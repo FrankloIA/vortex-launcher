@@ -1747,3 +1747,5 @@ Guardar y Cancelar se separan 12 px y se bajan 18 px respecto al editor de confi
 
 ## 2026-10-07 — Identidad y carpeta Vortex (ChatGPT)
 Se migra la carpeta activa a vortex, con perfiles y datos locales preservados. Se actualizan comandos, workflows, documentación, imports y metadatos del instalador. Dependencias mediante alias vortex-core/vortex-distribution-types, conservando sus paquetes y licencias originales. README conserva el trabajo ajeno existente. Los avisos legales originales no se eliminan. Se valida panel, launcher y compilación de pruebas; no publicación oficial.
+
+Se completan también los nombres de archivos de pruebas y documentos auxiliares con la identidad Vortex. Panel operativo, publicación de pruebas conservada, comprobación Electron sin errores y 27 tests relevantes correctos. Instalador de pruebas generado desde vortex/dist.

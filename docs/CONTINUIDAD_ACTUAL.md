@@ -46,3 +46,12 @@ Claude debe empezar por Git y respetar README y archivos no rastreados ajenos. R
 
 ## Nueva planificación: addon de refuerzo
 El usuario pide compatibilidades SecurityCraft con prioridad Biomes O Plenty y Macaw’s Biomes O Plenty. Lista y fases en [SECURITYCRAFT_ADDON_PLAN.md](SECURITYCRAFT_ADDON_PLAN.md). Solo planificación; no hay nuevo repositorio, código ni JAR. Revisar SecurityCraft modificado e inventario servidor antes de implementar.
+
+## 2026-10-07 — Vortex SecurityCraft Addon 0.1.0 beta (ChatGPT)
+Implementación entregada: repo privado https://github.com/FrankloIA/vortex-securitycraft-addon, fuente D:\Vortex Mods\vortex-securitycraft-addon, rama main, commit d856a4f. Mod ID vortexreinforcement; Minecraft 1.21.1 / NeoForge 21.1.250 / Java 21 / SecurityCraft 1.10.2.1. Destino cliente y servidor mediante Admin Panel > Añadir > Local, primero en pruebas. No se importó ni desplegó automáticamente.
+
+Reforzador/eliminador/modificador universal, clic izquierdo sobre bloques colocados. Protección virtual por posición/UUID y SavedData por dimensión; no registra variantes ni cambia IDs, modelos o texturas. Primera fase BOP constructivos y mcwbiomesoplenty sin plantas/fluidos/hojas/gravedad/entidad/inventario. No se sustituye SecurityCraft-tintfix-v3.jar ni otro parche Jarvis. No integración nativa con GUI de refuerzo, módulos, bloqueo de uso o WorldEdit/VortexReinforce; no prometer soporte universal.
+
+JAR entregado: D:\Vortex Launcher\dist\addons\vortex-securitycraft-addon-0.1.0.jar. SHA-256 7E924549C2EC1FA7BA73C920DD6CEA73FB02818B3AEDCC071C2D3571B39109DE. Contiene únicamente clases propias, metadatos y mixin, sin assets ni JAR de terceros. Licencia propia: todos los derechos reservados.
+
+Compilación, pruebas UUID/grupos/permisos y persistencia NBT correctas. Prueba NeoForge aislada detectó conflicto de paquete Mixin y se corrigió con subpaquete exclusivo; inicialización de mods correcta posteriormente. El servidor local no alcanza carga de mundo porque Netty/Windows falla al abrir su loopback (Unable to establish loopback connection / Invalid argument: connect), también con preferIPv4Stack. EULA de prueba autorizada expresamente por el usuario. Ninguna prueba de partida, BOP/Macaw cargados ni Arclight aprobada todavía. Antes de publicar oficialmente: probar propietario/otro jugador, refuerzo/retirada, reinicio, explosión, pistón y puertas dobles con el pack real. Conservar data/vortex_reinforcement.dat por dimensión en backups. Desinstalar no cambia bloques, pero deja de aplicar su protección.

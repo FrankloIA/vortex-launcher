@@ -49,7 +49,7 @@ class TestGate {
         if(run.status!=='running') return
         const crashFiles=[path.join(run.instance,'crash-reports'),run.instance].flatMap(folder=>fs.existsSync(folder)?fs.readdirSync(folder).filter(n=>folder.endsWith('crash-reports') || /^hs_err_pid.*\.log$/.test(n)).map(n=>path.join(folder,n)):[])
         const crash=crashFiles.some(f=>fs.statSync(f).isFile() && fs.statSync(f).mtimeMs>=run.startedAt)
-        if(code!==0 || signal || crash || !run.ready || Date.now()-run.startedAt<60000) {run.status='failed';run.reason=crash?'Se generó un informe de crash':code!==0 || signal?'El cliente terminó con error':'La prueba no llegó a cargar el juego durante al menos 60 segundos';return}
+        if(code!==0 || signal || crash || !run.ready) {run.status='failed';run.reason=crash?'Se generó un informe de crash':code!==0 || signal?'El cliente terminó con error':'La prueba no llegó a cargar el juego';return}
         run.status='awaitingApproval';run.finishedAt=Date.now()
         })
     }
@@ -63,15 +63,11 @@ class TestGate {
             const pids=run.status==='running'?[run.launcherPid,run.gamePid]:[run.launcherPid]
             try {for(const pid of pids) {if(pid) process.kill(pid,0);else if(Date.now()-run.createdAt>30000) throw Error('No iniciado')}} catch {run=this.fail(id,'La prueba se interrumpió o el proceso dejó de responder')}
         }
-        if(['awaitingApproval','passed'].includes(run.status) && run.launcherPid && !run.launcherClosedNormally) {
-            try {process.kill(run.launcherPid,0)} catch {run=this.fail(id,'El launcher terminó de forma inesperada')}
-        }
-        return {...run,eligible:run.status==='passed' && run.launcherClosedNormally===true}
+        return {...run,eligible:run.status==='passed'}
     }
     approve(name,id) {
         const run=this.status(name)
         if(run.id!==id || run.status!=='awaitingApproval') throw Error('La prueba debe arrancar y cerrar correctamente antes de confirmarla')
-        if(!run.launcherClosedNormally) throw Error('Cierra también el launcher de pruebas antes de confirmar el resultado')
         return this.mutate(id,current=>{if(current.status!=='awaitingApproval')throw Error('La prueba cambió; revisa el resultado');current.status='passed';current.approvedAt=Date.now()})
     }
     assertPassed(name) {const run=this.status(name);if(!run.eligible) throw Error('Prueba esta revisión, cierra el juego sin fallos y confirma el resultado antes de publicar oficialmente');return run}

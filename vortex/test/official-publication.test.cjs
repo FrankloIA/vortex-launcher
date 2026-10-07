@@ -16,6 +16,16 @@ test('La publicación exige arranque, salida limpia y confirmación; cualquier c
     s.gate.launcherClosed(run.id);s.gate.approve('trial',run.id);assert(s.gate.status('trial').eligible)
     s.store.edit('trial',1,d=>{d.notes='Otro cambio'});assert.equal(s.gate.status('trial').status,'outdated');assert.throws(()=>s.store.promote('trial',2))
 })
+test('Una partida corta con carga y cierre limpio permite confirmar sin cerrar el launcher',t=>{
+    const s=setup(t),run=s.run()
+    s.gate.mutate(run.id,r=>{r.startedAt=Date.now()-1000})
+    s.gate.finished(run.id,0,null)
+    assert.equal(s.gate.status('trial').status,'awaitingApproval')
+    assert.equal(s.gate.status('trial').eligible,false)
+    s.gate.approve('trial',run.id)
+    assert.equal(s.gate.status('trial').eligible,true)
+})
+
 test('Un informe de crash, una señal o cerrar antes de cargar mantiene la publicación bloqueada',t=>{
     const s=setup(t);let run=s.run();fs.mkdirSync(path.join(s.root,'game/crash-reports'),{recursive:true});fs.writeFileSync(path.join(s.root,'game/crash-reports/crash.txt'),'fallo')
     s.gate.finished(run.id,0,null);assert.equal(s.gate.status('trial').status,'failed')

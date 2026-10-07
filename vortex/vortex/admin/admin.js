@@ -292,10 +292,10 @@ function render() {
     get('tryVersion').disabled = !draft || draft.status !== 'test' || state.channels?.test?.version !== draft.version
     get('tryVersion').title = get('tryVersion').disabled ? 'Publica primero esta versión en pruebas' : 'Abrir el launcher de pruebas actualizado'
     get('publish').disabled = !canEdit()
-    get('publishOfficial').disabled = !canEdit() || !draft?.testResult?.eligible || !state.githubReady || state.publishing || !!serverLibrary?.changes?.length || !!serverLibrary?.job?.running
-    get('approveTest').hidden = !canEdit() || draft?.testResult?.status !== 'awaitingApproval' || !draft.testResult.launcherClosedNormally
+    get('publishOfficial').disabled = !canEdit() || !(draft?.testResult?.eligible || draft?.testResult?.status==='awaitingApproval') || !state.githubReady || state.publishing || !!serverLibrary?.changes?.length || !!serverLibrary?.job?.running
+    get('approveTest').hidden = !canEdit() || draft?.testResult?.status !== 'awaitingApproval'
     get('rejectTest').hidden = !canEdit() || !['prepared','running','awaitingApproval','passed'].includes(draft?.testResult?.status)
-    const statuses={untested:'Debes publicar y probar esta versión',prepared:'Prueba abierta con Mystwer · Pulsa Jugar en el launcher de pruebas',running:'Prueba en curso · Juega al menos un minuto y cierra el cliente normalmente',awaitingApproval:draft?.testResult?.launcherClosedNormally ? 'El cliente y el launcher cerraron sin fallos detectados · Confirma cómo fue la partida' : 'El cliente cerró correctamente · Cierra también el launcher de pruebas para confirmar el resultado',passed:'Prueba aprobada · Lista para publicar oficialmente',failed:'Prueba fallida · Corrige los problemas y vuelve a probar',outdated:'La versión cambió · Publica y prueba los últimos cambios'}
+    const statuses={untested:'Debes publicar y probar esta versión',prepared:'Prueba abierta con Mystwer · Pulsa Jugar en el launcher de pruebas',running:'Prueba en curso · Prueba la partida y cierra el juego normalmente',awaitingApproval:'El juego cargó y cerró sin fallos detectados · Confirma la partida o pulsa Publicar oficialmente',passed:'Prueba aprobada · Lista para publicar oficialmente',failed:'Prueba fallida · Corrige los problemas y vuelve a probar',outdated:'La versión cambió · Publica y prueba los últimos cambios'}
     get('testStatus').textContent=state.publishing ? 'Publicando oficialmente en GitHub…' : (statuses[draft?.testResult?.status] || statuses.untested)+(draft?.testResult?.reason ? ' · '+draft.testResult.reason : '')+(!state.githubReady ? ' · GitHub no está conectado para publicar' : '')
     get('automaticNotes').textContent=(draft?.automaticNotes || []).map(n=>'- '+n.text).join('\n') || 'Los cambios se registrarán aquí automáticamente'
 
@@ -567,6 +567,10 @@ get('approveTest').onclick=()=>action(async()=>{
 })
 get('rejectTest').onclick=()=>action(async()=>{await api('test/reject',{id:selected,runId:current().testResult.id});await refresh()})
 get('publishOfficial').onclick=()=>action(async()=>{
+    if(current().testResult?.status==='awaitingApproval') {
+        if(!confirm('¿La partida funcionó correctamente y no encontraste problemas? Confirma el resultado para continuar con la publicación.')) return
+        await api('test/approve',{id:selected,runId:current().testResult.id});await refresh()
+    }
     if(!confirm('¿Publicar oficialmente la versión '+current().version+' para todos los jugadores? La versión quedará bloqueada.')) return
     get('testStatus').textContent='Publicando oficialmente en GitHub…'
     const result=await api('publish/official',{id:selected,revision:current().revision});await refresh()

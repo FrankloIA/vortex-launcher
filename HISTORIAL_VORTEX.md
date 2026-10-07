@@ -1816,3 +1816,7 @@ El usuario pide revisar los 199 mods actuales del launcher, incluidos catálogos
 ### Icono de la pestaña del admin panel — 2026-10-07
 - Se declara el favicon PNG con el vórtice existente de Vortex en admin.html usando /vortex-logo.png. Verificado en el panel activo: declaración presente y recurso HTTP 200 image/png. Recargar la pestaña para que el navegador lo muestre.
 
+
+### Título de la pestaña del panel — 2026-10-07
+- Título solicitado: Vortex . Admin Panel. Cambiado en admin.html y verificado en el HTML servido por el panel activo. Conserva el favicon del vórtice.
+

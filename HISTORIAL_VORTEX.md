@@ -1827,3 +1827,9 @@ El usuario pide revisar los 199 mods actuales del launcher, incluidos catálogos
 ### Categorías de la biblioteca del servidor — 2026-10-07
 - Resourcepacks deja de mostrarse como pestaña en la biblioteca del servidor. Si estaba seleccionado al pasar desde cliente, se selecciona Mods. La biblioteca del cliente conserva Resourcepacks. No se borran archivos. Comprobación de sintaxis correcta.
 
+
+### Dependencias al actualizar desde catálogos — 2026-10-07
+- Sustituido el bloqueo indiscriminado de actualizaciones con dependencias por comprobación de proyectos instalados del mismo proveedor, metadatos por hash y versiones exactas cuando Modrinth las exige. Excluye el archivo sustituido como proveedor de su propia dependencia. BOTH comprueba también el servidor antes de mutar el borrador. Las dependencias ausentes o sin identidad verificable se indican; no se descargan automáticamente ni se sustituyen mods Jarvis.
+- Nuevo catalog-dependencies.cjs y pruebas; integración en admin-server.cjs. Cuatro pruebas pasaron, incluida API privada. Reiniciado solo el panel para cargar el arreglo. No se actualizaron mods en nombre del usuario y falta comprobar su selección real.
+- Las mejoras de clasificación por hash y política Distant Horizons de la auditoría en curso se registran junto al backend para mantener sus imports coherentes; la auditoría y sincronización final siguen pendientes.
+

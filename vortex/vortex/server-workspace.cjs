@@ -44,7 +44,7 @@ class ServerWorkspace {
         if(this.job)save(path.join(this.folder,'job.json'),this.job)
         const base=this.baseline(),plan=this.current(id)
         if(id?.startsWith('release:')){const version=id.slice(8);if(!/^[\w.-]+( fixed)?$/.test(version))throw Error('Versión inválida');const archived=read(path.join(this.folder,'official',version+'.json'),null);if(archived)return {loaded:true,loadedAt:archived.archivedAt,files:archived.files,changes:[],job:this.job,archived:true}}
-        return {loaded:base.loaded,loadedAt:base.loadedAt,files:(plan?.files || base.files).map(file=>{const cached=base.files.find(b=>b.path===file.path);return cached && (!file.sha256 || cached.sha256===file.sha256)?{...cached,...file,source:file.source || cached.source,display:file.display || cached.display,protection:file.protection || cached.protection}:file}),changes:plan?.changes || [],job:this.job}
+        return {loaded:base.loaded,loadedAt:base.loadedAt,files:(plan?.files || base.files).map(file=>{const cached=base.files.find(b=>b.path===file.path);const result=cached && (!file.sha256 || cached.sha256===file.sha256)?{...cached,...file,source:file.source || cached.source,display:file.display || cached.display,protection:file.protection || cached.protection}:file;return file.path.startsWith('mods/')?{...result,destinationReview:require('./mod-destination.cjs').destinationSummary(this.root,result.sha256)}:result}),changes:plan?.changes || [],job:this.job}
     }
     async analyze(metadata,job) {
         const catalog=this.baseline();if(!catalog.loaded)throw Error('Carga primero la biblioteca del servidor')

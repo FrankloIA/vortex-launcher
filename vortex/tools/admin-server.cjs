@@ -25,6 +25,7 @@ function startAdmin({ root = path.resolve(__dirname, '../.runtime/pack-admin'), 
         let catalog
         if(source?.provider==='modrinth'){try{catalog=await providers.request('modrinth','project/'+encodeURIComponent(source.projectId))}catch{}}
         const review=require('../vortex/mod-destination.cjs').inspectMod(data,catalog && {client_side:catalog.client_side,server_side:catalog.server_side})
+        if(review.policy)return review
         const saved=path.join(root,'server','reviews',review.sha256+'.json')
         if(fs.existsSync(saved) && review.evidence.maxJava<=21){const manual=JSON.parse(fs.readFileSync(saved));return {...review,verified:true,destination:manual.destination,reason:'Doble revisión registrada para este hash: '+manual.documentation,evidence:{...review.evidence,manual}}}
         return review
@@ -145,6 +146,7 @@ function startAdmin({ root = path.resolve(__dirname, '../.runtime/pack-admin'), 
                         if(draft.readOnly) draft.notes=draft.manualNotes ?? draft.notes
                         if(!draft.readOnly) draft.testResult=gate.status(draft.id)
                         for(const file of draft.files) {
+                            if(file.path.startsWith('mods/'))file.destinationReview=require('../vortex/mod-destination.cjs').destinationSummary(root,file.sha256)
                             if(file.path.startsWith('config/')) file.editableText=canEditConfig(file)
                             const cached=metadata.get(file);file.source ||= cached?.source
                             file.display = cached?.display || protection.display(file) || libraryMetadata.get(String(file.source?.projectId) + ':' + file.source?.fileId) || [...libraryMetadata.values()].find(item=>item.filename?.toLowerCase()===file.path.split('/').at(-1).toLowerCase())
@@ -209,7 +211,7 @@ function startAdmin({ root = path.resolve(__dirname, '../.runtime/pack-admin'), 
                         const file=serverWorkspace.view(body.id).files.find(f=>f.path===body.path);if(!file?.source || file.protection?.protected)throw Error('El archivo del servidor está protegido o sin identidad exacta')
                         const category=file.path.split('/')[0],latest=await providers.latest(file.source.provider,file.source.projectId,category,targetFor(body.id)),data=await providers.download(latest)
                         require('../vortex/local-compatibility.cjs').checkLocal(data,category,targetFor(body.id))
-                        if(latest.dependencies.length)throw Error('Revisa las dependencias requeridas antes de actualizar este mod del servidor')
+                        await require('../vortex/catalog-dependencies.cjs').assertDependencies(latest,serverWorkspace.view(body.id).files,metadata,providers,file.path)
                         const review=category==='mods'?await inspectDestination(data,file.source):null;if(review && (!review.verified || review.destination==='client'))throw Error('Revisa el destino de esta versión antes de actualizar el servidor')
                         result=await serverWorkspace.add(body.id,body.revision,category+'/'+latest.filename,data,file.path,{provider:file.source.provider,projectId:file.source.projectId,fileId:latest.fileId,version:latest.version});break
                     }
@@ -237,6 +239,7 @@ function startAdmin({ root = path.resolve(__dirname, '../.runtime/pack-admin'), 
                         if(!['client','server','both'].includes(body.destination) || typeof body.documentation!=='string' || body.documentation.trim().length<20 || body.documentation.length>3000)throw Error('Registra el destino y la evidencia de la documentación del proyecto')
                         const file=store.getDraft(body.id).files.find(f=>f.path===body.path && f.path.startsWith('mods/'));if(!file)throw Error('Mod inexistente')
                         const review=await inspectDestination(fs.readFileSync(path.join(root,'blobs',file.sha256)),file.source || metadata.get(file)?.source)
+                        if(review.policy && body.destination!==review.destination)throw Error(review.reason)
                         if(review.evidence.maxJava>21)throw Error('Este JAR requiere una versión de Java superior a la del servidor')
                         require('../vortex/release-store.cjs').atomic(path.join(root,'server','reviews',file.sha256+'.json'),JSON.stringify({destination:body.destination,documentation:body.documentation.trim(),evidence:review.evidence,sha256:file.sha256,reviewedAt:new Date().toISOString()}))
                         serverWorkspace.note(body.id,body.revision,'Destino revisado para '+file.path+': '+body.destination);result={saved:true};break
@@ -337,10 +340,11 @@ function startAdmin({ root = path.resolve(__dirname, '../.runtime/pack-admin'), 
                         if(body.replacePath && !draft.files.some(f => {const source=f.source || metadata.get(f)?.source;return f.path === body.replacePath && f.path.startsWith(body.category + '/') && source?.provider === body.provider && String(source.projectId) === String(body.projectId)})) throw Error('La actualización no corresponde al archivo seleccionado')
                         const file = await providers.latest(body.provider, body.projectId, body.category,targetFor(body.id))
                         protection.assertCatalogReplacement(draft,body.category+'/'+file.filename,body.replacePath,body.projectId)
-                        if(file.dependencies.length) throw Error('Esta versión requiere dependencias: instalación automática pendiente. Usa Añadir archivo tras revisar las dependencias.')
                         if(path.basename(file.filename) !== file.filename || !({ mods: '.jar', resourcepacks: '.zip', shaderpacks: '.zip' }[body.category]) || path.extname(file.filename).toLowerCase() !== { mods: '.jar', resourcepacks: '.zip', shaderpacks: '.zip' }[body.category]) throw Error('Archivo incompatible')
                         const temp = path.join(root, 'download-' + crypto.randomUUID())
                         const bytes=await providers.download(file),routing=await prepareRouting({...body,filename:file.filename},bytes,{provider:body.provider,projectId:body.projectId})
+                        if(!routing?.verified || routing.destination!=='server') await require('../vortex/catalog-dependencies.cjs').assertDependencies(file,draft.files,metadata,providers,body.replacePath)
+                        if(routing?.verified && ['both','server'].includes(routing.destination)) await require('../vortex/catalog-dependencies.cjs').assertDependencies(file,serverWorkspace.view(body.id).files,metadata,providers,routing.serverReplace)
                         fs.writeFileSync(temp, bytes)
                         try {
                             if(routing?.verified && routing.destination==='server') {

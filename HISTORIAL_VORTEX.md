@@ -1726,3 +1726,6 @@ Claude creará repositorios independientes para los mods y plugins que mantiene.
 ## 2026-10-07 — Perfil administrador e integridad (ChatGPT)
 
 Se implementan perfiles locales separados por UUID, rol Microsoft verificado, biblioteca personal de Mods/Resourcepacks/Shaders/Configs y vista de jugador. Las actualizaciones conservan archivos personales del administrador, incluido essentialspatcher.json. Se añade escaneo firmado, bloqueo de Jugar y Reparar exclusivamente la instancia del jugador afectado, conservando mundos y otros perfiles. Cifrado local DPAPI para mods propios registrados; no es protección absoluta ni cifra paquetes públicos ni todos los archivos modificados. Detalles, límites y continuidad: docs/stage-3/launcher-protection.md. Pendiente prueba real de Minecraft y publicación oficial; no se autoriza ni simula la confirmación humana.
+
+## 2026-10-07 — Probar versión sin publicación previa (ChatGPT)
+Se detectó que Probar versión permanecía habilitado sin channels/test.json. Se desactiva hasta publicar en pruebas la versión seleccionada y se sustituye ENOENT por un mensaje con el paso necesario. No se publica automáticamente ni se alteran los archivos del borrador. Prueba de regresión en official-publication.test.cjs.

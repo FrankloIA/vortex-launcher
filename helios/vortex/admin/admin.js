@@ -289,6 +289,8 @@ function render() {
     get('cancelDraft').disabled = false
     get('notes').disabled = !canEdit()
     get('saveNotes').disabled = !canEdit()
+    get('tryVersion').disabled = !draft || draft.status !== 'test' || state.channels?.test?.version !== draft.version
+    get('tryVersion').title = get('tryVersion').disabled ? 'Publica primero esta versión en pruebas' : 'Abrir el launcher de pruebas actualizado'
     get('publish').disabled = !canEdit()
     get('publishOfficial').disabled = !canEdit() || !draft?.testResult?.eligible || !state.githubReady || state.publishing || !!serverLibrary?.changes?.length || !!serverLibrary?.job?.running
     get('approveTest').hidden = !canEdit() || draft?.testResult?.status !== 'awaitingApproval' || !draft.testResult.launcherClosedNormally

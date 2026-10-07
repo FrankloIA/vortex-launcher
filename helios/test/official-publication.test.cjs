@@ -57,3 +57,5 @@ test('Publicar oficialmente también publica el instalador de la versión como a
     assert(calls.some(args=>args[1]==='upload' && args[2]==='v1.0.1' && args.includes(installer)))
     assert.equal(calls.at(-1)[2],'v1.0.1');assert(calls.at(-1).includes('--latest=true'))
 })
+
+test('sin canal de pruebas informa el paso necesario sin mostrar ENOENT',t=>{const s=setup(t);fs.unlinkSync(path.join(s.root,'channels/test.json'));assert.throws(()=>s.gate.snapshot('trial'),/Publica primero esta versión en pruebas/)})

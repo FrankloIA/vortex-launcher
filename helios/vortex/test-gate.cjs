@@ -19,7 +19,9 @@ class TestGate {
         try {const run=this.read(id);change(run);return this.write(run)} finally {fs.closeSync(fd);fs.unlinkSync(lock)}
     }
     snapshot(name) {
-        const draft=this.store.getDraft(name), channel=JSON.parse(fs.readFileSync(path.join(this.root,'channels/test.json')))
+        const draft=this.store.getDraft(name), channelFile=path.join(this.root,'channels/test.json')
+        if(!fs.existsSync(channelFile))throw Error('Publica primero esta versión en pruebas y después pulsa Probar versión')
+        const channel=JSON.parse(fs.readFileSync(channelFile))
         const bytes=fs.readFileSync(path.join(this.root,'releases',channel.version+'.json'))
         if(hash(bytes)!==channel.releaseSha256) throw Error('La publicación de pruebas está alterada')
         const manifest=verify(JSON.parse(bytes),fs.readFileSync(path.join(this.root,'public-signing-key.pem')))

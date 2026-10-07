@@ -1856,3 +1856,9 @@ El usuario pide revisar los 199 mods actuales del launcher, incluidos catálogos
 
 - Compilación corregida 1.0.2 completada correctamente mediante ensureLauncherBuild; disponible para Probar versión. La ventana abierta anteriormente sigue usando la compilación antigua: cerrar antes de abrir la nueva prueba.
 
+
+### Segunda causa del bloqueo: dependencias del ejecutable empaquetado — 2026-10-07
+- La verificación anterior del arranque desde código fuente no cubría el ejecutable: en el ASAR, electron-builder usa los nombres npm reales de las dependencias aliased, mientras la interfaz requiere vortex-core y vortex-distribution-types. El ejecutable real produjo Cannot find module para ambos; por eso la corrección anterior de rutas era necesaria pero insuficiente. No causado por publicar el pack.
+- dependency-alias.cjs conserva resolución por alias en desarrollo y añade alternativa limitada a esos dos paquetes y submódulos cuando el alias no existe. Nueva prueba de resolución en ambos entornos; API privada sigue pasando.
+- Recompilación 1.0.2 terminada. Verificación del ejecutable real en perfil aislado con diagnóstico de Electron: sin excepciones de módulos, loading none, main block, catálogo con vortex-published-test. Probar versión vía API del panel respondió 200, launcherOpened true, versión 1.0.2 y abrió la compilación nueva para el usuario. No se inició Minecraft ni se aprobó la prueba ni se publicó oficialmente.
+

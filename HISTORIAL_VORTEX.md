@@ -1738,3 +1738,6 @@ Configs añade Sustituir, conservando ruta y nombre de destino y verificando per
 
 ## 2026-10-07 — Selección única de navegación (ChatGPT)
 La navegación de la biblioteca personal informa al sincronizador lateral para desmarcar Inicio/Ajustes mientras está abierta. Al salir restituye únicamente el tab visible. Se evita que Ajustes y Mods aparezcan seleccionados simultáneamente. Verificación de interfaz y nueva compilación de pruebas; sin publicación oficial.
+
+## 2026-10-07 — Orden lateral y apertura de Ajustes (ChatGPT)
+Orden administrador: Inicio, Mods, Resourcepacks, Shaders, Configs, Ajustes. Al pulsar Inicio/Ajustes se cierra primero la biblioteca personal y su editor mediante captura del evento. Ajustes ya visible reinicia su animación de subida sin intentar cambiar de la vista a sí misma. Verificación Electron y compilación 1.0.2 de pruebas; no publicación oficial.

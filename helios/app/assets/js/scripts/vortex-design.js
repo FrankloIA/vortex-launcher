@@ -105,6 +105,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     normalizeStatus()
     new MutationObserver(normalizeStatus).observe(status, { childList: true, characterData: true, subtree: true })
-    byId('vortexSettings').onclick = () => byId('settingsMediaButton').click()
+    byId('vortexSettings').onclick = () => {const settings=byId('settingsContainer');if(getComputedStyle(settings).display !== 'none'){settings.style.animation='none';void settings.offsetHeight;settings.style.animation='';syncSidebar()}else byId('settingsMediaButton').click()}
     byId('vortexHome').onclick = () => { if(getComputedStyle(byId('settingsContainer')).display !== 'none') { byId('settingsNavDone').click(); return } if(byId('newsContainer').style.top === '0px') byId('newsButton').click() }
 })

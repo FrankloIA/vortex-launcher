@@ -46,6 +46,8 @@ Después de publicar, se registra el inventario y se limpian releases oficiales 
 
 ## Integración del servidor: implementada y comprobada por API
 
+El diseño aprobado del admin ya está aplicado: lee docs/stage-3/admin-design.md. La presentación está en vortex/admin/design.js/css, mantiene controles originales y usa datos reales. No quitar los bloqueos al cambiar el aspecto ni inventar destinos Ambos donde el archivo sigue pendiente. Mantén la navegación lateral, bibliotecas cliente/servidor, paginación, inspector de cambios y estados sincronizados.
+
 La dirección también es dinámica: workflow raíz server-address.yml consulta la asignación predeterminada y publica solo dirección/puerto en un registro firmado de la release vortex-server-address. El launcher verifica una clave pública exclusiva, conserva caché firmada y actualiza servers.dat de la instancia antes de arrancar, preservando iconos y servidores ajenos. La clave del pack no cambia. Lee la sección Dirección dinámica en docs/stage-3/server-integration.md y verifica el último run de Actions; GitHub no garantiza puntualidad exacta. Los clientes anteriores requieren la compilación nueva mediante publicación oficial.
 
 El usuario quiere un selector **Launcher (cliente) / Servidor** en Biblioteca con las mismas funciones; una pestaña **Servidor** con cuadro de cambios; versiones coordinadas, dependencias, configuraciones separadas, pruebas de conexión cliente/servidor, backups y despliegue con recuperación.

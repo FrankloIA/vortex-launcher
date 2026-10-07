@@ -445,7 +445,8 @@ function startAdmin({ root = path.resolve(__dirname, '../.runtime/pack-admin'), 
                 return reply(200, result)
             }
             if(req.url === '/vortex-logo.png' && req.method==='GET') {res.writeHead(200,{'Content-Type':'image/png'});return res.end(fs.readFileSync(path.resolve(__dirname,'../app/assets/images/vortex-icon-pixel.png')))}
-            const assets = { '/': ['admin.html', 'text/html; charset=utf-8'], '/admin.js': ['admin.js', 'text/javascript'], '/syntax.js': ['syntax.js', 'text/javascript'], '/admin.css': ['admin.css', 'text/css'] }
+            if(req.url==='/vortex-background.png' && req.method==='GET'){res.writeHead(200,{'Content-Type':'image/png'});return res.end(fs.readFileSync(path.resolve(__dirname,'../app/assets/images/vortex-night.png')))}
+            const assets = { '/design.js': ['design.js','text/javascript'], '/design.css': ['design.css','text/css'], '/': ['admin.html', 'text/html; charset=utf-8'], '/admin.js': ['admin.js', 'text/javascript'], '/syntax.js': ['syntax.js', 'text/javascript'], '/admin.css': ['admin.css', 'text/css'] }
             if(req.method !== 'GET' || !assets[req.url]) return reply(404, { error: 'Ruta no encontrada' })
             const [file, type] = assets[req.url]
             res.writeHead(200, { 'Content-Type': type }); res.end(fs.readFileSync(path.join(__dirname, '../vortex/admin', file)))

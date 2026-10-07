@@ -133,6 +133,14 @@ Al cerrar cada tarea registrar aquí: fecha/agente, motivo, archivos o mods afec
 - **Dato observado:** la interfaz de la V11 se dibuja bien en el cliente del usuario (botones, rótulo y «En bolsillo»); ese cliente confirmó el diseño.
 - **Siguiente paso para ChatGPT:** importar la V12 verificando el SHA-256 en lugar de la V11.
 
+### Entrega de Claude — 2026-10-07 (6): Vortex MusicPlayer V13
+
+- **Qué cambió y por qué:** el usuario no quiere buscar canciones con la radio apagada (se descarta la V12) y quiere que una radio encendida en el hombro siga encendida al colocarla en el suelo. El mod solo permitía colocar una radio apagada. La V13 lo permite parcheando `BoomboxItem.place` y `canPlace`. Repositorio `vortex-musicplayer`.
+- **Artefacto:** `vortex-musicplayer-3.24.4-1.21.1-vortex13.jar`, SHA-256 `0414e92e9f4ec3c80869df9b254658db01eb51a32f6f053689fe496fd6059858`. Debe estar en servidor y clientes.
+- **Comprobaciones:** compila; 24 clases verificadas con ASM; confirmado con `javap` el cambio en ambos métodos. No probado en el juego.
+- **Efecto secundario:** con la radio encendida en la mano, el clic derecho sobre un bloque la coloca; la pantalla se abre con clic derecho en el aire.
+- **Siguiente paso para ChatGPT:** importar la V13 verificando el SHA-256 en lugar de V11 y V12.
+
 ### Código posterior a la primera recopilación del historial
 
 - 3d59a0b Conservar inventarios y cambios antes de retirar publicaciones antiguas para limitar el almacenamiento de GitHub

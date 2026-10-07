@@ -1741,3 +1741,6 @@ La navegación de la biblioteca personal informa al sincronizador lateral para d
 
 ## 2026-10-07 — Orden lateral y apertura de Ajustes (ChatGPT)
 Orden administrador: Inicio, Mods, Resourcepacks, Shaders, Configs, Ajustes. Al pulsar Inicio/Ajustes se cierra primero la biblioteca personal y su editor mediante captura del evento. Ajustes ya visible reinicia su animación de subida sin intentar cambiar de la vista a sí misma. Verificación Electron y compilación 1.0.2 de pruebas; no publicación oficial.
+
+## 2026-10-07 — Espaciado de acciones del editor (ChatGPT)
+Guardar y Cancelar se separan 12 px y se bajan 18 px respecto al editor de configs. Cancelar usa fondo secundario del tema. Cambio visual sin modificar guardado ni permisos. Se recompila la prueba 1.0.2; no publicación oficial.

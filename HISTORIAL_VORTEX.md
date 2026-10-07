@@ -141,6 +141,13 @@ Al cerrar cada tarea registrar aquí: fecha/agente, motivo, archivos o mods afec
 - **Efecto secundario:** con la radio encendida en la mano, el clic derecho sobre un bloque la coloca; la pantalla se abre con clic derecho en el aire.
 - **Siguiente paso para ChatGPT:** importar la V13 verificando el SHA-256 en lugar de V11 y V12.
 
+### Entrega de Claude — 2026-10-07 (7): addon de refuerzo y /reforzar
+
+- **Síntoma del usuario:** el Vortex SecurityCraft Addon 0.1.0 «no pasa nada» y, con el clic izquierdo, abre un menú (el del reforzador de SecurityCraft, que se abre con el clic derecho; se ha pedido pantallazo o los controles del usuario).
+- **Hallazgos:** el addon se carga en el servidor sin errores y el evento `LeftClickBlock` sí se dispara en Arclight (verificado en el código de Arclight). No se halló un fallo evidente en la lógica. Se preparó `vortex-securitycraft-addon-0.1.1-debug.jar` (rama `debug-log` del repositorio del addon, SHA-256 `ac89c08c1ddc7b7b4d201e3354c493b0742e308fcc6978a9245dcd50d8f02df3`) que solo añade líneas de registro; sustituyó al 0.1.0 en `/mods` del servidor (renombrado a `.disabled`). Sin probar: falta que el usuario haga el clic de ataque con el servidor encendido.
+- **VortexReinforce 1.1.0:** `/reforzar` también registra en el addon (por reflexión sobre `com.vortex.reinforcement.Protection`) los bloques compatibles que SecurityCraft no puede reforzar, a nombre del jugador indicado, y `/reforzar quitar` los retira. El addon es opcional. Todas las firmas se comprobaron contra las clases reales del addon. Repositorio `vortex-reinforce`, commit b5ee028. Desplegado en `/plugins` del servidor (apagado); el anterior quedó como `VortexReinforce.jar.before-addon`. Sin probar en partida.
+- **Siguiente paso para ChatGPT:** revisar el addon con el registro de diagnóstico cuando el usuario pruebe; el repositorio del addon es de ChatGPT, la rama `debug-log` no toca `main`.
+
 ### Código posterior a la primera recopilación del historial
 
 - 3d59a0b Conservar inventarios y cambios antes de retirar publicaciones antiguas para limitar el almacenamiento de GitHub

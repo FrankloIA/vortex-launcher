@@ -28,7 +28,7 @@ async function checkOfficialRelease(instancesRoot) {
     const installed=fs.existsSync(state)?JSON.parse(fs.readFileSync(state)):null
     return {...pointer,pending:installed?.releaseSha256!==pointer.releaseSha256}
 }
-async function prepareOfficialRelease(instancesRoot,onProgress=()=>{}) {
+async function prepareOfficialRelease(instancesRoot,onProgress=()=>{},options={}) {
     const release=await checkOfficialRelease(instancesRoot)
     if(!release) throw Error('Todavía no hay una versión oficial publicada')
     const instance=path.join(instancesRoot,'vortex-official'),cache=path.join(instancesRoot,'.vortex-downloads'),blobs=path.join(cache,'blobs')
@@ -38,8 +38,9 @@ async function prepareOfficialRelease(instancesRoot,onProgress=()=>{}) {
     if(hash(Buffer.from(JSON.stringify(envelope,null,2)))!==release.releaseSha256) throw Error('La publicación descargada no corresponde al canal oficial')
     const manifest=verify(envelope,feed.publicKey)
     if(manifest.version!==release.version || manifest.minecraft!=='1.21.1' || (manifest.loader || 'neoforge')!=='neoforge') throw Error('Esta versión necesita otro ejecutable del launcher')
+    const modVault=require('./mod-vault.cjs');const readBlob=sha=>{const blob=path.join(blobs,sha);return fs.existsSync(blob)?fs.readFileSync(blob):modVault.protect(fs.readFileSync(blob+'.vxmod'),false)}
     let done=0
-    const missing=manifest.files.some(f=>{const blob=path.join(blobs,f.sha256);return !fs.existsSync(blob) || fs.statSync(blob).size!==f.size || fileHash(blob)!==f.sha256})
+    const missing=manifest.files.some(f=>{const blob=path.join(blobs,f.sha256);if(!fs.existsSync(blob)&&fs.existsSync(blob+'.vxmod')){try{const bytes=readBlob(f.sha256);return bytes.length!==f.size || hash(bytes)!==f.sha256}catch{return true}}return !fs.existsSync(blob) || fs.statSync(blob).size!==f.size || fileHash(blob)!==f.sha256})
     for(const part of release.bundles) {
         const file=path.join(cache,part.sha256+'.vxp')
         if(missing && (!fs.existsSync(file) || fileHash(file)!==part.sha256)) {
@@ -52,9 +53,12 @@ async function prepareOfficialRelease(instancesRoot,onProgress=()=>{}) {
         if(missing) unpack(file,manifest,blobs)
         onProgress({percent:Math.floor(++done*90/release.bundles.length),message:'Actualizando Vortex · '+release.version})
     }
-    const result=applyRelease(instance,envelope,feed.publicKey,sha=>fs.readFileSync(path.join(blobs,sha)))
+    const vault=require('./mod-vault.cjs'),integrity=require('./instance-integrity.cjs');vault.open(instance);const prior=fs.existsSync(path.join(instance,'.vortex-authority.json'))?JSON.parse(fs.readFileSync(path.join(instance,'.vortex-authority.json'))):null;if(!options.administrator && prior)integrity.scan(instance,prior,feed.publicKey,readBlob)
+    const result=applyRelease(instance,envelope,feed.publicKey,readBlob,{preservePersonal:options.administrator===true})
     require('./mod-policy.cjs').applyOptional(instance);const shaders=require('./shader-policy.cjs');shaders.set(instance,shaders.get(instance))
     fs.writeFileSync(path.join(instance,'.vortex-release.json'),JSON.stringify({version:manifest.version,releaseSha256:release.releaseSha256}))
+    fs.writeFileSync(path.join(instance,'.vortex-authority.json'),JSON.stringify(envelope));if(manifest.security?.integrity)fs.writeFileSync(path.join(instance,'.vortex-protected'),'1')
+    if(manifest.security?.vault!==false && manifest.files.some(f=>modVault.ownHashes.has(f.sha256))){for(const f of manifest.files){if(!modVault.ownHashes.has(f.sha256))continue;const blob=path.join(blobs,f.sha256);if(fs.existsSync(blob)){require('./release-store.cjs').atomic(blob+'.vxmod',modVault.protect(fs.readFileSync(blob),true));fs.unlinkSync(blob)}}for(const part of release.bundles){const archive=path.join(cache,part.sha256+'.vxp');if(fs.existsSync(archive))fs.unlinkSync(archive)}}
     onProgress({percent:100,message:'Vortex '+manifest.version+' actualizado'})
     return result
 }

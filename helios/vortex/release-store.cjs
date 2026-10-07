@@ -229,7 +229,8 @@ class ReleaseStore {
             fs.writeFileSync(keyFile, keys.privateKey.export({ type: 'pkcs8', format: 'pem' }), { flag: 'wx', mode: 0o600 })
             fs.writeFileSync(path.join(this.root, 'public-signing-key.pem'), keys.publicKey.export({ type: 'spki', format: 'pem' }), { flag: 'wx' })
         }
-        const manifest = { ...draft, manualNotes:draft.notes, notes:require('./change-notes.cjs').notesFor(draft), publishedAt: new Date().toISOString() }
+        const securedFiles=draft.files.map(file=>file.path==='config/iris.properties'?{...file,integrityHash:hash(fs.readFileSync(path.join(this.root,'blobs',file.sha256),'utf8').split(/\r?\n/).filter(line=>!/^\s*(shaderPack|enableShaders)\s*=/.test(line)).join('\n').trim())}:file)
+        const manifest = { ...draft, files:securedFiles, security:{integrity:true,vault:true,runtimeIris:!draft.files.some(f=>f.path==='config/iris.properties')}, manualNotes:draft.notes, notes:require('./change-notes.cjs').notesFor(draft), publishedAt: new Date().toISOString() }
         const payload = JSON.stringify(manifest)
         const envelope = { payload, signature: crypto.sign(null, Buffer.from(payload), fs.readFileSync(keyFile)).toString('base64') }
         save(releaseFile, envelope)
@@ -273,12 +274,15 @@ function applyRelease(instance, envelope, publicKey, blobReader, options = {}) {
         const ownedFile = path.join(instance, '.vortex-owned.json')
         const previous = json(ownedFile, null)
         if(previous) validate(previous)
+        const personalDeleted=options.preservePersonal?new Set(json(path.join(instance,'.vortex-personal.json'),{}).deleted || []):new Set()
         const priorFiles = new Map((previous?.files || []).map(file => [file.path.toLowerCase(), file]))
         const work = path.join(instance, '.vortex-update')
         const changes = []
         const nextNames = new Set(manifest.files.map(f => f.path.toLowerCase()))
         for(const file of manifest.files) {
             const target = safe(instance, file.path)
+            if(personalDeleted.has(file.path))continue
+            if(options.preservePersonal && fs.existsSync(target)){const old=priorFiles.get(file.path.toLowerCase());if(!old || hash(fs.readFileSync(target))!==old.sha256)continue}
             if(file.policy === 'seed' && fs.existsSync(target) && !options.replaceSeeds) {
                 const prior=priorFiles.get(file.path.toLowerCase())
                 if(!prior || hash(fs.readFileSync(target))!==prior.sha256) continue
@@ -295,6 +299,7 @@ function applyRelease(instance, envelope, publicKey, blobReader, options = {}) {
             if(file.policy !== 'managed' || nextNames.has(file.path.toLowerCase())) continue
             const target = safe(instance, file.path)
             if(!fs.existsSync(target)) continue
+            if(options.preservePersonal && hash(fs.readFileSync(target))!==file.sha256)continue
             if(hash(fs.readFileSync(target)) !== file.sha256) throw Error('Archivo retirado modificado por el jugador: ' + file.path)
             changes.push({ path: file.path, existed: true, remove: true })
         }

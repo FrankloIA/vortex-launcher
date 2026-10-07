@@ -77,7 +77,7 @@ document.addEventListener('DOMContentLoaded', () => {
         })
         worker.on('error', error => finish(error.message))
         worker.on('exit', () => { if(!completed) finish('La actualización se interrumpió') })
-        worker.send({ instancesRoot: ConfigManager.getInstanceDirectory(), version: pending.version })
+        worker.send({ instancesRoot: ConfigManager.getInstanceDirectory(), version: pending.version,account:ConfigManager.getSelectedAccount() })
     }, true)
     refreshUpdate()
     setInterval(refreshUpdate, 30000)

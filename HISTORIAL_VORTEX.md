@@ -1722,3 +1722,7 @@ La fuente extensa de Claude permanece local: no se copia íntegra al repositorio
 
 Claude creará repositorios independientes para los mods y plugins que mantiene. Cuando estén disponibles, enlazarlos en `docs/MODS_EN_DESARROLLO.md` con repositorio, rama, responsable, commit, artefacto y pruebas. El repositorio del launcher seguirá siendo la fuente de integración y continuidad; crear un repositorio de un mod no autoriza sustituir sus bytes Jarvis ni publicar cambios sin verificar hashes y compatibilidad.
 
+
+## 2026-10-07 — Perfil administrador e integridad (ChatGPT)
+
+Se implementan perfiles locales separados por UUID, rol Microsoft verificado, biblioteca personal de Mods/Resourcepacks/Shaders/Configs y vista de jugador. Las actualizaciones conservan archivos personales del administrador, incluido essentialspatcher.json. Se añade escaneo firmado, bloqueo de Jugar y Reparar exclusivamente la instancia del jugador afectado, conservando mundos y otros perfiles. Cifrado local DPAPI para mods propios registrados; no es protección absoluta ni cifra paquetes públicos ni todos los archivos modificados. Detalles, límites y continuidad: docs/stage-3/launcher-protection.md. Pendiente prueba real de Minecraft y publicación oficial; no se autoriza ni simula la confirmación humana.

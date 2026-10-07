@@ -4,12 +4,12 @@ const { validateLocalFile } = require('helios-core/common')
 
 // Catálogo de pruebas: comprobar la instantánea importada, sin restaurar
 // configuraciones del jugador ni fingir que existe un servicio de actualización.
-async function verifyPackSnapshot(server, instancesRoot) {
+async function verifyPackSnapshot(server, instancesRoot, options={}) {
     if(server.rawServer.id === 'vortex-official') {
-        return require('../../../vortex/official-release.cjs').prepareOfficialRelease(instancesRoot)
+        const result=await require('../../../vortex/official-release.cjs').prepareOfficialRelease(instancesRoot,undefined,options);require('../../../vortex/launcher-protection.cjs').check(instancesRoot,server.rawServer.id,options);return result
     }
     if(server.rawServer.id === 'vortex-published-test') {
-        return require('../../../vortex/test-release.cjs').prepareTestRelease(instancesRoot)
+        const result=await require('../../../vortex/test-release.cjs').prepareTestRelease(instancesRoot,undefined,undefined,options);require('../../../vortex/launcher-protection.cjs').check(instancesRoot,server.rawServer.id);return result
     }
     if(!server.rawServer.vortexPackSnapshot) return
     if(server.rawServer.id !== 'vortex-pack-test') throw new Error('Instancia de pack de pruebas desconocida')

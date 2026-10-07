@@ -150,6 +150,29 @@ app.disableHardwareAcceleration()
 
 const REDIRECT_URI_PREFIX = 'https://login.microsoftonline.com/common/oauth2/nativeclient?'
 
+let administratorProfileMigration,playerPreview=false
+const personalFiles=new (require("./vortex/personal-files.cjs").PersonalFiles)(path.join(app.getPath("userData"),"config.json"))
+ipcMain.handle("vortex:personal-list",(_event,category)=>personalFiles.list(category))
+ipcMain.handle("vortex:personal-read",(_event,name)=>personalFiles.read(name))
+ipcMain.handle("vortex:personal-save",(_event,name,text,hash)=>personalFiles.write(name,text,hash))
+ipcMain.handle("vortex:personal-remove",(_event,name)=>personalFiles.remove(name))
+ipcMain.handle("vortex:player-preview",async(_event,enabled)=>{await personalFiles.context();playerPreview=enabled===true;return playerPreview})
+ipcMain.handle('vortex:account-role',async()=>{try{const config=JSON.parse(fs.readFileSync(path.join(app.getPath('userData'),'config.json'))),account=config.authenticationDatabase?.[config.selectedAccount],role=await require('./vortex/account-role.cjs').accountRole(account);if(!account || !/^[a-f0-9-]{32,36}$/i.test(account.uuid || ''))return {role:'Jugador'};const base=path.resolve(config.settings.launcher.dataDirectory),instances=path.join(base,'profiles',account.uuid.replace(/-/g,'').toLowerCase(),'instances');if(administratorProfileMigration)await administratorProfileMigration;if(!fs.existsSync(instances)){administratorProfileMigration ||= (async()=>{const original=path.join(base,'instances'),staging=instances+'.migration-'+require('crypto').randomUUID();if(fs.existsSync(original))await fs.promises.cp(original,staging,{recursive:true,filter:source=>!fs.lstatSync(source).isSymbolicLink()});else fs.mkdirSync(staging,{recursive:true});fs.renameSync(staging,instances)})().catch(error=>{administratorProfileMigration=null;throw error});await administratorProfileMigration;administratorProfileMigration=null}const latest=JSON.parse(fs.readFileSync(path.join(app.getPath('userData'),'config.json')));if(latest.selectedAccount!==config.selectedAccount)return {role:'Jugador'};return {role,instances,preview:playerPreview}}catch{return {role:'Jugador'}}})
+ipcMain.handle('vortex:personal-import',async(_event,category)=>{
+    if(!['mods','resourcepacks','shaderpacks','config'].includes(category))throw Error('Categoría inválida')
+    const config=JSON.parse(fs.readFileSync(path.join(app.getPath('userData'),'config.json'))),account=config.authenticationDatabase?.[config.selectedAccount]
+    if(await require('./vortex/account-role.cjs').accountRole(account)!=='Administrador')throw Error('Solo el administrador puede añadir contenido personalizado')
+    const extensions=category==='mods'?['jar']:category==='config'?['json','toml','cfg','properties','txt','yaml','yml','ini','conf']:['zip']
+    const selection=await require('electron').dialog.showOpenDialog({title:'Añadir contenido personalizado',properties:['openFile','multiSelections'],filters:[{name:'Archivos compatibles',extensions}]})
+    if(selection.canceled)return {cancelled:true}
+    const latest=JSON.parse(fs.readFileSync(path.join(app.getPath('userData'),'config.json')))
+    if(latest.selectedAccount!==config.selectedAccount)throw Error('La cuenta seleccionada cambió')
+    const server=latest.selectedServer;if(!/^[a-z0-9._-]{1,80}$/i.test(server))throw Error('Instancia inválida')
+    const instance=path.join(path.resolve(config.settings.launcher.dataDirectory),'profiles',account.uuid.replace(/-/g,'').toLowerCase(),'instances',server)
+    if(!fs.existsSync(instance))throw Error('Instala primero la versión del juego')
+    if(fs.existsSync(path.join(instance,'.vortex-update.lock')))throw Error('Espera a que termine la actualización')
+    return personalFiles.add(category,selection.filePaths)
+})
 // Microsoft Auth Login
 let msftAuthWindow
 let msftAuthSuccess

@@ -66,3 +66,6 @@ Para cada mod registra:
 - Problemas conocidos, trabajo pendiente, responsable de la siguiente tarea y pasos para reproducir.
 
 Los repositorios y artefactos de los mods se conservarán independientemente de la limpieza de releases antiguas del launcher. No enviar credenciales ni contenido privado a catálogos como parte del análisis. Existe autorización del usuario para consultar huellas CurseForge y hashes SHA-1 Modrinth de archivos del pack.
+
+### 2026-10-07 — Almacenamiento del launcher
+Los bytes originales de los JAR no se modifican. El launcher introduce un almacén DPAPI local para hashes propios registrados (VortexTab/InstantRespawn/VortexSleep); al iniciar Minecraft necesita restaurar los bytes originales. No protege la descarga pública ni identifica automáticamente todos los parches Jarvis futuros. Ver docs/stage-3/launcher-protection.md. No cambiar licencias ni sustituir versiones modificadas por catálogo.

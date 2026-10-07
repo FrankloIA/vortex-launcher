@@ -94,10 +94,17 @@ function setDownloadPercentage(percent){
  * 
  * @param {boolean} val True to enable, false to disable.
  */
+let integrityBlocked=false, administratorSession=false,lastIntegrityAccount
+async function refreshAccountRole(){const result=await ipcRenderer.invoke("vortex:account-role"),role=result.role;ConfigManager.setVerifiedAdministratorInstances(result.instances);administratorSession=role==="Administrador";let label=document.getElementById("vortexAccountRole");if(!label){label=document.createElement("small");label.id="vortexAccountRole";document.getElementById("vortexAccount").append(label)}label.textContent=result.preview?"Jugador · Vista previa":role;window.dispatchEvent(new CustomEvent("vortex:role",{detail:result}));const personal=document.getElementById("vortexPersonalContent");if(personal)personal.hidden=!administratorSession;return administratorSession}
+function showIntegrityFailure(error){const affectedAccount=ConfigManager.getSelectedAccount()?.uuid,affectedRoot=ConfigManager.getInstanceDirectory(),affectedServer=ConfigManager.getSelectedServer();toggleLaunchArea(false);integrityBlocked=true;setLaunchEnabled(false);setOverlayContent("Instalación modificada","Has realizado modificaciones a los archivos del juego. Debes reparar la instalación para continuar","Reparar","Cerrar");setOverlayHandler(async()=>{toggleOverlay(false);toggleLaunchArea(true);try{setLaunchDetails("Reparando archivos oficiales…");if(ConfigManager.getSelectedAccount()?.uuid!==affectedAccount)throw Error("Vuelve a la cuenta afectada para reparar su instalación");await refreshAccountRole();if(administratorSession || ConfigManager.getInstanceDirectory()!==affectedRoot)throw Error("La reparación no puede intervenir en otro perfil");await require("../vortex/repair-instance.cjs").repair(affectedRoot,affectedServer,event=>setLaunchPercentage(event.percent));integrityBlocked=false;setLaunchEnabled(true);setOverlayContent("Instalación reparada","Los archivos oficiales están restaurados","Ok");setOverlayHandler(()=>toggleOverlay(false));toggleOverlay(true)}catch(e){showLaunchFailure("No se pudo reparar",e.message)}finally{toggleLaunchArea(false)}});setDismissHandler(()=>toggleOverlay(false));toggleOverlay(true,true)}
 function setLaunchEnabled(val){
-    document.getElementById('launch_button').disabled = !val
+    document.getElementById('launch_button').disabled = !val || integrityBlocked
 }
 
+async function inspectInstalledPack(){if(proc || integrityBlocked || launch_details.style.display==='flex' || document.getElementById('launch_button').textContent.includes('ACTUALIZANDO'))return;try{await refreshAccountRole();require('../vortex/launcher-protection.cjs').check(ConfigManager.getInstanceDirectory(),ConfigManager.getSelectedServer(),{seal:true,administrator:administratorSession})}catch(error){showIntegrityFailure(error)}}
+setInterval(inspectInstalledPack,30000)
+window.addEventListener('focus',inspectInstalledPack)
+document.addEventListener('DOMContentLoaded',()=>setTimeout(inspectInstalledPack,1000))
 // Bind launch button
 let packUpdatePrompted
 let launcherUpdatePrompted
@@ -126,7 +133,7 @@ async function checkOfficialPackUpdate() {
     setOverlayHandler(async()=>{
         toggleOverlay(false);toggleLaunchArea(true)
         try {
-            await require('./assets/js/../../../vortex/official-release.cjs').prepareOfficialRelease(ConfigManager.getInstanceDirectory(),event=>{setLaunchDetails(event.message);setLaunchPercentage(event.percent)})
+            await require('./assets/js/../../../vortex/official-release.cjs').prepareOfficialRelease(ConfigManager.getInstanceDirectory(),event=>{setLaunchDetails(event.message);setLaunchPercentage(event.percent)},{administrator:await refreshAccountRole()})
             setOverlayContent('Vortex actualizado','La versión '+release.version+' está lista para jugar','Ok');setOverlayHandler(()=>toggleOverlay(false));toggleOverlay(true)
         } catch(error) {showLaunchFailure('No se pudo actualizar Vortex',error.message);packUpdatePrompted=null}
         finally {toggleLaunchArea(false)}
@@ -137,6 +144,8 @@ setInterval(()=>checkOfficialPackUpdate().catch(error=>loggerLanding.warn('Actua
 document.getElementById('launch_button').addEventListener('click', async e => {
     loggerLanding.info('Launching game..')
     try {
+        if(integrityBlocked)return
+        try{await refreshAccountRole();require('../vortex/launcher-protection.cjs').check(ConfigManager.getInstanceDirectory(),ConfigManager.getSelectedServer(),{administrator:administratorSession})}catch(error){showIntegrityFailure(error);return}
         if(await checkRequiredLauncherUpdate(true)) return
         const server = (await DistroAPI.getDistribution()).getServerById(ConfigManager.getSelectedServer())
         const jExe = ConfigManager.getJavaExecutable(ConfigManager.getSelectedServer())
@@ -189,6 +198,7 @@ function updateSelectedAccount(authUser){
         }
     }
     user_text.innerHTML = username
+    if(lastIntegrityAccount!==authUser?.uuid){lastIntegrityAccount=authUser?.uuid;integrityBlocked=false;ConfigManager.setVerifiedAdministratorInstances(null);queueMicrotask(inspectInstalledPack)}
 }
 updateSelectedAccount(ConfigManager.getSelectedAccount())
 
@@ -533,7 +543,7 @@ async function dlAsync(login = true) {
     if(isNeoForge(serv)) {
         try {
             setLaunchDetails('Verificando archivos del pack Vortex')
-            await require('./assets/js/pack-snapshot').verifyPackSnapshot(serv, ConfigManager.getInstanceDirectory())
+            await require('./assets/js/pack-snapshot').verifyPackSnapshot(serv, ConfigManager.getInstanceDirectory(),{administrator:await refreshAccountRole()})
             const prepared = await prepareNeoForge({
                 commonDir: ConfigManager.getCommonDirectory(),
                 server: serv,
@@ -547,7 +557,7 @@ async function dlAsync(login = true) {
             modLoaderData = prepared.modManifest
         } catch(err) {
             loggerLaunchSuite.error('NeoForge preparation failed', err)
-            showLaunchFailure('NeoForge — Vortex', err.message)
+            if(err.code==='VORTEX_INTEGRITY'){showIntegrityFailure(err)}else showLaunchFailure('NeoForge — Vortex', err.message)
             return
         }
         remote.getCurrentWindow().setProgressBar(-1)
@@ -691,7 +701,7 @@ async function dlAsync(login = true) {
             // Build Minecraft process.
             proc = pb.build()
             const runningProcess=proc
-            proc.once('close',()=>{if(proc===runningProcess)proc=null;setLaunchEnabled(true)})
+            proc.once('close',()=>{if(proc===runningProcess)proc=null;try{require('../vortex/launcher-protection.cjs').close(ConfigManager.getInstanceDirectory(),serv.rawServer.id)}catch(error){loggerLaunchSuite.warn('Cifrado de mods',error.message)}setLaunchEnabled(true)})
             setLaunchEnabled(false)
 
             // Bind listeners to stdout.

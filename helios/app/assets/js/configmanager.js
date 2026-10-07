@@ -284,7 +284,10 @@ exports.getCommonDirectory = function(){
  * 
  * @returns {string} The launcher's instance directory.
  */
+let verifiedAdministratorInstances=null
+exports.setVerifiedAdministratorInstances = function(instances){verifiedAdministratorInstances=instances || null}
 exports.getInstanceDirectory = function(){
+    if(verifiedAdministratorInstances)return verifiedAdministratorInstances
     return path.join(exports.getDataDirectory(), 'instances')
 }
 

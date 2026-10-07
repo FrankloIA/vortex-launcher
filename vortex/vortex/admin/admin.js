@@ -402,10 +402,13 @@ function render() {
 async function upload(files, oldPath) {
     if(!requireEditable()) return
     const draftId = selected, uploadCategory = oldPath ? category : get('localCategory').value
+    const destination=oldPath?libraryScope:get('addScope').value
     for(const file of files) {
         if(file.size > 64 * 1048576) throw Error('El archivo supera 64 MiB: ' + file.name)
         const base64 = await new Promise((resolve, reject) => { const reader = new FileReader(); reader.onload = () => resolve(reader.result.split(',')[1]); reader.onerror = reject; reader.readAsDataURL(file) })
-        const destination=oldPath?libraryScope:get('addScope').value
+        // La selección y lectura pueden durar mientras otra operación guarda el borrador.
+        await refresh()
+        if(selected!==draftId || !requireEditable()) throw Error('La versión seleccionada cambió; vuelve a elegir los archivos')
         await api(destination==='server'?'server/add':'library/add', { id: draftId, revision: state.drafts.find(d => d.id === draftId).revision, category: uploadCategory, filename: file.name, base64, replacePath: oldPath })
         await refresh()
         if(destination==='server')await loadServerLibrary()

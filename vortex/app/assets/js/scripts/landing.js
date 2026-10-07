@@ -1,4 +1,4 @@
-require('../../../../vortex/dependency-alias.cjs')
+require('../vortex/dependency-alias.cjs')
 /**
  * Script for landing.ejs
  */

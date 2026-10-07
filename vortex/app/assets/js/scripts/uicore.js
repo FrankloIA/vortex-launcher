@@ -1,4 +1,4 @@
-require('../../../../vortex/dependency-alias.cjs')
+require('../vortex/dependency-alias.cjs')
 /**
  * Core UI functions are initialized in this file. This prevents
  * unexpected errors from breaking the core features. Specifically,

@@ -1848,3 +1848,8 @@ El usuario pide revisar los 199 mods actuales del launcher, incluidos catálogos
 - El requisito 1395870 es WATERMeDIA Platform Extension. El selector latest estable elegía 2.1.37 frente a 3.0.0.23 instalada y updates confundía cualquier fileId distinto con actualización. Ahora se contrastan fechas oficiales del archivo instalado y candidato del mismo proyecto/proveedor; candidatos anteriores o iguales no se ofrecen y se bloquean también al intentar actualizar desde una lista antigua. Aplica a cliente y servidor.
 - Comprobación real de fechas de WATERMeDIA: candidato antiguo no es actualización. Cinco pruebas pasaron (catálogo, comparación y API privada). Reiniciado panel. No se añadieron dependencias ni se reemplazó WATERMeDIA. Falta comprobación de entrada al juego; esta corrección no publica versión oficial.
 
+
+### Launcher de pruebas bloqueado en el vórtice — 2026-10-07
+- Causa reproducida en Electron con copia aislada del perfil: uicore.js y landing.js requerían dependency-alias.cjs relativo a su carpeta de scripts, pero require en scripts del renderer se resuelve respecto a app/app.ejs. Resultado: Cannot find module y posteriores ipcRenderer/LoggerUtil no definidos; carga infinita.
+- Corregidas ambas rutas a ../vortex/dependency-alias.cjs. Reproducción tras arreglo: ready complete, loading none, main block y sin errores de módulos. Sintaxis correcta. Compilación 1.0.2 de pruebas en preparación; no se declara aprobada la prueba del juego ni se publica oficialmente. Cuenta y archivos originales intactos.
+

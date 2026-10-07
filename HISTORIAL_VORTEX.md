@@ -1874,3 +1874,6 @@ El usuario pide revisar los 199 mods actuales del launcher, incluidos catálogos
 - Servidor ya conserva ese mismo Quark 486 y no tenía cambios de Quark pendientes. Publicación de pruebas 1.0.2 sincronizada, revisión 253; compilación compatible completada. No se aprobó el juego ni se publicó oficialmente. La excepción de bajar versión es exclusivamente Quark por petición explícita del usuario.
 - Conservada comprobación del requisito exacto NeoForge al importar/actualizar, además de Minecraft/loader; targetFor incluye neoforge. Evita aceptar Quark 487 con loader250. Nueva solicitud: concept art de barra de instalación galáctica más larga y texto legible; pendiente imagen, no implementación todavía.
 
+
+- Concept art completado: docs/concepts/barra-instalacion-galactica.png. Barra ancha cian/violeta con textura galáctica, vórtice al frente y texto de instalación separado sin recortar, porcentaje/archivo/progreso y pasos Java/NeoForge/Mods. Solo propuesta visual; no se implementó aún. Mantiene NeoForge 21.1.250 en el ejemplo.
+

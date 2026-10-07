@@ -50,6 +50,9 @@ Comprobación posterior: API y DNS muestran 209.222.97.103:25622. Se publicó es
 
 ### Coordinación con Claude y próxima acción
 
+Altura de consola — ChatGPT, 2026-10-07: la salida de consola utiliza el espacio disponible hasta el borde inferior de la ventana, reservando el formulario de comandos y el margen del panel. Recalcula al abrir la pestaña y al redimensionar, con mínimo de 340 px para ventanas pequeñas. Fuente: admin/console.js; comprobación de sintaxis. Cambio visual sin operaciones sobre el servidor ni contenido del pack.
+
+
 Tarjetas por biblioteca — ChatGPT, 2026-10-07: el resumen superior aparece únicamente en Biblioteca. Cliente conserva mods/resourcepacks/shaders; Servidor utiliza su inventario separado y muestra mods/plugins/configuraciones. Plugins cuenta únicamente JAR, no los archivos de datos de las carpetas de plugins. Inventario todavía no cargado se muestra como —, sin usar cantidades del cliente. Fuente: admin/design.js. No cambia contenido ni versión del pack.
 
 

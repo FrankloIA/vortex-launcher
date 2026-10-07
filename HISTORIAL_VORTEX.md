@@ -108,6 +108,15 @@ Al cerrar cada tarea registrar aquí: fecha/agente, motivo, archivos o mods afec
 - **Límites:** los repositorios no se han probado desde cero (nadie ha recompilado desde ellos); VortexAdmin y MobNames no se pueden reconstruir solo desde su repositorio porque falta la fuente original. Los repositorios son privados: ChatGPT necesita acceso a la cuenta `FrankloIA`.
 - **Siguiente paso:** cada agente trabaja en su rama dentro de cada repositorio y registra commit y hash en `docs/MODS_EN_DESARROLLO.md`.
 
+### Entrega de Claude — 2026-10-07 (3): regla nueva y Tombstone 9.5.7
+
+- **Decisión del usuario (sustituye el flujo anterior de CurseForge y zips):** toda modificación de un mod se hace en su repositorio de GitHub y el jar se carga en el Admin Panel para lanzarlo como actualización. La instancia de CurseForge ya no existe.
+- **Qué cambió:** `vortex-patch-tombstone` ahora genera `tombstone-neoforge-1.21.1-9.5.7.jar` (SHA-256 `086290d876bc815ac9c63ccddd58d4fee2eaae0e457082d2555d375060aa8261`) a partir del original 9.5.6 (`520e2a3cb5fb8001da20a23aaf39a7fd8fd937af962c2b43c55460099e30b23b`). Tope de 100 ticks al círculo y chispas de casteo, y versión del mod 9.5.7 en `neoforge.mods.toml`.
+- **Por qué no rompe la conexión:** `PROTOCOL_ID` (`tombstone-9.5.6`) sigue igual, así que el cliente 9.5.7 es compatible con el servidor 9.5.6 original. No se publicó nada en el servidor.
+- **Comprobaciones:** solo difieren 3 entradas (las 2 clases y el `mods.toml`); `MANIFEST.MF` idéntico; 1757 entradas; jar leído completo con ZipFS; bytecode revisado con `javap`.
+- **Límites:** no probado en una partida. Falta que el usuario lo suba al Admin Panel (borrador, prueba y, solo con su confirmación, publicación oficial). No es un archivo de catálogo: modificación Jarvis, sin actualizaciones automáticas.
+- **Siguiente paso para ChatGPT:** al importarlo, verificar el SHA-256 y marcarlo como Jarvis para que ninguna actualización de catálogo lo sustituya.
+
 ### Código posterior a la primera recopilación del historial
 
 - 3d59a0b Conservar inventarios y cambios antes de retirar publicaciones antiguas para limitar el almacenamiento de GitHub

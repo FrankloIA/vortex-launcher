@@ -1,5 +1,9 @@
 # Borradores, publicaciones y actualización local
 
+<!-- VORTEX_CONTINUIDAD_ACTUAL -->
+> Actualizado el 7 de octubre de 2026. Estado, reglas vigentes, comprobaciones y pendientes: [continuidad actual](../CONTINUIDAD_ACTUAL.md). Consulta esa entrega antes de continuar; sus decisiones sustituyen las anteriores incompatibles.
+<!-- /VORTEX_CONTINUIDAD_ACTUAL -->
+
 Entrega inicial: 3 de octubre de 2026. La aprobación de la aplicación Microsoft de Vortex sigue pendiente. Esta entrega permite desarrollar y probar distribución sin iniciar sesión en Minecraft.
 
 ## Panel local

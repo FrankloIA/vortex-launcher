@@ -1,5 +1,9 @@
 # Distribution Index
 
+<!-- VORTEX_CONTINUIDAD_ACTUAL -->
+> Actualizado el 7 de octubre de 2026. Estado, reglas vigentes, comprobaciones y pendientes: [continuidad actual](../../docs/CONTINUIDAD_ACTUAL.md). Consulta esa entrega antes de continuar; sus decisiones sustituyen las anteriores incompatibles.
+<!-- /VORTEX_CONTINUIDAD_ACTUAL -->
+
 You can use [Nebula](https://github.com/dscalzi/Nebula) to automate the generation of a distribution index.
 
 The most up to date and accurate descriptions of the distribution spec can be viewed in [vortex-distribution-types](https://github.com/dscalzi/vortex-distribution-types).

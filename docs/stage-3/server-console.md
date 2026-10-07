@@ -1,5 +1,9 @@
 # Consola del hosting en el panel
 
+<!-- VORTEX_CONTINUIDAD_ACTUAL -->
+> Actualizado el 7 de octubre de 2026. Estado, reglas vigentes, comprobaciones y pendientes: [continuidad actual](../CONTINUIDAD_ACTUAL.md). Consulta esa entrega antes de continuar; sus decisiones sustituyen las anteriores incompatibles.
+<!-- /VORTEX_CONTINUIDAD_ACTUAL -->
+
 ChatGPT, 2026-10-07. Pestaña Servidor: consola con últimas líneas y salida en directo, reconexión, desplazamiento automático salvo que el usuario esté leyendo arriba, limpiar solo la vista y envío de comandos de una sola línea. Flecha arriba recupera el último comando. Los comandos no están ligados al borrador del pack; se bloquean durante una operación de despliegue del servidor.
 
 El backend solicita `/websocket` a Pterodactyl y autentica el socket del hosting con origen https://gamedash.astrolnodes.net. Se usa ws explícitamente como dependencia; el WebSocket nativo de Node no admite ese origen requerido. Tras auth success solicita send logs. El token temporal y la clave API permanecen en el backend. El navegador recibe únicamente estado, cursor y líneas mediante HTTP local. Al dejar de consultar se desconecta tras inactividad; expiración del token y cortes permiten reconexión con nuevas credenciales.

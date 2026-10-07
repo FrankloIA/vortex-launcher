@@ -6,7 +6,7 @@ Estas instrucciones se aplican a ChatGPT, Claude y cualquier agente que trabaje 
 
 Antes de leer o modificar código ejecuta `git log --oneline -15`, `git status` y `git diff`. Revisa cambios ajenos sin pisarlos ni incluirlos en tu commit por accidente.
 
-Lee `HISTORIAL_VORTEX.md` (primero estado vigente y pendientes), `PROMPT_CLAUDE_VORTEX.md`, `docs/MODS_EN_DESARROLLO.md` y las instrucciones propias del componente que vayas a modificar. El historial contiene inventarios largos: no confundas una lectura truncada con haber leído todo; consulta por secciones y busca los archivos concretos del mod.
+Lee primero `docs/CONTINUIDAD_ACTUAL.md` y después `HISTORIAL_VORTEX.md` (primero estado vigente y pendientes), `PROMPT_CLAUDE_VORTEX.md`, `docs/MODS_EN_DESARROLLO.md` y las instrucciones propias del componente que vayas a modificar. El historial contiene inventarios largos: no confundas una lectura truncada con haber leído todo; consulta por secciones y busca los archivos concretos del mod.
 
 Si existe `.codegraph/`, usa CodeGraph antes de buscar o leer código para localizar símbolos. Si no existe, no indexes por tu cuenta. Busca con `rg`. Actualmente no hay `RTK.md`; si se incorpora, léelo también.
 

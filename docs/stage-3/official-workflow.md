@@ -1,5 +1,9 @@
 # Publicación del pack Vortex
 
+<!-- VORTEX_CONTINUIDAD_ACTUAL -->
+> Actualizado el 7 de octubre de 2026. Estado, reglas vigentes, comprobaciones y pendientes: [continuidad actual](../CONTINUIDAD_ACTUAL.md). Consulta esa entrega antes de continuar; sus decisiones sustituyen las anteriores incompatibles.
+<!-- /VORTEX_CONTINUIDAD_ACTUAL -->
+
 El launcher Windows 1.0.2 incorpora el canal de packs firmado de GitHub. Los clientes anteriores necesitan instalarlo para recibir las nuevas publicaciones del pack. El panel sincroniza la versión activa con la del launcher nuevo y no baja el número de una versión futura que ya se esté preparando.
 
 1. Prepara los cambios en la versión activa. Las notas automáticas registran añadidos, sustituciones, retiradas y cambios de configuración. Los commits del launcher posteriores al inicio del borrador también se incorporan.

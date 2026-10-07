@@ -1,5 +1,9 @@
 # Microsoft Authentication
 
+<!-- VORTEX_CONTINUIDAD_ACTUAL -->
+> Actualizado el 7 de octubre de 2026. Estado, reglas vigentes, comprobaciones y pendientes: [continuidad actual](../../docs/CONTINUIDAD_ACTUAL.md). Consulta esa entrega antes de continuar; sus decisiones sustituyen las anteriores incompatibles.
+<!-- /VORTEX_CONTINUIDAD_ACTUAL -->
+
 Authenticating with Microsoft is fully supported by Vortex Launcher.
 
 ## Acquiring an Entra Client ID

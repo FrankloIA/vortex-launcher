@@ -1,5 +1,9 @@
 # Integración AstrolNodes y estado del launcher
 
+<!-- VORTEX_CONTINUIDAD_ACTUAL -->
+> Actualizado el 7 de octubre de 2026. Estado, reglas vigentes, comprobaciones y pendientes: [continuidad actual](../CONTINUIDAD_ACTUAL.md). Consulta esa entrega antes de continuar; sus decisiones sustituyen las anteriores incompatibles.
+<!-- /VORTEX_CONTINUIDAD_ACTUAL -->
+
 ## Dirección dinámica (2026-10-07)
 
 Migración confirmada por soporte: 209.222.97.184:25622, 2026-10-07 11:00 Europe/Madrid = 09:00 UTC. El registro firmado incluye next con effectiveAt; el launcher evalúa la activación también en caché. El publicador conserva la programación mientras la API todavía muestre la asignación anterior. El estado usa la nueva dirección en el siguiente sondeo; servers.dat se adapta antes de arrancar Minecraft. No cambia una partida que ya esté abierta ni garantiza disponibilidad durante el traslado del hosting.

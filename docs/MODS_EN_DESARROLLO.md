@@ -1,5 +1,9 @@
 # Registro compartido de mods — Claude y ChatGPT
 
+<!-- VORTEX_CONTINUIDAD_ACTUAL -->
+> Actualizado el 7 de octubre de 2026. Estado, reglas vigentes, comprobaciones y pendientes: [continuidad actual](CONTINUIDAD_ACTUAL.md). Consulta esa entrega antes de continuar; sus decisiones sustituyen las anteriores incompatibles.
+<!-- /VORTEX_CONTINUIDAD_ACTUAL -->
+
 Última revisión: 2026-10-07 (Claude). Los proyectos de Claude se incorporaron a partir de su propio registro de trabajo (`D:\Vortex Server\CLAUDE.md` y las carpetas de `D:\Vortex Server\downloads\`). No se atribuye a Claude ningún archivo que no figure ahí.
 
 ## Coordinación
@@ -69,3 +73,6 @@ Los repositorios y artefactos de los mods se conservarán independientemente de 
 
 ### 2026-10-07 — Almacenamiento del launcher
 Los bytes originales de los JAR no se modifican. El launcher introduce un almacén DPAPI local para hashes propios registrados (VortexTab/InstantRespawn/VortexSleep); al iniciar Minecraft necesita restaurar los bytes originales. No protege la descarga pública ni identifica automáticamente todos los parches Jarvis futuros. Ver docs/stage-3/launcher-protection.md. No cambiar licencias ni sustituir versiones modificadas por catálogo.
+
+### Entrega vigente de launcher — 7 de octubre de 2026
+La protección local no identifica ni cifra automáticamente todos los parches propios: conserva los hashes registrados y sus bytes. No se editaron mods en esta entrega documental. Los repositorios de mods de Claude se consultan por su registro real; no suponer sincronía de chats. Fuente del launcher: vortex/. Reglas de perfiles, pruebas y limitaciones: CONTINUIDAD_ACTUAL.md.

@@ -1,5 +1,9 @@
 # Configurar Microsoft para Vortex
 
+<!-- VORTEX_CONTINUIDAD_ACTUAL -->
+> Actualizado el 7 de octubre de 2026. Estado, reglas vigentes, comprobaciones y pendientes: [continuidad actual](../CONTINUIDAD_ACTUAL.md). Las observaciones antiguas se conservan como historial; no describen por sí solas la entrega actual.
+<!-- /VORTEX_CONTINUIDAD_ACTUAL -->
+
 El launcher utiliza una aplicación propia. El ID público se guarda en `vortex/vortex/microsoft-auth.json`; la variable `VORTEX_MICROSOFT_CLIENT_ID` tiene prioridad. Actualmente el ID está vacío: el inicio de sesión real todavía no se ha probado.
 
 1. Entrar en [Microsoft Entra](https://entra.microsoft.com/) con la cuenta que gestionará Vortex y abrir **Registros de aplicaciones → Nuevo registro**.

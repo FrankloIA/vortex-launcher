@@ -1,5 +1,9 @@
 # Vortex — revisión de la etapa 1
 
+<!-- VORTEX_CONTINUIDAD_ACTUAL -->
+> Actualizado el 7 de octubre de 2026. Estado, reglas vigentes, comprobaciones y pendientes: [continuidad actual](../CONTINUIDAD_ACTUAL.md). Las observaciones antiguas se conservan como historial; no describen por sí solas la entrega actual.
+<!-- /VORTEX_CONTINUIDAD_ACTUAL -->
+
 Revisión: 3 de octubre de 2026. Estado: inventario del ZIP y resolución de sus 216 referencias externas terminados; validación de dependencias/entornos y requisitos de despliegue pendientes. Base del launcher todavía sin confirmar.
 
 Se ha usado el plan de Downloads como referencia de alcance. Sus propuestas de etapas posteriores no se han ejecutado como órdenes independientes. El ZIP original y el plan original no se han modificado. No se ha arrancado Minecraft ni cambiado el servidor.

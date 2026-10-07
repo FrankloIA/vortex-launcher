@@ -1,5 +1,9 @@
 # Prompt de continuidad para Claude — proyecto Vortex
 
+<!-- VORTEX_CONTINUIDAD_ACTUAL -->
+> Actualizado el 7 de octubre de 2026. Estado, reglas vigentes, comprobaciones y pendientes: [continuidad actual](docs/CONTINUIDAD_ACTUAL.md). Consulta esa entrega antes de continuar; sus decisiones sustituyen las anteriores incompatibles.
+<!-- /VORTEX_CONTINUIDAD_ACTUAL -->
+
 Puedes entregar este documento a Claude junto con acceso al repositorio. No presupone que Claude pueda leer la conversación de ChatGPT: el contexto persistente se conserva aquí, en el historial, en los inventarios y en Git.
 
 ## Tu tarea al incorporarte
@@ -10,11 +14,11 @@ No empieces reimplementando lo existente. Revisa el código y el estado real del
 
 ## Origen y evolución del launcher
 
-Se partió de un launcher Electron basado en Vortex y se desarrolló la identidad Vortex. La interfaz visible debe estar en español y usar Vortex, sin marcas Vortex. Se sustituyeron las cargas por un vórtice giratorio, las imágenes de versiones y Acerca de por el logo completo con texto, y el engranaje de Ajustes. Inicio, ajustes y bienvenida usan el fondo de paisaje/portal y paneles translúcidos. La bienvenida tiene marca y textos pequeños; Ajustes separa el subtítulo del título. No reintroducir enlaces externos de soporte, fuente, DevTools o notas de GitHub eliminados.
+Se adaptó una base Electron existente a la identidad Vortex. La interfaz visible y la carpeta activa son Vortex; se conservan las licencias externas. Se sustituyeron las cargas por un vórtice giratorio, las imágenes de versiones y Acerca de por el logo completo con texto, y el engranaje de Ajustes. Inicio, ajustes y bienvenida usan el fondo de paisaje/portal y paneles translúcidos. La bienvenida tiene marca y textos pequeños; Ajustes separa el subtítulo del título. No reintroducir enlaces externos de soporte, fuente, DevTools o notas de GitHub eliminados.
 
 Las cuentas admiten **una Microsoft y una Mojang a la vez**, nunca dos del mismo proveedor. La regla antigua de una cuenta global fue sustituida. Sin ninguna cuenta se vuelve a bienvenida/login. Cabezas nítidas, logout rojo con brillo al pasar el ratón, acciones a la derecha y centradas verticalmente. La espera Microsoft usa «Iniciando sesión...» con el vórtice. Las ventanas Microsoft usan el icono Vortex.
 
-Minecraft toma inicialmente la resolución del monitor. RAM inicial mínima y máxima de 11G. Datos normales en `D:\Vortex Launcher\.runtime\data`. Ajustes de shaders en una pestaña propia: Vortex Luxury (Predeterminado), Vortex Ratrero o Desactivados; se conserva la elección del jugador. Mods obligatorios no se pueden añadir, quitar ni desactivar desde el launcher de jugadores; Distant Horizons es el único opcional pedido, con toggle y sin eliminación. Opcionales arriba, buscador parcial de mods.
+Minecraft toma inicialmente la resolución del monitor. RAM inicial mínima y máxima de 11G. Datos locales dentro de `vortex/.runtime`, con instancias separadas por UUID dentro del directorio de datos de cada contexto. Ajustes de shaders en una pestaña propia: Vortex Luxury (Predeterminado), Vortex Ratrero o Desactivados; se conserva la elección del jugador. Mods obligatorios no se pueden añadir, quitar ni desactivar desde el launcher de jugadores; Distant Horizons es el único opcional pedido, con toggle y sin eliminación. Opcionales arriba, buscador parcial de mods.
 
 El estado del servidor se consulta periódicamente y al volver del login, con dirección y puerto exactos; online muestra indicador verde y jugadores, offline gris. No fijar un resultado ni deducir disponibilidad de una etiqueta antigua. La búsqueda de actualización del launcher da resultado real y popup con Ok, sin punto final añadido. El primer instalador remoto observado fue v1.0.0; no confundirlo con el pack actual.
 
@@ -60,7 +64,7 @@ Observado en el navegador autenticado el 2026-10-07:
 - Servidor Vortex online, dirección `ly06.astrolnodes.net:25622`.
 - Startup: Minecraft 1.21.1, Java 21, **Arclight con loader NeoForge**; el número exacto del NeoForge del servidor aún no se verificó.
 - SFTP en `ly06.astrolnodes.net:2022`, gestión de archivos, backups, consola y arranque/parada disponibles. No se documentan credenciales.
-- La API Pterodactyl de cliente está confirmada. El panel lee VORTEX_PTERODACTYL_API_TOKEN del usuario Windows aunque el proceso no la haya heredado; también admite introducirla en Servidor y persistirla cifrada con DPAPI. No extraer cookies como sustituto. No se alteró ni reinició el servidor en la comprobación.
+- La API Pterodactyl de cliente está confirmada. El panel lee VORTEX_PTERODACTYL_API_TOKEN del usuario Windows aunque el proceso no la haya heredado; conserva almacenamiento DPAPI; la interfaz de introducir/cambiar la API se retiró por petición del usuario. No extraer cookies como sustituto. No se alteró ni reinició el servidor en la comprobación.
 
 Lee docs/stage-3/server-integration.md: contiene módulos, arranque, pruebas y límites. Biblioteca ya permite elegir cliente/servidor; Servidor muestra cambios y operaciones. El inventario real de lectura contiene 932 archivos y 180 mods. La doble clasificación bloquea casos inciertos; los hashes conocidos de parches propios conservan su destino y sus bytes. Los cambios del servidor se preparan en el mismo borrador, se autoguardan y necesitan aplicación explícita con backup completado, hashes y recuperación. Las operaciones destructivas se comprobaron con una API simulada, no en producción. El estado del launcher obtiene un resumen del panel local sin clave, con respaldo Minecraft directo; API resources no aporta número de jugadores. No publicar, detener producción o enviar archivos solo para comprobar acceso.
 

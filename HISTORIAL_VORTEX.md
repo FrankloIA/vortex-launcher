@@ -1,5 +1,9 @@
 # Historial compartido de Vortex — ChatGPT y Claude
 
+<!-- VORTEX_CONTINUIDAD_ACTUAL -->
+> Actualizado el 7 de octubre de 2026. Estado, reglas vigentes, comprobaciones y pendientes: [continuidad actual](docs/CONTINUIDAD_ACTUAL.md). Consulta esa entrega antes de continuar; sus decisiones sustituyen las anteriores incompatibles.
+<!-- /VORTEX_CONTINUIDAD_ACTUAL -->
+
 Este documento conserva los cambios desde la primera versión. No contiene credenciales ni archivos binarios. Git conserva el código y su autoría; los manifiestos registran rutas y hashes de mods, resourcepacks, shaders, configuraciones y cualquier otro archivo del pack.
 
 ## Estado vigente y entrega entre agentes — 2026-10-07
@@ -11,9 +15,9 @@ Este resumen prevalece sobre decisiones anteriores sustituidas. Instrucciones ob
 ### Estado comprobado
 
 - Launcher Windows: 1.0.2. Panel local: http://127.0.0.1:43117, sin contraseña. Fuente en vortex; runtime local separado e ignorado.
-- Pack seleccionado como trabajo activo: 1.0.2, borrador editable recuperado. Última consulta: revisión 7, 726 archivos. La revisión cambia al incorporar notas de nuevos commits; consultar el panel antes de mutar.
+- Pack seleccionado como trabajo activo: 1.0.2, borrador editable recuperado. Última consulta de esta entrega: revisión 20, 726 archivos. La revisión cambia al incorporar notas de nuevos commits; consultar el panel antes de mutar.
 - Inventario: 199 mods, 26 resourcepacks, 4 shaderpacks, 487 config, 1 defaultconfigs, 5 customnpcs, 2 bivrik, options.txt y servers.dat. Las rutas y hashes completos están en las instantáneas posteriores de este documento.
-- 1.0.1 sigue disponible como publicación en pruebas. No considerar ninguna de estas publicaciones oficial por su número. El historial de Crear solo admite oficiales.
+- El canal local de pruebas apunta a 1.0.2 y el canal estable está ausente; verificar coincidencia de revisión antes de probar. No considerar ninguna de estas publicaciones oficial por su número. El historial de Crear solo admite oficiales.
 - Cancelar siempre está habilitado y se refiere a la versión seleccionada. El caso seleccionar 1.0.1 mientras 1.0.2 está activa se verificó sin modificar los datos reales: se conserva 1.0.2. Las oficiales no se cancelan.
 - La 1.0.2 se recuperó de la última instantánea firmada de prueba después de una eliminación accidental. Se verificaron los 726 blobs. Las notas posteriores de código se reconstruyen desde Git; no afirmar recuperación de cambios sin publicar que no se archivaron. Desde c16d1e8 también se guardan borradores completos al cancelar.
 - Catálogos automáticos Modrinth/CurseForge con buscador, páginas, compatibilidad y exclusión de proyectos conocidos. Verificados contra ambas API y en la interfaz. No se ocultan con certeza proyectos aún no identificados.
@@ -1749,3 +1753,6 @@ Guardar y Cancelar se separan 12 px y se bajan 18 px respecto al editor de confi
 Se migra la carpeta activa a vortex, con perfiles y datos locales preservados. Se actualizan comandos, workflows, documentación, imports y metadatos del instalador. Dependencias mediante alias vortex-core/vortex-distribution-types, conservando sus paquetes y licencias originales. README conserva el trabajo ajeno existente. Los avisos legales originales no se eliminan. Se valida panel, launcher y compilación de pruebas; no publicación oficial.
 
 Se completan también los nombres de archivos de pruebas y documentos auxiliares con la identidad Vortex. Panel operativo, publicación de pruebas conservada, comprobación Electron sin errores y 27 tests relevantes correctos. Instalador de pruebas generado desde vortex/dist.
+
+## 2026-10-07 — Entrega documental completa para Claude (ChatGPT)
+Se actualizan todos los Markdown rastreados con enlace a docs/CONTINUIDAD_ACTUAL.md, corrigiendo estados antiguos, rutas, administrador, biblioteca personal, sustitución, navegación, editor, integridad, reparación aislada, cifrado y límites. AGENTS/CLAUDE/PROMPT remiten a la entrega vigente. No se afirma edición única con colores, sincronización cloud, cifrado total ni partida real aprobada. Panel consultado: borrador 1.0.2 revisión 20, 726 archivos; canal test 1.0.2, stable ausente. Solo documentación; no se modifica ni publica el pack. README ajeno conservado.

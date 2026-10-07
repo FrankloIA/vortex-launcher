@@ -1,5 +1,9 @@
 # Etapa 2: base Vortex y prueba técnica
 
+<!-- VORTEX_CONTINUIDAD_ACTUAL -->
+> Actualizado el 7 de octubre de 2026. Estado, reglas vigentes, comprobaciones y pendientes: [continuidad actual](../CONTINUIDAD_ACTUAL.md). Las observaciones antiguas se conservan como historial; no describen por sí solas la entrega actual.
+<!-- /VORTEX_CONTINUIDAD_ACTUAL -->
+
 Fecha: 3 de octubre de 2026. El usuario confirmó Vortex como base. La evaluación comparativa de etapa 1 queda sustituida por esta decisión; el fork FewerTeam revisado no aporta una adaptación NeoForge propia en su rama pública. Se utiliza Vortex oficial con adaptación local y su licencia MIT conservada.
 
 ## Procedencia

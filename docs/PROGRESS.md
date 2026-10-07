@@ -1,5 +1,27 @@
 # Seguimiento de Vortex
 
+Actualizado: 7 de octubre de 2026. Fuente activa: `vortex/`.
+
+Estado y pendientes completos: [CONTINUIDAD_ACTUAL.md](CONTINUIDAD_ACTUAL.md).
+
+| Área | Estado actual | Pendiente real |
+| --- | --- | --- |
+| Launcher e identidad | 1.0.2 compilada, carpeta y rutas Vortex | Partida real y piloto |
+| Perfil administrador | Rol Microsoft verificado, bibliotecas personales y vista de jugador | Archivo personal essentialspatcher.json aún no entregado |
+| Protección | Integridad, Reparar aislado y DPAPI de hashes propios registrados | Validar escrituras legítimas de mods; no cifra todo ni evita otros clientes |
+| Panel y versiones | Borradores, notas, prueba y promoción con controles | Publicar revisión vigente en pruebas y valoración humana |
+| Hosting | Lectura API, consola, inventario y herramientas de backup/despliegue | Despliegue real no certificado por las pruebas simuladas |
+| Oficial | Canal estable local ausente | No publicar sin prueba y confirmación |
+
+<details>
+<summary>Registro previo de seguimiento; las decisiones anteriores sustituidas no son pendientes actuales</summary>
+
+# Seguimiento de Vortex
+
+<!-- VORTEX_CONTINUIDAD_ACTUAL -->
+> Actualizado el 7 de octubre de 2026. Estado, reglas vigentes, comprobaciones y pendientes: [continuidad actual](CONTINUIDAD_ACTUAL.md). Las observaciones antiguas se conservan como historial; no describen por sí solas la entrega actual.
+<!-- /VORTEX_CONTINUIDAD_ACTUAL -->
+
 Actualizado: 3 de octubre de 2026.
 
 Objetivo: Windows, Minecraft 1.21.1, NeoForge 21.1.250; instalación y actualización del pack; panel privado con borradores y publicación.
@@ -25,3 +47,5 @@ Aplicación Microsoft de Vortex configurada: da38927b-f4a6-4688-914a-6f7f770c235
 
 
 Entrega de distribución: [panel y actualizaciones locales](stage-3/README.md). Ocho pruebas pasan y la interfaz real abre. Aplicación Microsoft: primer intento llega a Minecraft token y recibe HTTP 403; solicitud de aprobación en trámite por el usuario.
+
+</details>

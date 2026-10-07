@@ -1,5 +1,9 @@
 # Vortex Launcher
 
+<!-- VORTEX_CONTINUIDAD_ACTUAL -->
+> Actualizado el 7 de octubre de 2026. Estado, reglas vigentes, comprobaciones y pendientes: [continuidad actual](docs/CONTINUIDAD_ACTUAL.md). Consulta esa entrega antes de continuar; sus decisiones sustituyen las anteriores incompatibles.
+<!-- /VORTEX_CONTINUIDAD_ACTUAL -->
+
 Launcher personalizado de Minecraft (Electron) con sincronizacion centralizada via un `distribution.json` remoto en GitHub. Emula el modelo Tortillaland: el admin sube un cambio al repo del modpack y clientes + servidor se sincronizan solos.
 
 ## Entorno de juego

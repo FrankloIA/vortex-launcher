@@ -1823,3 +1823,7 @@ El usuario pide revisar los 199 mods actuales del launcher, incluidos catálogos
 
 - Corrección solicitada del título: Vortex Admin Panel, sin punto. Verificado en el HTML servido.
 
+
+### Categorías de la biblioteca del servidor — 2026-10-07
+- Resourcepacks deja de mostrarse como pestaña en la biblioteca del servidor. Si estaba seleccionado al pasar desde cliente, se selecciona Mods. La biblioteca del cliente conserva Resourcepacks. No se borran archivos. Comprobación de sintaxis correcta.
+

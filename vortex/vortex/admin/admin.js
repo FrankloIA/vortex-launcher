@@ -14,7 +14,7 @@ const analyzeServer=document.createElement('button');analyzeServer.id='serverAna
 const rollbackServer=document.createElement('button');rollbackServer.id='serverRollback';rollbackServer.className='secondary';rollbackServer.textContent='Preparar recuperación del último despliegue';get('serverDeploy').after(rollbackServer)
 const scopeLabel=document.createElement('label');scopeLabel.textContent='Biblioteca'
 const scopeSelect=document.createElement('select');scopeSelect.id='libraryScope';scopeSelect.innerHTML='<option value="client">Launcher (cliente)</option><option value="server">Servidor</option>';scopeLabel.append(scopeSelect);get('search').closest('.toolbar').prepend(scopeLabel)
-scopeSelect.onchange=()=>{libraryScope=scopeSelect.value;folder='';if(category==='shaderpacks' && libraryScope==='server')category='mods';loadServerLibrary().then(render).catch(error=>message(error.message));render()}
+scopeSelect.onchange=()=>{libraryScope=scopeSelect.value;folder='';if(['shaderpacks','resourcepacks'].includes(category) && libraryScope==='server')category='mods';loadServerLibrary().then(render).catch(error=>message(error.message));render()}
 const addScopeLabel=document.createElement('label');addScopeLabel.textContent='Destino de los archivos locales'
 const addScope=document.createElement('select');addScope.id='addScope';addScope.innerHTML='<option value="client">Launcher (cliente)</option><option value="server">Servidor</option>';addScopeLabel.append(addScope);get('localCategory').closest('label').before(addScopeLabel)
 for(const [value,text] of [['plugins','Plugins Bukkit (servidor)'],['defaultconfigs','Configuraciones predeterminadas (servidor)']]){const o=document.createElement('option');o.value=value;o.textContent=text;get('localCategory').append(o)}
@@ -127,7 +127,7 @@ const message = text => {
 const current = () => state?.drafts.find(d => d.id === selected)
 function renderServerLibrary() {
     get('folders').hidden=true;get('categoryHint').textContent=!serverLibrary?.loaded?'Carga la biblioteca desde la pestaña Servidor':canEdit()?'Los cambios se guardan en esta versión; se aplican desde Servidor':'Biblioteca del servidor de solo lectura; crea una versión para modificar'
-    for(const tab of document.querySelectorAll('[data-category]')){const c=tab.dataset.category;tab.hidden=c==='shaderpacks';tab.textContent=(names[c] || c)+' ('+(serverLibrary?.files || []).filter(f=>f.path.startsWith(c+'/')).length+')';tab.setAttribute('aria-pressed',String(c===category))}
+    for(const tab of document.querySelectorAll('[data-category]')){const c=tab.dataset.category;tab.hidden=['shaderpacks','resourcepacks'].includes(c);tab.textContent=(names[c] || c)+' ('+(serverLibrary?.files || []).filter(f=>f.path.startsWith(c+'/')).length+')';tab.setAttribute('aria-pressed',String(c===category))}
     const query=get('search').value.toLowerCase(),updateKey='server:'+selected+':'+category+':',files=(serverLibrary?.files || []).filter(f=>f.path.startsWith(category+'/') && (f.path+' '+(f.display?.title || '')).toLowerCase().includes(query)).sort((a,b)=>Number(availableUpdates.has(updateKey+b.path))-Number(availableUpdates.has(updateKey+a.path)) || Number(!!b.editableText)-Number(!!a.editableText) || a.path.localeCompare(b.path))
     get('content').replaceChildren()
     for(const file of files) {

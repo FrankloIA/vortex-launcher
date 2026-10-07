@@ -50,6 +50,9 @@ Comprobación posterior: API y DNS muestran 209.222.97.103:25622. Se publicó es
 
 ### Coordinación con Claude y próxima acción
 
+Tarjetas por biblioteca — ChatGPT, 2026-10-07: el resumen superior aparece únicamente en Biblioteca. Cliente conserva mods/resourcepacks/shaders; Servidor utiliza su inventario separado y muestra mods/plugins/configuraciones. Plugins cuenta únicamente JAR, no los archivos de datos de las carpetas de plugins. Inventario todavía no cargado se muestra como —, sin usar cantidades del cliente. Fuente: admin/design.js. No cambia contenido ni versión del pack.
+
+
 Ajustes de navegación — ChatGPT, 2026-10-07: Crear es la pestaña inicial. Biblioteca cliente y servidor muestran todas las filas mediante desplazamiento continuo, sustituyendo la paginación de cuatro filas. Actualizar estado está en Estatus; Crear backup está en Publicar; se ocultan Cargar biblioteca y Vincular imágenes/actualizaciones. Se ocultan las líneas duplicadas de estado/jugadores. Los trabajos previos exitosos ya no generan un aviso genérico; solo el despliegue recién completado muestra confirmación en Publicar durante seis segundos, sin ocultar errores. No se cambian archivos del pack ni del hosting; misma versión 1.0.2. Fuente: admin.js, server-tabs.js, design.js; verificación UI adaptada.
 
 

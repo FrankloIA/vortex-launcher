@@ -226,7 +226,9 @@ get('onlineUpdates').onclick = () => action(async () => {
     message(results.length ? 'Consulta completada. Revisa los resultados.' : 'No se encontraron actualizaciones en los archivos vinculados a un proveedor')
 })
 async function api(route, data) {
-    const response = await fetch('/api/' + route, data ? { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) } : {})
+    let response
+    try {response = await fetch('/api/' + route, data ? { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) } : {})}
+    catch {throw Error('Se perdió la conexión con el admin panel. Recarga la página para comprobar el estado antes de repetir la operación.')}
     const result = await response.json()
     if(!response.ok) throw Error(result.error)
     return result
@@ -296,7 +298,7 @@ function render() {
     get('approveTest').hidden = !canEdit() || draft?.testResult?.status !== 'awaitingApproval'
     get('rejectTest').hidden = !canEdit() || !['prepared','running','awaitingApproval','passed'].includes(draft?.testResult?.status)
     const statuses={untested:'Debes publicar y probar esta versión',prepared:'Prueba abierta con Mystwer · Pulsa Jugar en el launcher de pruebas',running:'Prueba en curso · Prueba la partida y cierra el juego normalmente',awaitingApproval:'El juego cargó y cerró sin fallos detectados · Confirma la partida o pulsa Publicar oficialmente',passed:'Prueba aprobada · Lista para publicar oficialmente',failed:'Prueba fallida · Corrige los problemas y vuelve a probar',outdated:'La versión cambió · Publica y prueba los últimos cambios'}
-    get('testStatus').textContent=state.publishing ? 'Publicando oficialmente en GitHub…' : (statuses[draft?.testResult?.status] || statuses.untested)+(draft?.testResult?.reason ? ' · '+draft.testResult.reason : '')+(!state.githubReady ? ' · GitHub no está conectado para publicar' : '')
+    get('testStatus').textContent=state.publishing ? 'Publicando oficialmente en GitHub…' : (statuses[draft?.testResult?.status] || statuses.untested)+(draft?.testResult?.status==='failed' && draft.testResult.reason ? ' · '+draft.testResult.reason : '')+(!state.githubReady ? ' · GitHub no está conectado para publicar' : '')
     get('automaticNotes').textContent=(draft?.automaticNotes || []).map(n=>'- '+n.text).join('\n') || 'Los cambios se registrarán aquí automáticamente'
 
     get('emptyPack').hidden = !!draft; get('library').hidden = panel !== 'library' || !draft

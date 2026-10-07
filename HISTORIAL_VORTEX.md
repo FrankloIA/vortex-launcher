@@ -1732,3 +1732,6 @@ Se detectó que Probar versión permanecía habilitado sin channels/test.json. S
 
 ## 2026-10-07 — Vista de jugador en Cuenta (ChatGPT)
 Se mueve el control debajo del cuadro Mojang en Ajustes > Cuenta con tarjeta, estado y errores visibles. Se evita el doble clic y se descartan respuestas de rol antiguas para que no reviertan el cambio de vista. La verificación Microsoft se comparte entre consultas simultáneas y conserva por 60 segundos exclusivamente una identidad verificada para el mismo token; no concede roles por nombre ni por datos locales. Pendiente validación de partida; no publicación oficial.
+
+## 2026-10-07 — Biblioteca personal: sustituir y acabado visual (ChatGPT)
+Configs añade Sustituir, conservando ruta y nombre de destino y verificando permisos en proceso principal; incluye archivos binarios y rechaza cambios de cuenta durante el selector. Los cuatro tabs tienen iconos, buscador separado de su descripción y scroll violeta del launcher. Se elimina Administrador de la descripción de biblioteca. La identidad lateral coloca el rol debajo del nombre y la vista de jugador dice únicamente Jugador. Tests de sustitución, permisos e interfaz; recompilación de pruebas 1.0.2, sin publicación oficial.

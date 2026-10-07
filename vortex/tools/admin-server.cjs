@@ -204,12 +204,12 @@ function startAdmin({ root = path.resolve(__dirname, '../.runtime/pack-admin'), 
                     case '/api/server/updates': {
                         const files=serverWorkspace.view(body.id).files.filter(f=>f.path.startsWith(body.category+'/') && f.source && !f.protection?.protected)
                         result=[]
-                        for(const file of files)try{const latest=await providers.latest(file.source.provider,file.source.projectId,body.category,targetFor(body.id));if(String(latest.fileId)!==String(file.source.fileId))result.push({path:file.path,source:file.source,version:latest.version})}catch(error){result.push({path:file.path,error:error.message})}break
+                        for(const file of files)try{const latest=await providers.latest(file.source.provider,file.source.projectId,body.category,targetFor(body.id));if(await providers.isNewer(latest,file.source))result.push({path:file.path,source:file.source,version:latest.version})}catch(error){result.push({path:file.path,error:error.message})}break
                     }
                     case '/api/server/update': {
                         serverWorkspace.editable(body.id,body.revision)
                         const file=serverWorkspace.view(body.id).files.find(f=>f.path===body.path);if(!file?.source || file.protection?.protected)throw Error('El archivo del servidor está protegido o sin identidad exacta')
-                        const category=file.path.split('/')[0],latest=await providers.latest(file.source.provider,file.source.projectId,category,targetFor(body.id)),data=await providers.download(latest)
+                        const category=file.path.split('/')[0],latest=await providers.latest(file.source.provider,file.source.projectId,category,targetFor(body.id));if(!await providers.isNewer(latest,file.source))throw Error('No hay una actualización estable más reciente que tu archivo instalado');const data=await providers.download(latest)
                         require('../vortex/local-compatibility.cjs').checkLocal(data,category,targetFor(body.id))
                         await require('../vortex/catalog-dependencies.cjs').assertDependencies(latest,serverWorkspace.view(body.id).files,metadata,providers,file.path,data)
                         const review=category==='mods'?await inspectDestination(data,file.source):null;if(review && (!review.verified || review.destination==='client'))throw Error('Revisa el destino de esta versión antes de actualizar el servidor')
@@ -342,6 +342,7 @@ function startAdmin({ root = path.resolve(__dirname, '../.runtime/pack-admin'), 
                         protection.assertCatalogReplacement(draft,body.category+'/'+file.filename,body.replacePath,body.projectId)
                         if(path.basename(file.filename) !== file.filename || !({ mods: '.jar', resourcepacks: '.zip', shaderpacks: '.zip' }[body.category]) || path.extname(file.filename).toLowerCase() !== { mods: '.jar', resourcepacks: '.zip', shaderpacks: '.zip' }[body.category]) throw Error('Archivo incompatible')
                         const temp = path.join(root, 'download-' + crypto.randomUUID())
+                        if(body.replacePath){const installed=draft.files.find(f=>f.path===body.replacePath);if(!await providers.isNewer(file,installed.source || metadata.get(installed)?.source))throw Error('No hay una actualización estable más reciente que tu archivo instalado')} 
                         const bytes=await providers.download(file),routing=await prepareRouting({...body,filename:file.filename},bytes,{provider:body.provider,projectId:body.projectId})
                         if(!routing?.verified || routing.destination!=='server') await require('../vortex/catalog-dependencies.cjs').assertDependencies(file,draft.files,metadata,providers,body.replacePath,bytes)
                         if(routing?.verified && ['both','server'].includes(routing.destination)) await require('../vortex/catalog-dependencies.cjs').assertDependencies(file,serverWorkspace.view(body.id).files,metadata,providers,routing.serverReplace,bytes)
@@ -374,7 +375,7 @@ function startAdmin({ root = path.resolve(__dirname, '../.runtime/pack-admin'), 
                                         updateCache.set(key,cached);cached.promise.catch(()=>updateCache.delete(key))
                                     }
                                     const latest=await cached.promise
-                                    if(String(latest.fileId)!==String(file.source.fileId) && !Object.entries(latest.hashes).some(([algo,h])=>crypto.createHash(algo).update(fs.readFileSync(path.join(root,'blobs',file.sha256))).digest('hex')===h.toLowerCase())) updates.push({path:file.path,source:file.source,version:latest.version})
+                                    if(await providers.isNewer(latest,file.source) && !Object.entries(latest.hashes).some(([algo,h])=>crypto.createHash(algo).update(fs.readFileSync(path.join(root,'blobs',file.sha256))).digest('hex')===h.toLowerCase())) updates.push({path:file.path,source:file.source,version:latest.version})
                                 } catch(error) { updates.push({path:file.path,error:error.message}) }
                             }
                         }))

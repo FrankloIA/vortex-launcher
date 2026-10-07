@@ -2,6 +2,15 @@ const fs = require('fs')
 const path = require('path')
 const crypto = require('crypto')
 class Providers {
+    async isNewer(release, installed) {
+        if(String(release.fileId)===String(installed.fileId)) return false
+        if(release.provider!==installed.provider || String(release.projectId)!==String(installed.projectId)) throw Error('La actualización no corresponde al proyecto instalado')
+        const current=await this.request(installed.provider, installed.provider==='curseforge' ? `mods/${encodeURIComponent(installed.projectId)}/files/${encodeURIComponent(installed.fileId)}` : `version/${encodeURIComponent(installed.fileId)}`)
+        const date=installed.provider==='curseforge' ? current.data?.fileDate : current.date_published
+        const before=Date.parse(date),after=Date.parse(release.publishedAt)
+        if(!Number.isFinite(before) || !Number.isFinite(after)) throw Error('No se pudo verificar la fecha de la actualización')
+        return after>before
+    }
     constructor(root) { this.keyFile = path.join(root, 'curseforge-key.txt') }
     key() { return process.env.VORTEX_CURSEFORGE_KEY || (fs.existsSync(this.keyFile) ? fs.readFileSync(this.keyFile, 'utf8').trim() : '') }
     async request(provider, route, body) {
@@ -38,14 +47,14 @@ class Providers {
             const v = versions.filter(v => v.version_type === 'release').sort((a,b) => b.date_published.localeCompare(a.date_published))[0]
             if(!v) throw Error('No hay versión estable compatible')
             const f = v.files.find(f => f.primary) || v.files[0]
-            return { provider, projectId, fileId: v.id, filename: f.filename, url: f.url, hashes: f.hashes, size: f.size, dependencies: v.dependencies.filter(d => d.dependency_type === 'required'), version: v.version_number }
+            return { provider, projectId, fileId: v.id, publishedAt:v.date_published, filename: f.filename, url: f.url, hashes: f.hashes, size: f.size, dependencies: v.dependencies.filter(d => d.dependency_type === 'required'), version: v.version_number }
         }
         const params = { gameVersion: target.minecraft, pageSize: 50 }
         if(category === 'mods') params.modLoaderType = {forge:1,fabric:4,quilt:5,neoforge:6}[target.loader]
         const data = await this.request(provider, `mods/${project}/files?` + new URLSearchParams(params))
         const f = data.data.filter(f => f.releaseType === 1 && f.gameVersions.includes(target.minecraft) && (category !== 'mods' || f.gameVersions.includes({neoforge:'NeoForge',forge:'Forge',fabric:'Fabric',quilt:'Quilt'}[target.loader]))).sort((a,b) => b.fileDate.localeCompare(a.fileDate))[0]
         if(!f) throw Error('No hay versión estable compatible')
-        return { provider, projectId, fileId: f.id, filename: f.fileName, url: f.downloadUrl, hashes: Object.fromEntries(f.hashes.filter(h => [1,2].includes(h.algo)).map(h => [h.algo === 1 ? 'sha1' : 'md5', h.value])), size: f.fileLength, dependencies: f.dependencies.filter(d => d.relationType === 3), version: f.displayName }
+        return { provider, projectId, fileId: f.id, publishedAt:f.fileDate, filename: f.fileName, url: f.downloadUrl, hashes: Object.fromEntries(f.hashes.filter(h => [1,2].includes(h.algo)).map(h => [h.algo === 1 ? 'sha1' : 'md5', h.value])), size: f.fileLength, dependencies: f.dependencies.filter(d => d.relationType === 3), version: f.displayName }
     }
     async download(file) {
         if(!file.url) throw Error('El autor no permite esta descarga externa')

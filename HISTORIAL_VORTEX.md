@@ -1843,3 +1843,8 @@ El usuario pide revisar los 199 mods actuales del launcher, incluidos catálogos
 - CurseForge exige proyecto 704113 (Botarium) para Giselle 8.5, pero META-INF/neoforge.mods.toml del JAR oficial 9080559 declara Common Storage Lib y no Botarium. Añadida excepción limitada al proyecto 714958/archivo 9080559 y descriptor contrastado tras descarga verificada; el resto de dependencias permanece obligatorio. No instalar Botarium para resolver este aviso ni generalizar la excepción a otros archivos.
 - Pruebas verifican alcance de la excepción y rechazo cuando cambia el archivo o declara Botarium. Reiniciado panel, sin actualizar mods automáticamente.
 
+
+### Falsa actualización de WATERMeDIA — 2026-10-07
+- El requisito 1395870 es WATERMeDIA Platform Extension. El selector latest estable elegía 2.1.37 frente a 3.0.0.23 instalada y updates confundía cualquier fileId distinto con actualización. Ahora se contrastan fechas oficiales del archivo instalado y candidato del mismo proyecto/proveedor; candidatos anteriores o iguales no se ofrecen y se bloquean también al intentar actualizar desde una lista antigua. Aplica a cliente y servidor.
+- Comprobación real de fechas de WATERMeDIA: candidato antiguo no es actualización. Cinco pruebas pasaron (catálogo, comparación y API privada). Reiniciado panel. No se añadieron dependencias ni se reemplazó WATERMeDIA. Falta comprobación de entrada al juego; esta corrección no publica versión oficial.
+

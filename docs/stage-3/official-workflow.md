@@ -12,7 +12,7 @@ El historial de Crear muestra únicamente las tres últimas versiones publicadas
 
 Cambiar archivos, notas, la revisión publicada o el código del launcher invalida la prueba. Las publicaciones oficiales quedan bloqueadas incluso cuando hay otra versión oficial más reciente. Para modificar una publicación se crea una nueva versión o un Fix.
 
-Los paquetes se dividen en archivos de hasta 256 MiB y se verifican con SHA-256. El cliente comprueba la firma Ed25519 usando la clave pública incluida en `helios/vortex/pack-feed.json`. No se distribuyen claves privadas ni cuentas. No se sustituyen archivos por descargas originales de CurseForge o Modrinth.
+Los paquetes se dividen en archivos de hasta 256 MiB y se verifican con SHA-256. El cliente comprueba la firma Ed25519 usando la clave pública incluida en `vortex/vortex/pack-feed.json`. No se distribuyen claves privadas ni cuentas. No se sustituyen archivos por descargas originales de CurseForge o Modrinth.
 
 Al iniciar sesión y cada diez minutos, el launcher comprueba el canal oficial. También lo comprueba antes de iniciar el perfil oficial. La instalación conserva mundos y preferencias, y actualiza configuraciones predeterminadas que el jugador no haya modificado. Una descarga corrupta o incompleta no se aplica. Si falla la aplicación de archivos, se recupera la versión anterior.
 

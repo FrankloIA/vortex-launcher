@@ -1,0 +1,863 @@
+{
+  "repository": "FewerTeam/VortexLauncher-neoforge",
+  "commit": "f8b7b9251c2d50ea06c8c9c6b63ea4ad05630644",
+  "files": [
+    {
+      "path": ".eslintignore",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "53c37a16608c014b2cf0bd2d5dfcafe953cdd857",
+      "size": 4,
+      "url": "https://api.github.com/repos/FewerTeam/VortexLauncher-neoforge/git/blobs/53c37a16608c014b2cf0bd2d5dfcafe953cdd857"
+    },
+    {
+      "path": ".eslintrc.json",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "dd0367066f9b5055116e427eac5fbff2a48c2d21",
+      "size": 1286,
+      "url": "https://api.github.com/repos/FewerTeam/VortexLauncher-neoforge/git/blobs/dd0367066f9b5055116e427eac5fbff2a48c2d21"
+    },
+    {
+      "path": ".github",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "7c3dbd4e608b1d06a55c2c308066a450dff7145a",
+      "url": "https://api.github.com/repos/FewerTeam/VortexLauncher-neoforge/git/trees/7c3dbd4e608b1d06a55c2c308066a450dff7145a"
+    },
+    {
+      "path": ".github/FUNDING.yml",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "e338313de410520c0e1f6060b7ada14ebb3786a1",
+      "size": 75,
+      "url": "https://api.github.com/repos/FewerTeam/VortexLauncher-neoforge/git/blobs/e338313de410520c0e1f6060b7ada14ebb3786a1"
+    },
+    {
+      "path": ".github/workflows",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "25e7359c9cd4abe6968a1e1c9aa577a96e601f8b",
+      "url": "https://api.github.com/repos/FewerTeam/VortexLauncher-neoforge/git/trees/25e7359c9cd4abe6968a1e1c9aa577a96e601f8b"
+    },
+    {
+      "path": ".github/workflows/build.yml",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "c680644d0d867eb309a6d47c4ec56d420db1a790",
+      "size": 700,
+      "url": "https://api.github.com/repos/FewerTeam/VortexLauncher-neoforge/git/blobs/c680644d0d867eb309a6d47c4ec56d420db1a790"
+    },
+    {
+      "path": ".gitignore",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "30ce193d48998aa103a6d68c1d18406bbb4e906d",
+      "size": 58,
+      "url": "https://api.github.com/repos/FewerTeam/VortexLauncher-neoforge/git/blobs/30ce193d48998aa103a6d68c1d18406bbb4e906d"
+    },
+    {
+      "path": ".nvmrc",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "2edeafb09db0093bae6ff060e2dcd2166f5c9387",
+      "size": 2,
+      "url": "https://api.github.com/repos/FewerTeam/VortexLauncher-neoforge/git/blobs/2edeafb09db0093bae6ff060e2dcd2166f5c9387"
+    },
+    {
+      "path": "LICENSE.txt",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "a92150f240d83d9e2aa4d922055c1a83ca5d232b",
+      "size": 1077,
+      "url": "https://api.github.com/repos/FewerTeam/VortexLauncher-neoforge/git/blobs/a92150f240d83d9e2aa4d922055c1a83ca5d232b"
+    },
+    {
+      "path": "README.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "ce117b3a162725d6e539e2a24c831bb315cfde16",
+      "size": 7085,
+      "url": "https://api.github.com/repos/FewerTeam/VortexLauncher-neoforge/git/blobs/ce117b3a162725d6e539e2a24c831bb315cfde16"
+    },
+    {
+      "path": "app",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "ff27cd89ae881aecf01b5447178e87cdfc4317b1",
+      "url": "https://api.github.com/repos/FewerTeam/VortexLauncher-neoforge/git/trees/ff27cd89ae881aecf01b5447178e87cdfc4317b1"
+    },
+    {
+      "path": "app/app.ejs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "75b5ea285955205163632d8c4b12599f04a16690",
+      "size": 2903,
+      "url": "https://api.github.com/repos/FewerTeam/VortexLauncher-neoforge/git/blobs/75b5ea285955205163632d8c4b12599f04a16690"
+    },
+    {
+      "path": "app/assets",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "f94503d52e1f44fef5efc9ac6f80156412534c0b",
+      "url": "https://api.github.com/repos/FewerTeam/VortexLauncher-neoforge/git/trees/f94503d52e1f44fef5efc9ac6f80156412534c0b"
+    },
+    {
+      "path": "app/assets/css",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "6a1ad16cbdae9f7c109aa52fe7d14781744fdcd1",
+      "url": "https://api.github.com/repos/FewerTeam/VortexLauncher-neoforge/git/trees/6a1ad16cbdae9f7c109aa52fe7d14781744fdcd1"
+    },
+    {
+      "path": "app/assets/css/launcher.css",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "a77f7340c8abfba67bbc2cb23ef42e9683a5b507",
+      "size": 91588,
+      "url": "https://api.github.com/repos/FewerTeam/VortexLauncher-neoforge/git/blobs/a77f7340c8abfba67bbc2cb23ef42e9683a5b507"
+    },
+    {
+      "path": "app/assets/fonts",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "ba886adc1cdc8a9073caced78a28bcc05c2c80a9",
+      "url": "https://api.github.com/repos/FewerTeam/VortexLauncher-neoforge/git/trees/ba886adc1cdc8a9073caced78a28bcc05c2c80a9"
+    },
+    {
+      "path": "app/assets/fonts/Avenir-Black.ttf",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "9da575255b18d91160a9d6f3bf1d15506801fe82",
+      "size": 91016,
+      "url": "https://api.github.com/repos/FewerTeam/VortexLauncher-neoforge/git/blobs/9da575255b18d91160a9d6f3bf1d15506801fe82"
+    },
+    {
+      "path": "app/assets/fonts/Avenir-BlackOblique.ttf",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "1b73af975a27d10384a1b491786daf396fb2e099",
+      "size": 84604,
+      "url": "https://api.github.com/repos/FewerTeam/VortexLauncher-neoforge/git/blobs/1b73af975a27d10384a1b491786daf396fb2e099"
+    },
+    {
+      "path": "app/assets/fonts/Avenir-Book.ttf",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "de9c227fce112ce84db245564b963311a45641ad",
+      "size": 143212,
+      "url": "https://api.github.com/repos/FewerTeam/VortexLauncher-neoforge/git/blobs/de9c227fce112ce84db245564b963311a45641ad"
+    },
+    {
+      "path": "app/assets/fonts/Avenir-BookOblique.ttf",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "4258fda18897faeb876c042bad981b5dae2a91b3",
+      "size": 150804,
+      "url": "https://api.github.com/repos/FewerTeam/VortexLauncher-neoforge/git/blobs/4258fda18897faeb876c042bad981b5dae2a91b3"
+    },
+    {
+      "path": "app/assets/fonts/Avenir-Heavy.ttf",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "67738068410f6311e359e79b0203872b7bc67150",
+      "size": 134548,
+      "url": "https://api.github.com/repos/FewerTeam/VortexLauncher-neoforge/git/blobs/67738068410f6311e359e79b0203872b7bc67150"
+    },
+    {
+      "path": "app/assets/fonts/Avenir-HeavyOblique.ttf",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "d3588cd1052f8448512ba82a8a4f0080f5c5bb5b",
+      "size": 60008,
+      "url": "https://api.github.com/repos/FewerTeam/VortexLauncher-neoforge/git/blobs/d3588cd1052f8448512ba82a8a4f0080f5c5bb5b"
+    },
+    {
+      "path": "app/assets/fonts/Avenir-Light.ttf",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "69761e4bc84ba8848082485c70fae25a79cc129f",
+      "size": 85100,
+      "url": "https://api.github.com/repos/FewerTeam/VortexLauncher-neoforge/git/blobs/69761e4bc84ba8848082485c70fae25a79cc129f"
+    },
+    {
+      "path": "app/assets/fonts/Avenir-LightOblique.ttf",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "6e1af66f78cd2906a7daa2638382fb32fe793a19",
+      "size": 73936,
+      "url": "https://api.github.com/repos/FewerTeam/VortexLauncher-neoforge/git/blobs/6e1af66f78cd2906a7daa2638382fb32fe793a19"
+    },
+    {
+      "path": "app/assets/fonts/Avenir-Medium.ttf",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "09770bbaf7a67b44b3306504cbf65af3c34c72d5",
+      "size": 138892,
+      "url": "https://api.github.com/repos/FewerTeam/VortexLauncher-neoforge/git/blobs/09770bbaf7a67b44b3306504cbf65af3c34c72d5"
+    },
+    {
+      "path": "app/assets/fonts/Avenir-MediumOblique.ttf",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "0a68d909bdf52e5a0cb7eaa1214369ddafc83fef",
+      "size": 129120,
+      "url": "https://api.github.com/repos/FewerTeam/VortexLauncher-neoforge/git/blobs/0a68d909bdf52e5a0cb7eaa1214369ddafc83fef"
+    },
+    {
+      "path": "app/assets/fonts/Avenir-Oblique.ttf",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "bc02bfa7f220849bd3c58f6b4dc1f89e860ee826",
+      "size": 67580,
+      "url": "https://api.github.com/repos/FewerTeam/VortexLauncher-neoforge/git/blobs/bc02bfa7f220849bd3c58f6b4dc1f89e860ee826"
+    },
+    {
+      "path": "app/assets/fonts/Avenir-Roman.ttf",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "295a5525766a5e01216c491827404b14d107adf4",
+      "size": 101228,
+      "url": "https://api.github.com/repos/FewerTeam/VortexLauncher-neoforge/git/blobs/295a5525766a5e01216c491827404b14d107adf4"
+    },
+    {
+      "path": "app/assets/fonts/ringbearer.ttf",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "5fb3a09bfbae41178e7d79414b817410ceef4ca9",
+      "size": 107280,
+      "url": "https://api.github.com/repos/FewerTeam/VortexLauncher-neoforge/git/blobs/5fb3a09bfbae41178e7d79414b817410ceef4ca9"
+    },
+    {
+      "path": "app/assets/images",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "4ea75406818ebf1006801a8b4d170d6c9bb7caba",
+      "url": "https://api.github.com/repos/FewerTeam/VortexLauncher-neoforge/git/trees/4ea75406818ebf1006801a8b4d170d6c9bb7caba"
+    },
+    {
+      "path": "app/assets/images/LoadingSeal.png",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "afe2c4d404deff2bdedd1ffe21b4c697867848d7",
+      "size": 249314,
+      "url": "https://api.github.com/repos/FewerTeam/VortexLauncher-neoforge/git/blobs/afe2c4d404deff2bdedd1ffe21b4c697867848d7"
+    },
+    {
+      "path": "app/assets/images/LoadingText.png",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "5e55b332450bf97f3412489d8ffe84e1a468d344",
+      "size": 126664,
+      "url": "https://api.github.com/repos/FewerTeam/VortexLauncher-neoforge/git/blobs/5e55b332450bf97f3412489d8ffe84e1a468d344"
+    },
+    {
+      "path": "app/assets/images/SealCircle.ico",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "e37b95df680b073b8afa170fe1ab89e6cbe29ebd",
+      "size": 49505,
+      "url": "https://api.github.com/repos/FewerTeam/VortexLauncher-neoforge/git/blobs/e37b95df680b073b8afa170fe1ab89e6cbe29ebd"
+    },
+    {
+      "path": "app/assets/images/SealCircle.png",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "9e21d08be275a3d66d6c1aac8ef87058c439fb17",
+      "size": 145930,
+      "url": "https://api.github.com/repos/FewerTeam/VortexLauncher-neoforge/git/blobs/9e21d08be275a3d66d6c1aac8ef87058c439fb17"
+    },
+    {
+      "path": "app/assets/images/backgrounds",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "5e2d9756724cef5e17b4c2a311739db3cd1cdce9",
+      "url": "https://api.github.com/repos/FewerTeam/VortexLauncher-neoforge/git/trees/5e2d9756724cef5e17b4c2a311739db3cd1cdce9"
+    },
+    {
+      "path": "app/assets/images/backgrounds/0.jpg",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "66a2c12aab7da8151f5ef1753dae240e9c6151ad",
+      "size": 164047,
+      "url": "https://api.github.com/repos/FewerTeam/VortexLauncher-neoforge/git/blobs/66a2c12aab7da8151f5ef1753dae240e9c6151ad"
+    },
+    {
+      "path": "app/assets/images/backgrounds/1.jpg",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "e343cbe2745cebf9c0674ca71d61d0c3829856e2",
+      "size": 184918,
+      "url": "https://api.github.com/repos/FewerTeam/VortexLauncher-neoforge/git/blobs/e343cbe2745cebf9c0674ca71d61d0c3829856e2"
+    },
+    {
+      "path": "app/assets/images/backgrounds/2.jpg",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "7a13e771291cbf75d76bcff5231cf87554034d94",
+      "size": 514058,
+      "url": "https://api.github.com/repos/FewerTeam/VortexLauncher-neoforge/git/blobs/7a13e771291cbf75d76bcff5231cf87554034d94"
+    },
+    {
+      "path": "app/assets/images/backgrounds/3.jpg",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "5c7be569c4a6bd25308c18ff877fcba3cd0e73f9",
+      "size": 1070390,
+      "url": "https://api.github.com/repos/FewerTeam/VortexLauncher-neoforge/git/blobs/5c7be569c4a6bd25308c18ff877fcba3cd0e73f9"
+    },
+    {
+      "path": "app/assets/images/backgrounds/4.jpg",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "1db7800eebfedf8b72a6f46ba54bc12160076c61",
+      "size": 273995,
+      "url": "https://api.github.com/repos/FewerTeam/VortexLauncher-neoforge/git/blobs/1db7800eebfedf8b72a6f46ba54bc12160076c61"
+    },
+    {
+      "path": "app/assets/images/backgrounds/5.jpg",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "beb4b148e948e116d567c6af7fca6e7de62609a7",
+      "size": 466433,
+      "url": "https://api.github.com/repos/FewerTeam/VortexLauncher-neoforge/git/blobs/beb4b148e948e116d567c6af7fca6e7de62609a7"
+    },
+    {
+      "path": "app/assets/images/backgrounds/6.jpg",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "acdaa73ac656554c490f29c50bef9156aa81f1c3",
+      "size": 2734467,
+      "url": "https://api.github.com/repos/FewerTeam/VortexLauncher-neoforge/git/blobs/acdaa73ac656554c490f29c50bef9156aa81f1c3"
+    },
+    {
+      "path": "app/assets/images/backgrounds/7.jpg",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "cc48f72fd59c16f31d882299755de3215be3908b",
+      "size": 5235358,
+      "url": "https://api.github.com/repos/FewerTeam/VortexLauncher-neoforge/git/blobs/cc48f72fd59c16f31d882299755de3215be3908b"
+    },
+    {
+      "path": "app/assets/images/icons",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "8c137d2ba09e4a563bc45f027afe0d4e6047532c",
+      "url": "https://api.github.com/repos/FewerTeam/VortexLauncher-neoforge/git/trees/8c137d2ba09e4a563bc45f027afe0d4e6047532c"
+    },
+    {
+      "path": "app/assets/images/icons/arrow.svg",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "93326051ff5d21dbcf75ec58993c9b764fc2ed8c",
+      "size": 298,
+      "url": "https://api.github.com/repos/FewerTeam/VortexLauncher-neoforge/git/blobs/93326051ff5d21dbcf75ec58993c9b764fc2ed8c"
+    },
+    {
+      "path": "app/assets/images/icons/discord.svg",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "87271281f197e11ca2d2356a69304b398962c5d3",
+      "size": 1194,
+      "url": "https://api.github.com/repos/FewerTeam/VortexLauncher-neoforge/git/blobs/87271281f197e11ca2d2356a69304b398962c5d3"
+    },
+    {
+      "path": "app/assets/images/icons/instagram.svg",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "00c70bdabd5113604fc858d90b8297c64a0c2ce5",
+      "size": 1866,
+      "url": "https://api.github.com/repos/FewerTeam/VortexLauncher-neoforge/git/blobs/00c70bdabd5113604fc858d90b8297c64a0c2ce5"
+    },
+    {
+      "path": "app/assets/images/icons/link.svg",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "df151d4a5843b8b845db3c545ceedef92e8f5228",
+      "size": 875,
+      "url": "https://api.github.com/repos/FewerTeam/VortexLauncher-neoforge/git/blobs/df151d4a5843b8b845db3c545ceedef92e8f5228"
+    },
+    {
+      "path": "app/assets/images/icons/lock.svg",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "47a5343e428e45993f6c65766b3588d3484ae79f",
+      "size": 756,
+      "url": "https://api.github.com/repos/FewerTeam/VortexLauncher-neoforge/git/blobs/47a5343e428e45993f6c65766b3588d3484ae79f"
+    },
+    {
+      "path": "app/assets/images/icons/microsoft.svg",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "78a4ed94368cf9d71282774ce80fcdef385c79e7",
+      "size": 303,
+      "url": "https://api.github.com/repos/FewerTeam/VortexLauncher-neoforge/git/blobs/78a4ed94368cf9d71282774ce80fcdef385c79e7"
+    },
+    {
+      "path": "app/assets/images/icons/mojang.svg",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "e1116b41bad5a5b77cd862aefb89a3b18297d346",
+      "size": 664,
+      "url": "https://api.github.com/repos/FewerTeam/VortexLauncher-neoforge/git/blobs/e1116b41bad5a5b77cd862aefb89a3b18297d346"
+    },
+    {
+      "path": "app/assets/images/icons/news.svg",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "775578d435df8778a94bda91557af237dcee609c",
+      "size": 959,
+      "url": "https://api.github.com/repos/FewerTeam/VortexLauncher-neoforge/git/blobs/775578d435df8778a94bda91557af237dcee609c"
+    },
+    {
+      "path": "app/assets/images/icons/profile.svg",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "6526c65f0d6fa96958e80bd3a14a3d1a0c8d613a",
+      "size": 602,
+      "url": "https://api.github.com/repos/FewerTeam/VortexLauncher-neoforge/git/blobs/6526c65f0d6fa96958e80bd3a14a3d1a0c8d613a"
+    },
+    {
+      "path": "app/assets/images/icons/settings.svg",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "1a0ec766953c43df1c298c225e913623056aabde",
+      "size": 1280,
+      "url": "https://api.github.com/repos/FewerTeam/VortexLauncher-neoforge/git/blobs/1a0ec766953c43df1c298c225e913623056aabde"
+    },
+    {
+      "path": "app/assets/images/icons/sevenstar.svg",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "4f55ef4005ebeb2eabaab28954a459f35ed1628b",
+      "size": 809,
+      "url": "https://api.github.com/repos/FewerTeam/VortexLauncher-neoforge/git/blobs/4f55ef4005ebeb2eabaab28954a459f35ed1628b"
+    },
+    {
+      "path": "app/assets/images/icons/sevenstar_circle.svg",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "9e8c8a8f0b3a92ea5f745010a0cfe59deb627da6",
+      "size": 932,
+      "url": "https://api.github.com/repos/FewerTeam/VortexLauncher-neoforge/git/blobs/9e8c8a8f0b3a92ea5f745010a0cfe59deb627da6"
+    },
+    {
+      "path": "app/assets/images/icons/sevenstar_circle_extended.svg",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "8651baa32121ef3ec3318cc9ebfb5a615c0001e7",
+      "size": 822,
+      "url": "https://api.github.com/repos/FewerTeam/VortexLauncher-neoforge/git/blobs/8651baa32121ef3ec3318cc9ebfb5a615c0001e7"
+    },
+    {
+      "path": "app/assets/images/icons/sevenstar_circle_hole.svg",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "65250d4ab4ceebaaf1b016855a5419b13c566613",
+      "size": 1018,
+      "url": "https://api.github.com/repos/FewerTeam/VortexLauncher-neoforge/git/blobs/65250d4ab4ceebaaf1b016855a5419b13c566613"
+    },
+    {
+      "path": "app/assets/images/icons/sevenstar_circle_hole_extended.svg",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "e549b4d4be1bec953a83fdf452a79966591863a4",
+      "size": 907,
+      "url": "https://api.github.com/repos/FewerTeam/VortexLauncher-neoforge/git/blobs/e549b4d4be1bec953a83fdf452a79966591863a4"
+    },
+    {
+      "path": "app/assets/images/icons/sevenstar_extended.svg",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "b8e28241fff641b1e815229feec7623785d329ef",
+      "size": 700,
+      "url": "https://api.github.com/repos/FewerTeam/VortexLauncher-neoforge/git/blobs/b8e28241fff641b1e815229feec7623785d329ef"
+    },
+    {
+      "path": "app/assets/images/icons/x.svg",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "c3b51623a8603b6f372421ccc4148deac6ddd509",
+      "size": 243,
+      "url": "https://api.github.com/repos/FewerTeam/VortexLauncher-neoforge/git/blobs/c3b51623a8603b6f372421ccc4148deac6ddd509"
+    },
+    {
+      "path": "app/assets/images/icons/youtube.svg",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "38a2e8bad47d5e5014b9ca294e7e3ef7e0b5c465",
+      "size": 654,
+      "url": "https://api.github.com/repos/FewerTeam/VortexLauncher-neoforge/git/blobs/38a2e8bad47d5e5014b9ca294e7e3ef7e0b5c465"
+    },
+    {
+      "path": "app/assets/images/minecraft.icns",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "60ce69d7919dc216556525fb9e4189ccfdbb28cc",
+      "size": 120723,
+      "url": "https://api.github.com/repos/FewerTeam/VortexLauncher-neoforge/git/blobs/60ce69d7919dc216556525fb9e4189ccfdbb28cc"
+    },
+    {
+      "path": "app/assets/js",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "a205eca03f7b8c3540042fc75f9c465f07ad374d",
+      "url": "https://api.github.com/repos/FewerTeam/VortexLauncher-neoforge/git/trees/a205eca03f7b8c3540042fc75f9c465f07ad374d"
+    },
+    {
+      "path": "app/assets/js/authmanager.js",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "5a24f30aece12aa178d1f33f1b7695ef970fc00d",
+      "size": 16678,
+      "url": "https://api.github.com/repos/FewerTeam/VortexLauncher-neoforge/git/blobs/5a24f30aece12aa178d1f33f1b7695ef970fc00d"
+    },
+    {
+      "path": "app/assets/js/configmanager.js",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "38f864fe0c4be2faa4741c85b65d135c994cc46a",
+      "size": 24451,
+      "url": "https://api.github.com/repos/FewerTeam/VortexLauncher-neoforge/git/blobs/38f864fe0c4be2faa4741c85b65d135c994cc46a"
+    },
+    {
+      "path": "app/assets/js/discordwrapper.js",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "11ed053b304d620fab8046a9c53a698c49c052cc",
+      "size": 1515,
+      "url": "https://api.github.com/repos/FewerTeam/VortexLauncher-neoforge/git/blobs/11ed053b304d620fab8046a9c53a698c49c052cc"
+    },
+    {
+      "path": "app/assets/js/distromanager.js",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "8ae8ca0c114edcaef67b33f04865f49a8e2e42d6",
+      "size": 568,
+      "url": "https://api.github.com/repos/FewerTeam/VortexLauncher-neoforge/git/blobs/8ae8ca0c114edcaef67b33f04865f49a8e2e42d6"
+    },
+    {
+      "path": "app/assets/js/dropinmodutil.js",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "f816a20fcefb22344ccfdf6db09993767c5a69c7",
+      "size": 7215,
+      "url": "https://api.github.com/repos/FewerTeam/VortexLauncher-neoforge/git/blobs/f816a20fcefb22344ccfdf6db09993767c5a69c7"
+    },
+    {
+      "path": "app/assets/js/ipcconstants.js",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "a1cd6385655db577bb32c7e8eda6c71f3ef27630",
+      "size": 795,
+      "url": "https://api.github.com/repos/FewerTeam/VortexLauncher-neoforge/git/blobs/a1cd6385655db577bb32c7e8eda6c71f3ef27630"
+    },
+    {
+      "path": "app/assets/js/isdev.js",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "1ed55e5b3beef6558bed22aee7abe3abd412655b",
+      "size": 251,
+      "url": "https://api.github.com/repos/FewerTeam/VortexLauncher-neoforge/git/blobs/1ed55e5b3beef6558bed22aee7abe3abd412655b"
+    },
+    {
+      "path": "app/assets/js/langloader.js",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "b1f13c96edef29d1704708af749288f926c3b213",
+      "size": 1132,
+      "url": "https://api.github.com/repos/FewerTeam/VortexLauncher-neoforge/git/blobs/b1f13c96edef29d1704708af749288f926c3b213"
+    },
+    {
+      "path": "app/assets/js/preloader.js",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "95ead7334d7d40baec0a93ecee331afcd401899e",
+      "size": 2041,
+      "url": "https://api.github.com/repos/FewerTeam/VortexLauncher-neoforge/git/blobs/95ead7334d7d40baec0a93ecee331afcd401899e"
+    },
+    {
+      "path": "app/assets/js/processbuilder.js",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "2697434a116adc57d3d0b59956687c8ffb506040",
+      "size": 35566,
+      "url": "https://api.github.com/repos/FewerTeam/VortexLauncher-neoforge/git/blobs/2697434a116adc57d3d0b59956687c8ffb506040"
+    },
+    {
+      "path": "app/assets/js/scripts",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "7b11ae4cf126fd7baaafb14057654e25b67758b9",
+      "url": "https://api.github.com/repos/FewerTeam/VortexLauncher-neoforge/git/trees/7b11ae4cf126fd7baaafb14057654e25b67758b9"
+    },
+    {
+      "path": "app/assets/js/scripts/landing.js",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "1a1c1768cf7dff565ac34ccdfd2c12eabe15cf9a",
+      "size": 35773,
+      "url": "https://api.github.com/repos/FewerTeam/VortexLauncher-neoforge/git/blobs/1a1c1768cf7dff565ac34ccdfd2c12eabe15cf9a"
+    },
+    {
+      "path": "app/assets/js/scripts/login.js",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "30ff8937d69a63f0ceaf9313e1e57f85db80c1a6",
+      "size": 7299,
+      "url": "https://api.github.com/repos/FewerTeam/VortexLauncher-neoforge/git/blobs/30ff8937d69a63f0ceaf9313e1e57f85db80c1a6"
+    },
+    {
+      "path": "app/assets/js/scripts/loginOptions.js",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "cdb1bc8e3407f48eabb27ce604941829319562cd",
+      "size": 1635,
+      "url": "https://api.github.com/repos/FewerTeam/VortexLauncher-neoforge/git/blobs/cdb1bc8e3407f48eabb27ce604941829319562cd"
+    },
+    {
+      "path": "app/assets/js/scripts/overlay.js",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "0d6ab2ae7f34ff41f08816ee693edee77c58bc9d",
+      "size": 12053,
+      "url": "https://api.github.com/repos/FewerTeam/VortexLauncher-neoforge/git/blobs/0d6ab2ae7f34ff41f08816ee693edee77c58bc9d"
+    },
+    {
+      "path": "app/assets/js/scripts/settings.js",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "81a65a70811c5645aaec5d02f4cfe4d360c540d6",
+      "size": 58975,
+      "url": "https://api.github.com/repos/FewerTeam/VortexLauncher-neoforge/git/blobs/81a65a70811c5645aaec5d02f4cfe4d360c540d6"
+    },
+    {
+      "path": "app/assets/js/scripts/uibinder.js",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "5fe79df5e738dbfba512f6461089ce35cbcafa3c",
+      "size": 16209,
+      "url": "https://api.github.com/repos/FewerTeam/VortexLauncher-neoforge/git/blobs/5fe79df5e738dbfba512f6461089ce35cbcafa3c"
+    },
+    {
+      "path": "app/assets/js/scripts/uicore.js",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "02e9b5dafea097bc0cda7ab511ce69187eb3d796",
+      "size": 8614,
+      "url": "https://api.github.com/repos/FewerTeam/VortexLauncher-neoforge/git/blobs/02e9b5dafea097bc0cda7ab511ce69187eb3d796"
+    },
+    {
+      "path": "app/assets/js/scripts/welcome.js",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "ed0399c35312d9d065f414f6c730596c11f0f2b8",
+      "size": 337,
+      "url": "https://api.github.com/repos/FewerTeam/VortexLauncher-neoforge/git/blobs/ed0399c35312d9d065f414f6c730596c11f0f2b8"
+    },
+    {
+      "path": "app/assets/js/serverstatus.js",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "9729f9c7000fd39e641f7b43c337fbb37970c42d",
+      "size": 1978,
+      "url": "https://api.github.com/repos/FewerTeam/VortexLauncher-neoforge/git/blobs/9729f9c7000fd39e641f7b43c337fbb37970c42d"
+    },
+    {
+      "path": "app/assets/lang",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "69cc3e050d01dd88f240d8ce642cd426bdef942d",
+      "url": "https://api.github.com/repos/FewerTeam/VortexLauncher-neoforge/git/trees/69cc3e050d01dd88f240d8ce642cd426bdef942d"
+    },
+    {
+      "path": "app/assets/lang/_custom.toml",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "db736b4cb3fd7f2fb063ebe245015e442e3a71f5",
+      "size": 1083,
+      "url": "https://api.github.com/repos/FewerTeam/VortexLauncher-neoforge/git/blobs/db736b4cb3fd7f2fb063ebe245015e442e3a71f5"
+    },
+    {
+      "path": "app/assets/lang/en_US.toml",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "b9f64cfbf602bad8760f1511b568c9784c99ed2d",
+      "size": 15563,
+      "url": "https://api.github.com/repos/FewerTeam/VortexLauncher-neoforge/git/blobs/b9f64cfbf602bad8760f1511b568c9784c99ed2d"
+    },
+    {
+      "path": "app/frame.ejs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "1151f915a9281487d4a91c98c05a06ee202a1229",
+      "size": 2124,
+      "url": "https://api.github.com/repos/FewerTeam/VortexLauncher-neoforge/git/blobs/1151f915a9281487d4a91c98c05a06ee202a1229"
+    },
+    {
+      "path": "app/landing.ejs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "177cba7b165b55d278ba17e68adaa26d6c70e7de",
+      "size": 17420,
+      "url": "https://api.github.com/repos/FewerTeam/VortexLauncher-neoforge/git/blobs/177cba7b165b55d278ba17e68adaa26d6c70e7de"
+    },
+    {
+      "path": "app/login.ejs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "2da807291f3e690a4ba4f506d6c605eefb75a02a",
+      "size": 3878,
+      "url": "https://api.github.com/repos/FewerTeam/VortexLauncher-neoforge/git/blobs/2da807291f3e690a4ba4f506d6c605eefb75a02a"
+    },
+    {
+      "path": "app/loginOptions.ejs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "20aa67cca8dee92715afe368891adf3cbdf6770d",
+      "size": 2313,
+      "url": "https://api.github.com/repos/FewerTeam/VortexLauncher-neoforge/git/blobs/20aa67cca8dee92715afe368891adf3cbdf6770d"
+    },
+    {
+      "path": "app/overlay.ejs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "7faab15b3205d794b785d56ead8398b050340cdb",
+      "size": 2194,
+      "url": "https://api.github.com/repos/FewerTeam/VortexLauncher-neoforge/git/blobs/7faab15b3205d794b785d56ead8398b050340cdb"
+    },
+    {
+      "path": "app/settings.ejs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "3fda82a2e1ad42dd3fd591a994979ad25e337a12",
+      "size": 33252,
+      "url": "https://api.github.com/repos/FewerTeam/VortexLauncher-neoforge/git/blobs/3fda82a2e1ad42dd3fd591a994979ad25e337a12"
+    },
+    {
+      "path": "app/waiting.ejs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "c64726fbbdcddc57e10f59a82a75fb99e428aed0",
+      "size": 252,
+      "url": "https://api.github.com/repos/FewerTeam/VortexLauncher-neoforge/git/blobs/c64726fbbdcddc57e10f59a82a75fb99e428aed0"
+    },
+    {
+      "path": "app/welcome.ejs",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "4b3fee4674cf6dc5fd78d5efa013c3cfa87611f1",
+      "size": 1127,
+      "url": "https://api.github.com/repos/FewerTeam/VortexLauncher-neoforge/git/blobs/4b3fee4674cf6dc5fd78d5efa013c3cfa87611f1"
+    },
+    {
+      "path": "build",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "5a4c8668867a635458008af214f70b5192f8172f",
+      "url": "https://api.github.com/repos/FewerTeam/VortexLauncher-neoforge/git/trees/5a4c8668867a635458008af214f70b5192f8172f"
+    },
+    {
+      "path": "build/icon.png",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "9e21d08be275a3d66d6c1aac8ef87058c439fb17",
+      "size": 145930,
+      "url": "https://api.github.com/repos/FewerTeam/VortexLauncher-neoforge/git/blobs/9e21d08be275a3d66d6c1aac8ef87058c439fb17"
+    },
+    {
+      "path": "dev-app-update.yml",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "aa7ce8f47e4c2a6a32b1e5619040ad2292d33753",
+      "size": 53,
+      "url": "https://api.github.com/repos/FewerTeam/VortexLauncher-neoforge/git/blobs/aa7ce8f47e4c2a6a32b1e5619040ad2292d33753"
+    },
+    {
+      "path": "docs",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "873a87623e861d66ac482f668f06b8e1c300e12c",
+      "url": "https://api.github.com/repos/FewerTeam/VortexLauncher-neoforge/git/trees/873a87623e861d66ac482f668f06b8e1c300e12c"
+    },
+    {
+      "path": "docs/MicrosoftAuth.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "d7f1c09a9949525cc04258322732eb1ce60fcb45",
+      "size": 2694,
+      "url": "https://api.github.com/repos/FewerTeam/VortexLauncher-neoforge/git/blobs/d7f1c09a9949525cc04258322732eb1ce60fcb45"
+    },
+    {
+      "path": "docs/distro.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "762bb818a5920a1340456ebdbbbfe0855a446452",
+      "size": 19614,
+      "url": "https://api.github.com/repos/FewerTeam/VortexLauncher-neoforge/git/blobs/762bb818a5920a1340456ebdbbbfe0855a446452"
+    },
+    {
+      "path": "docs/sample_distribution.json",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "57bdb24359ab489bff1e4f6e6e42cf3b9ff49804",
+      "size": 79558,
+      "url": "https://api.github.com/repos/FewerTeam/VortexLauncher-neoforge/git/blobs/57bdb24359ab489bff1e4f6e6e42cf3b9ff49804"
+    },
+    {
+      "path": "electron-builder.yml",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "43a49b882c4264cddb75136a8693a46db6d38722",
+      "size": 1116,
+      "url": "https://api.github.com/repos/FewerTeam/VortexLauncher-neoforge/git/blobs/43a49b882c4264cddb75136a8693a46db6d38722"
+    },
+    {
+      "path": "index.js",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "7060c3c6854bff98ee03e2dd1049ad7d13555852",
+      "size": 11700,
+      "url": "https://api.github.com/repos/FewerTeam/VortexLauncher-neoforge/git/blobs/7060c3c6854bff98ee03e2dd1049ad7d13555852"
+    },
+    {
+      "path": "libraries",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "c5a541577f7e74819cb415ef961935a45ad88dbc",
+      "url": "https://api.github.com/repos/FewerTeam/VortexLauncher-neoforge/git/trees/c5a541577f7e74819cb415ef961935a45ad88dbc"
+    },
+    {
+      "path": "libraries/java",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "57faa231fade3a7ead6173adfecdcf8d163933a2",
+      "url": "https://api.github.com/repos/FewerTeam/VortexLauncher-neoforge/git/trees/57faa231fade3a7ead6173adfecdcf8d163933a2"
+    },
+    {
+      "path": "libraries/java/PackXZExtract.jar",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "9a779a7474156ab1a7b3766ddea7cc5df45c8e89",
+      "size": 122993,
+      "url": "https://api.github.com/repos/FewerTeam/VortexLauncher-neoforge/git/blobs/9a779a7474156ab1a7b3766ddea7cc5df45c8e89"
+    },
+    {
+      "path": "package-lock.json",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "20f8ecb7d7c6898e54124bedafd0209697e32530",
+      "size": 205779,
+      "url": "https://api.github.com/repos/FewerTeam/VortexLauncher-neoforge/git/blobs/20f8ecb7d7c6898e54124bedafd0209697e32530"
+    },
+    {
+      "path": "package.json",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "af16c969a79b5490f40e7fa6c68eddde0be8e168",
+      "size": 1421,
+      "url": "https://api.github.com/repos/FewerTeam/VortexLauncher-neoforge/git/blobs/af16c969a79b5490f40e7fa6c68eddde0be8e168"
+    }
+  ],
+  "date": "2025-03-09T18:11:24Z"
+}

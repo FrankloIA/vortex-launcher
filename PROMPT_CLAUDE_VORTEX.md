@@ -10,7 +10,7 @@ No empieces reimplementando lo existente. Revisa el código y el estado real del
 
 ## Origen y evolución del launcher
 
-Se partió de un launcher Electron basado en Helios y se desarrolló la identidad Vortex. La interfaz visible debe estar en español y usar Vortex, sin marcas Helios. Se sustituyeron las cargas por un vórtice giratorio, las imágenes de versiones y Acerca de por el logo completo con texto, y el engranaje de Ajustes. Inicio, ajustes y bienvenida usan el fondo de paisaje/portal y paneles translúcidos. La bienvenida tiene marca y textos pequeños; Ajustes separa el subtítulo del título. No reintroducir enlaces externos de soporte, fuente, DevTools o notas de GitHub eliminados.
+Se partió de un launcher Electron basado en Vortex y se desarrolló la identidad Vortex. La interfaz visible debe estar en español y usar Vortex, sin marcas Vortex. Se sustituyeron las cargas por un vórtice giratorio, las imágenes de versiones y Acerca de por el logo completo con texto, y el engranaje de Ajustes. Inicio, ajustes y bienvenida usan el fondo de paisaje/portal y paneles translúcidos. La bienvenida tiene marca y textos pequeños; Ajustes separa el subtítulo del título. No reintroducir enlaces externos de soporte, fuente, DevTools o notas de GitHub eliminados.
 
 Las cuentas admiten **una Microsoft y una Mojang a la vez**, nunca dos del mismo proveedor. La regla antigua de una cuenta global fue sustituida. Sin ninguna cuenta se vuelve a bienvenida/login. Cabezas nítidas, logout rojo con brillo al pasar el ratón, acciones a la derecha y centradas verticalmente. La espera Microsoft usa «Iniciando sesión...» con el vórtice. Las ventanas Microsoft usan el icono Vortex.
 
@@ -66,15 +66,15 @@ Lee docs/stage-3/server-integration.md: contiene módulos, arranque, pruebas y l
 
 ## Mapa de código y herramientas
 
-Fuente Electron: `helios/app`, `helios/index.js`. Panel: `helios/tools/admin-server.cjs`, `helios/vortex/admin/admin.js`, `admin.html`, `admin.css`.
+Fuente Electron: `vortex/app`, `vortex/index.js`. Panel: `vortex/tools/admin-server.cjs`, `vortex/vortex/admin/admin.js`, `admin.html`, `admin.css`.
 
-En `helios/vortex`: `release-store.cjs` (borradores, blobs, firma, cancelación y recuperación), `providers.cjs`, `content-metadata.cjs`, `jarvis-protection.cjs`, `local-compatibility.cjs`, `config-text.cjs`, `change-notes.cjs`, `test-gate.cjs`, `test-release.cjs`, `build-launcher.cjs`, `github-publisher.cjs`, `release-retention.cjs`, `official-release.cjs`, `pack-bundles.cjs`.
+En `vortex/vortex`: `release-store.cjs` (borradores, blobs, firma, cancelación y recuperación), `providers.cjs`, `content-metadata.cjs`, `jarvis-protection.cjs`, `local-compatibility.cjs`, `config-text.cjs`, `change-notes.cjs`, `test-gate.cjs`, `test-release.cjs`, `build-launcher.cjs`, `github-publisher.cjs`, `release-retention.cjs`, `official-release.cjs`, `pack-bundles.cjs`.
 
-Runtime del pack: `helios/.runtime/pack-admin`; datos/cuenta de pruebas: `helios/.runtime/testing`. Los runtime son locales, ignorados y no están disponibles por clonar Git; no generar una nueva identidad de firma para sustituir una que falte sin hablar con el usuario. Builds generados: `helios/dist`. Cuenta normal y tokens permanecen en runtime: no copiarlos al repositorio.
+Runtime del pack: `vortex/.runtime/pack-admin`; datos/cuenta de pruebas: `vortex/.runtime/testing`. Los runtime son locales, ignorados y no están disponibles por clonar Git; no generar una nueva identidad de firma para sustituir una que falte sin hablar con el usuario. Builds generados: `vortex/dist`. Cuenta normal y tokens permanecen en runtime: no copiarlos al repositorio.
 
-Node del proyecto: `D:\Vortex Launcher\.stage2-downloads\node22\node.exe`. Arranque del panel: ese Node con `helios/tools/admin-server.cjs` (ruta absoluta si es proceso separado). Si reinicias, identifica solo el proceso exacto del panel; no mates todos los node.exe ni el juego. En Windows usa procesos ocultos para servicios.
+Node del proyecto: `D:\Vortex Launcher\.stage2-downloads\node22\node.exe`. Arranque del panel: ese Node con `vortex/tools/admin-server.cjs` (ruta absoluta si es proceso separado). Si reinicias, identifica solo el proceso exacto del panel; no mates todos los node.exe ni el juego. En Windows usa procesos ocultos para servicios.
 
-Pruebas pertinentes en `helios/test`: `admin-server`, `version-flow`, `panel-synchronization`, `provider-catalog`, `jarvis-protection`, `local-compatibility`, `test-launcher`, `official-publication`, `official-client`, `release-update`, `release-retention` (extensión `.test.cjs`). Ejecuta con Node `--test` seleccionando las pertinentes. Una simulación no equivale a publicar realmente ni a jugar. Herramientas UI de verificación en runtime son auxiliares, no fuente del producto.
+Pruebas pertinentes en `vortex/test`: `admin-server`, `version-flow`, `panel-synchronization`, `provider-catalog`, `jarvis-protection`, `local-compatibility`, `test-launcher`, `official-publication`, `official-client`, `release-update`, `release-retention` (extensión `.test.cjs`). Ejecuta con Node `--test` seleccionando las pertinentes. Una simulación no equivale a publicar realmente ni a jugar. Herramientas UI de verificación en runtime son auxiliares, no fuente del producto.
 
 ## Entrega obligatoria a ChatGPT
 

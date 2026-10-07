@@ -1,0 +1,66 @@
+[
+  {
+    "name": "1.x.x",
+    "commit": {
+      "sha": "f3c1e42a0314f059fa53c6af5fe5515eb62a5fd9",
+      "url": "https://api.github.com/repos/dscalzi/VortexLauncher/commits/f3c1e42a0314f059fa53c6af5fe5515eb62a5fd9"
+    },
+    "protected": true
+  },
+  {
+    "name": "experiment-overhaul",
+    "commit": {
+      "sha": "9b1360b2147507a9af8a0c477d96a54b63d53503",
+      "url": "https://api.github.com/repos/dscalzi/VortexLauncher/commits/9b1360b2147507a9af8a0c477d96a54b63d53503"
+    },
+    "protected": false
+  },
+  {
+    "name": "legacy",
+    "commit": {
+      "sha": "4a8bffe8f64393c8df75cf47a64e61ca5090bb80",
+      "url": "https://api.github.com/repos/dscalzi/VortexLauncher/commits/4a8bffe8f64393c8df75cf47a64e61ca5090bb80"
+    },
+    "protected": false
+  },
+  {
+    "name": "master",
+    "commit": {
+      "sha": "86e4316b963b54ff052be9ec80f316b8f842cf87",
+      "url": "https://api.github.com/repos/dscalzi/VortexLauncher/commits/86e4316b963b54ff052be9ec80f316b8f842cf87"
+    },
+    "protected": true
+  },
+  {
+    "name": "react",
+    "commit": {
+      "sha": "04d869794f6bb795ff80b19e0a9ffe1351e77aa3",
+      "url": "https://api.github.com/repos/dscalzi/VortexLauncher/commits/04d869794f6bb795ff80b19e0a9ffe1351e77aa3"
+    },
+    "protected": false
+  },
+  {
+    "name": "stable",
+    "commit": {
+      "sha": "6d1ecd73ee038b55d83fa177c3e4ded87fce77bc",
+      "url": "https://api.github.com/repos/dscalzi/VortexLauncher/commits/6d1ecd73ee038b55d83fa177c3e4ded87fce77bc"
+    },
+    "protected": false
+  },
+  {
+    "name": "ts-refactor",
+    "commit": {
+      "sha": "f139992e06d5970704ff68a1d4d857ee5d9964e1",
+      "url": "https://api.github.com/repos/dscalzi/VortexLauncher/commits/f139992e06d5970704ff68a1d4d857ee5d9964e1"
+    },
+    "protected": true
+  },
+  {
+    "name": "typescript",
+    "commit": {
+      "sha": "b9536ed0149165e1161ed9c15b2b1ba38547cf0c",
+      "url": "https://api.github.com/repos/dscalzi/VortexLauncher/commits/b9536ed0149165e1161ed9c15b2b1ba38547cf0c"
+    },
+    "protected": false
+  }
+]

@@ -18,7 +18,7 @@ jobs:
         with:
           node-version: '22'
       - name: Consultar hosting y publicar dirección firmada
-        run: node helios/tools/publish-server-address.cjs
+        run: node vortex/tools/publish-server-address.cjs
         env:
           GH_TOKEN: ${{ github.token }}
           VORTEX_PTERODACTYL_API_TOKEN: ${{ secrets.VORTEX_PTERODACTYL_API_TOKEN }}

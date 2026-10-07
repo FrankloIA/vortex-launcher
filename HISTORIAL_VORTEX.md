@@ -10,7 +10,7 @@ Este resumen prevalece sobre decisiones anteriores sustituidas. Instrucciones ob
 
 ### Estado comprobado
 
-- Launcher Windows: 1.0.2. Panel local: http://127.0.0.1:43117, sin contraseña. Fuente en helios; runtime local separado e ignorado.
+- Launcher Windows: 1.0.2. Panel local: http://127.0.0.1:43117, sin contraseña. Fuente en vortex; runtime local separado e ignorado.
 - Pack seleccionado como trabajo activo: 1.0.2, borrador editable recuperado. Última consulta: revisión 7, 726 archivos. La revisión cambia al incorporar notas de nuevos commits; consultar el panel antes de mutar.
 - Inventario: 199 mods, 26 resourcepacks, 4 shaderpacks, 487 config, 1 defaultconfigs, 5 customnpcs, 2 bivrik, options.txt y servers.dat. Las rutas y hashes completos están en las instantáneas posteriores de este documento.
 - 1.0.1 sigue disponible como publicación en pruebas. No considerar ninguna de estas publicaciones oficial por su número. El historial de Crear solo admite oficiales.
@@ -44,7 +44,7 @@ Comprobación posterior: API y DNS muestran 209.222.97.103:25622. Se publicó es
 
 - El usuario comunicó migración de IP a las 11:00 hora española y pidió dirección automática y actualización del perfil Vortex en servers.dat. Autorizó consulta desde GitHub Actions y guardado cifrado del token del hosting; no se presume permiso sobre otras claves.
 - Se añadió workflow programado cada cinco minutos y ejecución manual, publicador de dirección firmada, clave pública independiente del pack y resolución en el launcher con caché firmada. La dirección se usa para estado y autoconexión; antes de iniciar Minecraft se actualiza Vortex en servers.dat sin borrar otros servidores, iconos ni datos adicionales.
-- Fuente: .github/workflows/server-address.yml; helios/tools/publish-server-address.cjs; vortex/server-address.json, server-address.cjs, servers-dat.cjs; launcher-server-status, landing y processbuilder. Pruebas server-address.test.cjs y documentación de integración. No se modificaron mods, resourcepacks ni configuraciones de producción.
+- Fuente: .github/workflows/server-address.yml; vortex/tools/publish-server-address.cjs; vortex/server-address.json, server-address.cjs, servers-dat.cjs; launcher-server-status, landing y processbuilder. Pruebas server-address.test.cjs y documentación de integración. No se modificaron mods, resourcepacks ni configuraciones de producción.
 - Las pruebas de migración NBT, conservación, archivos corruptos y firmas inválidas pasaron junto con las 13 de hosting y las tres de arranque NeoForge. Se conserva 1.0.2, sin publicación oficial del pack. GitHub puede retrasar el intervalo programado; una partida ya abierta requiere reinicio del cliente para releer servers.dat.
 - Los launchers anteriores necesitan recibir esta compilación mediante publicación oficial. No afirmar que ya la tienen por haber subido el código. Consulta docs/stage-3/server-integration.md para secretos, endpoint y continuidad.
 
@@ -81,7 +81,7 @@ Al cerrar cada tarea registrar aquí: fecha/agente, motivo, archivos o mods afec
 
 - **Qué cambió y por qué:** Claude se incorporó al proyecto y completó `docs/MODS_EN_DESARROLLO.md` con sus proyectos reales, para que ChatGPT pueda continuarlos leyendo Git y este historial. Sustituye la fila «Pendiente de identificar» del registro anterior.
 - **Qué leyó:** `AGENTS.md`, `CLAUDE.md`, `PROMPT_CLAUDE_VORTEX.md`, `docs/MODS_EN_DESARROLLO.md` y `docs/stage-3/official-workflow.md` completos. De `HISTORIAL_VORTEX.md` leyó el estado vigente, las reglas y las secciones de funciones, y solo cabeceras y muestras de los inventarios de los packs 1.0.1 y 1.0.2 (listas largas de rutas y SHA-256); no los revisó entero.
-- **Acceso:** `gh` autenticado como `FrankloIA` con permiso `ADMIN` sobre `FrankloIA/vortex-launcher` (público). Se trabajó en la copia existente `D:\Vortex Launcher`, rama `main`, partiendo de `c8d32ec`. Los cambios sin commit de otros agentes (`README.md` modificado, `docs/PROGRESS.md`, `docs/stage-1`, `docs/stage-2`, `helios/...`) **no se tocaron ni se incluyen en este commit**.
+- **Acceso:** `gh` autenticado como `FrankloIA` con permiso `ADMIN` sobre `FrankloIA/vortex-launcher` (público). Se trabajó en la copia existente `D:\Vortex Launcher`, rama `main`, partiendo de `c8d32ec`. Los cambios sin commit de otros agentes (`README.md` modificado, `docs/PROGRESS.md`, `docs/stage-1`, `docs/stage-2`, `vortex/...`) **no se tocaron ni se incluyen en este commit**.
 - **Archivos afectados:** `docs/MODS_EN_DESARROLLO.md` y este historial. No se modificó código del launcher, el panel, el pack ni ningún mod. No se publicó nada ni se tocó el servidor de producción.
 - **Contenido del registro:** 6 plugins de servidor, 4 mods NeoForge propios y 6 modificaciones Jarvis de mods de terceros, con carpeta, destino, estado, artefacto local, SHA-256 y pruebas. Ver el propio documento.
 - **Comprobaciones:** los SHA-256 se calcularon sobre los archivos de `D:\Vortex Server\downloads\`; los de ParCool, Enhanced AI, Majrusz y The Sift coinciden con los registrados antes en las notas de Claude.
@@ -178,17 +178,17 @@ Los mensajes siguientes reflejan decisiones en su momento; las reglas vigentes a
 - 8e258a9 Verificar actualización del pack completo y recuperación antes de distribuir versiones a jugadores
 - d691fce Eliminar borradores innecesarios conservando publicaciones y archivos compartidos
 - 4f9b4ac Renombrar borradores sin alterar publicaciones inmutables ni duplicar versiones
-- 91e20a8 Dar a Vortex la identidad del concepto conservando controles reales de Helios
+- 91e20a8 Dar a Vortex la identidad del concepto conservando controles reales de Vortex
 - 94b1941 Reforzar la identidad original con un vórtice circular cinematográfico y letras de píxel
 - 987fb3e Reconocer la cuenta por su cabeza y recuperar el rótulo de la marca original
 - bb82bb6 Unificar el emblema y el rótulo con el estilo de píxeles de la marca original
 - 765a3c6 Concentrar el inicio en ajustes y juego dejando visible el fondo de Vortex
-- c643d86 Mostrar el estado real de Helios en vez de convertir un elemento ausente en null
+- c643d86 Mostrar el estado real de Vortex en vez de convertir un elemento ausente en null
 - c1ad256 Identificar el pack por su versión numérica sin confundir borradores con publicaciones
 - f14d32b Separar la actualización del arranque para mostrar progreso y devolver el control a Jugar
 - cf7fe74 Recargar y enfocar el launcher al probar para evitar ventanas con diseño antiguo
 - 0096e2a Centrar la marca en toda la ventana y hacer uniforme su título en mayúsculas
-- ea26b11 Mantener la identidad de Vortex durante la carga con su emblema giratorio sin texto de Helios
+- ea26b11 Mantener la identidad de Vortex durante la carga con su emblema giratorio sin texto de Vortex
 - 6e6340a Hacer comprensibles los ajustes en español y evitar perfiles sin identidad visual
 - 9d423e5 Identificar las versiones con el logo completo original que incluye el nombre Vortex
 - 913bf7a Completar los textos dinámicos de ajustes y recargar el idioma del proceso principal
@@ -196,7 +196,7 @@ Los mensajes siguientes reflejan decisiones en su momento; las reglas vigentes a
 - a586258 Conservar la elección de shaders de cada jugador y dar prioridad visual a los mods opcionales
 - 0c154f0 Hacer reconocible Ajustes con un engranaje de dientes definidos
 - 40bf0f6 Integrar Ajustes con el escenario de Vortex y adaptar los valores iniciales de juego
-- ddf927b Evitar rutas Helios visibles y distinguir los shaders personalizados de Vortex
+- ddf927b Evitar rutas Vortex visibles y distinguir los shaders personalizados de Vortex
 - b779011 Simplificar Acerca de eliminando el enlace externo de notas
 - a68170b Dar resultados reales al buscar actualizaciones y facilitar la consulta de mods
 - 0eda593 Evitar cuentas simultáneas y mantener nítidos los avatares del jugador
@@ -1744,3 +1744,6 @@ Orden administrador: Inicio, Mods, Resourcepacks, Shaders, Configs, Ajustes. Al 
 
 ## 2026-10-07 — Espaciado de acciones del editor (ChatGPT)
 Guardar y Cancelar se separan 12 px y se bajan 18 px respecto al editor de configs. Cancelar usa fondo secundario del tema. Cambio visual sin modificar guardado ni permisos. Se recompila la prueba 1.0.2; no publicación oficial.
+
+## 2026-10-07 — Identidad y carpeta Vortex (ChatGPT)
+Se migra la carpeta activa a vortex, con perfiles y datos locales preservados. Se actualizan comandos, workflows, documentación, imports y metadatos del instalador. Dependencias mediante alias vortex-core/vortex-distribution-types, conservando sus paquetes y licencias originales. README conserva el trabajo ajeno existente. Los avisos legales originales no se eliminan. Se valida panel, launcher y compilación de pruebas; no publicación oficial.

@@ -1,0 +1,14 @@
+{
+  "javaSpawned": true,
+  "exitCode": 0,
+  "signal": null,
+  "stoppedAfter90Seconds": false,
+  "neoForgeVersionObserved": true,
+  "lwjglInitialized": true,
+  "openALInitialized": true,
+  "textureAtlasCreated": true,
+  "authenticated": false,
+  "serverConnectionTested": false,
+  "logFile": "D:\\Vortex Launcher\\vortex\\.runtime\\minimal-launch.log",
+  "error": null
+}

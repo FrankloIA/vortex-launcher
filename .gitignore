@@ -3,5 +3,5 @@ dist/
 *.log
 .DS_Store
 .stage2-downloads/
-helios/.runtime/
+vortex/.runtime/
 .runtime/

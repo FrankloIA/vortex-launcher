@@ -1,0 +1,177 @@
+{
+  "url": "https://api.github.com/repos/dscalzi/VortexLauncher/compare/master...FewerTeam:master",
+  "html_url": "https://github.com/dscalzi/VortexLauncher/compare/master...FewerTeam:master",
+  "permalink_url": "https://github.com/dscalzi/VortexLauncher/compare/dscalzi:86e4316...FewerTeam:f8b7b92",
+  "diff_url": "https://github.com/dscalzi/VortexLauncher/compare/master...FewerTeam:master.diff",
+  "patch_url": "https://github.com/dscalzi/VortexLauncher/compare/master...FewerTeam:master.patch",
+  "base_commit": {
+    "sha": "86e4316b963b54ff052be9ec80f316b8f842cf87",
+    "node_id": "C_kwDOBxV5lNoAKDg2ZTQzMTZiOTYzYjU0ZmYwNTJiZTllYzgwZjMxNmI4Zjg0MmNmODc",
+    "commit": {
+      "author": {
+        "name": "AmSach",
+        "email": "amansachan92905@gmail.com",
+        "date": "2026-05-04T02:54:30Z"
+      },
+      "committer": {
+        "name": "GitHub",
+        "email": "noreply@github.com",
+        "date": "2026-05-04T02:54:30Z"
+      },
+      "message": "fix: correct operator precedence in _resolveModuleLibraries (#395)\n\nChanged '!mdl.subModules.length > 0' to 'mdl.subModules.length === 0'.\n\nThe original code had a bug due to JavaScript's operator precedence: the '!'\noperator binds tighter than '>', so '!mdl.subModules.length' is evaluated\nfirst (producing a boolean), then '> 0' compares that boolean to 0, which\nis always truthy. The fix uses '=== 0' to correctly check if the array is empty.",
+      "tree": {
+        "sha": "6408891d80d15d8a500baa1537dbefcad673f62d",
+        "url": "https://api.github.com/repos/dscalzi/VortexLauncher/git/trees/6408891d80d15d8a500baa1537dbefcad673f62d"
+      },
+      "url": "https://api.github.com/repos/dscalzi/VortexLauncher/git/commits/86e4316b963b54ff052be9ec80f316b8f842cf87",
+      "comment_count": 0,
+      "verification": {
+        "verified": true,
+        "reason": "valid",
+        "signature": "-----BEGIN PGP SIGNATURE-----\n\nwsFcBAABCAAQBQJp+ApmCRC1aQ7uu5UhlAAAN9gQAJW31AncgnA0ADlmN2iq2D2G\nvwyGndOEAdun9IWCuHkH/Vl9jC3TBf8ooVnVE3f5PITrk84qXDEsyDzIx57OQn4C\nY0YulTahdkNWI1Z4DjCWYFYY2/OE5nuCSmhsDFk6x0KA5o7Tz66WtZ1gX1FhGwoO\n6sRlf/aqFD0Z6ripx9Xtln0wvfItaoovjKDz/mxmHeVxHniaZtTMiVSTuPMFsDg4\ntFvwgftYRAR7HRq+wi5ji08tvxbwnBrbt8CNPI3uvH9fNwQmKXTTSiApJcyywe6K\nFAYesMO3Z5YIEJhQA/7oVJeUkzu+B9OHI5E6NXvgtWw3uya7rfw4an307N+MiCq3\nUD+GGG8QsmRPBff2S6Qxq0BB10NVgrxiIRZryATovHA+ac3YUV+2aKjXpl/5Y+e4\n9duHwr8oumb+pfUpRFsVyMAYia7YhXayrT9vUU1YzNb3d14VL7raWSiwavpTQIVN\nJ/eE6bNHkRlFSyk0lvWPyaIwQndljjs+j2xALMOfdpcNC3/grsgVg+aqUb8hI18n\n63Dh8mdNForUzHzVDRZ3n5N3oQet0lb743P0Edj7PYRb0qadYx1TqeUo5bqXpXO/\nebueRwzJI1C7qD59DHXhEAsuIeIH8CqsJ4UMx35zq811l7AqbWnBdRSsQk4kTYXN\nM/hpfCsZyXPWSYCE2NJz\n=anOL\n-----END PGP SIGNATURE-----\n",
+        "payload": "tree 6408891d80d15d8a500baa1537dbefcad673f62d\nparent d10ba526bc436c090825216faf40b2a29418d176\nauthor AmSach <amansachan92905@gmail.com> 1777863270 -0400\ncommitter GitHub <noreply@github.com> 1777863270 -0400\n\nfix: correct operator precedence in _resolveModuleLibraries (#395)\n\nChanged '!mdl.subModules.length > 0' to 'mdl.subModules.length === 0'.\n\nThe original code had a bug due to JavaScript's operator precedence: the '!'\noperator binds tighter than '>', so '!mdl.subModules.length' is evaluated\nfirst (producing a boolean), then '> 0' compares that boolean to 0, which\nis always truthy. The fix uses '=== 0' to correctly check if the array is empty.",
+        "verified_at": "2026-05-04T02:54:31Z"
+      }
+    },
+    "url": "https://api.github.com/repos/dscalzi/VortexLauncher/commits/86e4316b963b54ff052be9ec80f316b8f842cf87",
+    "html_url": "https://github.com/dscalzi/VortexLauncher/commit/86e4316b963b54ff052be9ec80f316b8f842cf87",
+    "comments_url": "https://api.github.com/repos/dscalzi/VortexLauncher/commits/86e4316b963b54ff052be9ec80f316b8f842cf87/comments",
+    "author": {
+      "login": "AmSach",
+      "id": 232401021,
+      "node_id": "U_kgDODdoofQ",
+      "avatar_url": "https://avatars.githubusercontent.com/u/232401021?v=4",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/AmSach",
+      "html_url": "https://github.com/AmSach",
+      "followers_url": "https://api.github.com/users/AmSach/followers",
+      "following_url": "https://api.github.com/users/AmSach/following{/other_user}",
+      "gists_url": "https://api.github.com/users/AmSach/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/AmSach/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/AmSach/subscriptions",
+      "organizations_url": "https://api.github.com/users/AmSach/orgs",
+      "repos_url": "https://api.github.com/users/AmSach/repos",
+      "events_url": "https://api.github.com/users/AmSach/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/AmSach/received_events",
+      "type": "User",
+      "user_view_type": "public",
+      "site_admin": false
+    },
+    "committer": {
+      "login": "web-flow",
+      "id": 19864447,
+      "node_id": "MDQ6VXNlcjE5ODY0NDQ3",
+      "avatar_url": "https://avatars.githubusercontent.com/u/19864447?v=4",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/web-flow",
+      "html_url": "https://github.com/web-flow",
+      "followers_url": "https://api.github.com/users/web-flow/followers",
+      "following_url": "https://api.github.com/users/web-flow/following{/other_user}",
+      "gists_url": "https://api.github.com/users/web-flow/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/web-flow/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/web-flow/subscriptions",
+      "organizations_url": "https://api.github.com/users/web-flow/orgs",
+      "repos_url": "https://api.github.com/users/web-flow/repos",
+      "events_url": "https://api.github.com/users/web-flow/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/web-flow/received_events",
+      "type": "User",
+      "user_view_type": "public",
+      "site_admin": false
+    },
+    "parents": [
+      {
+        "sha": "d10ba526bc436c090825216faf40b2a29418d176",
+        "url": "https://api.github.com/repos/dscalzi/VortexLauncher/commits/d10ba526bc436c090825216faf40b2a29418d176",
+        "html_url": "https://github.com/dscalzi/VortexLauncher/commit/d10ba526bc436c090825216faf40b2a29418d176"
+      }
+    ]
+  },
+  "merge_base_commit": {
+    "sha": "f8b7b9251c2d50ea06c8c9c6b63ea4ad05630644",
+    "node_id": "C_kwDOPkDEu9oAKGY4YjdiOTI1MWMyZDUwZWEwNmM4YzljNmI2M2VhNGFkMDU2MzA2NDQ",
+    "commit": {
+      "author": {
+        "name": "Daniel Scalzi",
+        "email": "d_scalzi@yahoo.com",
+        "date": "2025-03-09T18:11:24Z"
+      },
+      "committer": {
+        "name": "Daniel Scalzi",
+        "email": "d_scalzi@yahoo.com",
+        "date": "2025-03-09T18:11:24Z"
+      },
+      "message": "Update twitter icon to x icon.",
+      "tree": {
+        "sha": "0da0cdfdbd34506c183b372bfdfb573ec755e8d1",
+        "url": "https://api.github.com/repos/dscalzi/VortexLauncher/git/trees/0da0cdfdbd34506c183b372bfdfb573ec755e8d1"
+      },
+      "url": "https://api.github.com/repos/dscalzi/VortexLauncher/git/commits/f8b7b9251c2d50ea06c8c9c6b63ea4ad05630644",
+      "comment_count": 0,
+      "verification": {
+        "verified": true,
+        "reason": "valid",
+        "signature": "-----BEGIN PGP SIGNATURE-----\n\niQIzBAABCAAdFiEEiChzYYdDx+g3t6u9nj4q/kUyiqUFAmfN2dMACgkQnj4q/kUy\niqVJLQ/9F2Eg2EX2cvc305ZEUq+BXDCkNLViGRiUnSdj9Rk2TOsR5NLc7h4EMgQS\n/FqAuZEj2Y6Kts2d0J5MVgZnj0Y6Am/RU08Gm2XyO3Gq5QD2iLWi+Q5XUjCAp1UW\nNGeVN/9P1hG376nFFAjpC03hcxwpPovF7KUu/iLu4bQEEs2TeOOqEt44nc802fhx\nF856LH/OFJ0LLaX2qaGCQF43xzhbHuPZ5kI/fz+o4Ci7o4KtJS7ptFDhwrLgWHwa\nQFiQ/ayOjYOb5EKv7Ged823CmmSHwGu281kTZu0XuP5Q7ZXYuiy4RqgHeEnp7Qjr\nZ5BQMwK2PHFx7aPKrD2GSHlofAOxwICbRhzSvc7/eOdSNxhBqaH6m5Av4IRXOYVd\nXoLKrzFLqp0OGb+4P2Ym/+lf1+PKbUnHFvECuUogCKcZJbfITaSM0AFOQcnTlpWu\nqHxGwKcw4DVNGHWhKcRSa0Hxyv4M5eV3kmQ2pzFBBwrQ3WA/nEKUWfSDX0X4ahmv\nGChBmElNHcPknhp+QdHEhGSIOfJ+JFY/L0d3ihfe4XJ1U4sFFXyK+NoOVouhsdF5\nqvlS73474CB3FsZ112xFSz9si3eDvFvgjw0IfzGkTGwy3c1wtJu85fh+dMEmVqjh\nnDkqgKZxICk2B7ivGUklGcXboRGvS55iZ0d0qHt2PyKycLz88sc=\n=UuC0\n-----END PGP SIGNATURE-----",
+        "payload": "tree 0da0cdfdbd34506c183b372bfdfb573ec755e8d1\nparent 6b90ce9341e23abba18e9ad5ff4182a0f310ae7b\nauthor Daniel Scalzi <d_scalzi@yahoo.com> 1741543884 -0400\ncommitter Daniel Scalzi <d_scalzi@yahoo.com> 1741543884 -0400\n\nUpdate twitter icon to x icon.\n",
+        "verified_at": "2025-03-09T18:11:52Z"
+      }
+    },
+    "url": "https://api.github.com/repos/dscalzi/VortexLauncher/commits/f8b7b9251c2d50ea06c8c9c6b63ea4ad05630644",
+    "html_url": "https://github.com/dscalzi/VortexLauncher/commit/f8b7b9251c2d50ea06c8c9c6b63ea4ad05630644",
+    "comments_url": "https://api.github.com/repos/dscalzi/VortexLauncher/commits/f8b7b9251c2d50ea06c8c9c6b63ea4ad05630644/comments",
+    "author": {
+      "login": "dscalzi",
+      "id": 9703873,
+      "node_id": "MDQ6VXNlcjk3MDM4NzM=",
+      "avatar_url": "https://avatars.githubusercontent.com/u/9703873?v=4",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/dscalzi",
+      "html_url": "https://github.com/dscalzi",
+      "followers_url": "https://api.github.com/users/dscalzi/followers",
+      "following_url": "https://api.github.com/users/dscalzi/following{/other_user}",
+      "gists_url": "https://api.github.com/users/dscalzi/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/dscalzi/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/dscalzi/subscriptions",
+      "organizations_url": "https://api.github.com/users/dscalzi/orgs",
+      "repos_url": "https://api.github.com/users/dscalzi/repos",
+      "events_url": "https://api.github.com/users/dscalzi/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/dscalzi/received_events",
+      "type": "User",
+      "user_view_type": "public",
+      "site_admin": false
+    },
+    "committer": {
+      "login": "dscalzi",
+      "id": 9703873,
+      "node_id": "MDQ6VXNlcjk3MDM4NzM=",
+      "avatar_url": "https://avatars.githubusercontent.com/u/9703873?v=4",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/dscalzi",
+      "html_url": "https://github.com/dscalzi",
+      "followers_url": "https://api.github.com/users/dscalzi/followers",
+      "following_url": "https://api.github.com/users/dscalzi/following{/other_user}",
+      "gists_url": "https://api.github.com/users/dscalzi/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/dscalzi/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/dscalzi/subscriptions",
+      "organizations_url": "https://api.github.com/users/dscalzi/orgs",
+      "repos_url": "https://api.github.com/users/dscalzi/repos",
+      "events_url": "https://api.github.com/users/dscalzi/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/dscalzi/received_events",
+      "type": "User",
+      "user_view_type": "public",
+      "site_admin": false
+    },
+    "parents": [
+      {
+        "sha": "6b90ce9341e23abba18e9ad5ff4182a0f310ae7b",
+        "url": "https://api.github.com/repos/dscalzi/VortexLauncher/commits/6b90ce9341e23abba18e9ad5ff4182a0f310ae7b",
+        "html_url": "https://github.com/dscalzi/VortexLauncher/commit/6b90ce9341e23abba18e9ad5ff4182a0f310ae7b"
+      }
+    ]
+  },
+  "status": "behind",
+  "ahead_by": 0,
+  "behind_by": 5,
+  "total_commits": 0,
+  "commits": [],
+  "files": []
+}

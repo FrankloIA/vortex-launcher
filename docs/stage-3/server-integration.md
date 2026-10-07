@@ -14,11 +14,11 @@ Antes de arrancar Minecraft, `servers-dat.cjs` actualiza la entrada Vortex de la
 
 Los clientes anteriores a esta compilación necesitan recibir el ejecutable actualizado mediante el flujo oficial habitual. La subida del código no equivale a distribuir ese ejecutable. Los secretos nunca están en el launcher ni en el registro público.
 
-Entrega ChatGPT, 2026-10-07. Fuente: `helios`; el runtime es privado e ignorado por Git. No se modificaron mods, mundos ni archivos de producción para verificar la conexión.
+Entrega ChatGPT, 2026-10-07. Fuente: `vortex`; el runtime es privado e ignorado por Git. No se modificaron mods, mundos ni archivos de producción para verificar la conexión.
 
 ## Conexión y uso
 
-Arrancar `helios/tools/admin-server.cjs` con Node 22. El panel está en http://127.0.0.1:43117. La variable de usuario Windows `VORTEX_PTERODACTYL_API_TOKEN` se consulta aunque no esté heredada en el proceso. Los controles de API se retiraron de la interfaz por petición del usuario; la credencial se administra fuera del navegador mediante variable Windows o el almacenamiento DPAPI existente. No incluir claves en comandos públicos, repositorios o instaladores.
+Arrancar `vortex/tools/admin-server.cjs` con Node 22. El panel está en http://127.0.0.1:43117. La variable de usuario Windows `VORTEX_PTERODACTYL_API_TOKEN` se consulta aunque no esté heredada en el proceso. Los controles de API se retiraron de la interfaz por petición del usuario; la credencial se administra fuera del navegador mediante variable Windows o el almacenamiento DPAPI existente. No incluir claves en comandos públicos, repositorios o instaladores.
 
 Servidor fijado: `gamedash.astrolnodes.net`, identificador `d2c7637e`. No se envía Bearer a URLs de transferencia firmadas; se restringen a HTTPS del hosting. La consulta real confirmó online, 0/20 jugadores y 932 archivos: 180 mods, 356 config, 1 defaultconfigs y 395 archivos de plugins. El inventario omite mundos, librerías, logs, backups y enlaces simbólicos.
 

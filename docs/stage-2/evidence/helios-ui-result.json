@@ -1,0 +1,14 @@
+{
+  "title": "Vortex Launcher",
+  "serverId": "vortex-neoforge-minimal",
+  "minecraft": "1.21.1",
+  "neoforge": "21.1.250",
+  "localCatalog": true,
+  "isolatedData": "D:\\Vortex Launcher\\vortex\\.runtime\\data",
+  "authenticationConfigured": false,
+  "adapterLoaded": true,
+  "selectedJava": "C:\\Program Files\\Microsoft\\jdk-21.0.12.101-hotspot\\bin\\java.exe",
+  "readyText": "Minecraft y NeoForge verificados",
+  "mainVisible": true,
+  "rendererErrors": []
+}

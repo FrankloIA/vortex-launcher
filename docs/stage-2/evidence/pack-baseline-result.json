@@ -1,0 +1,16 @@
+{
+  "javaSpawned": true,
+  "exitCode": 4294967295,
+  "signal": null,
+  "stoppedAfterTimeout": false,
+  "timeoutSeconds": 180,
+  "fullPack": true,
+  "neoForgeVersionObserved": true,
+  "lwjglInitialized": true,
+  "openALInitialized": false,
+  "textureAtlasCreated": false,
+  "authenticated": false,
+  "serverConnectionTested": false,
+  "logFile": "D:\\Vortex Launcher\\vortex\\.runtime\\pack-launch.log",
+  "error": null
+}

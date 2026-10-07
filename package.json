@@ -6,12 +6,12 @@
   "author": "Vortex",
   "license": "MIT",
   "scripts": {
-    "start": "npm --prefix helios start",
-    "dev": "npm --prefix helios start",
-    "test:helios": "npm --prefix helios test",
-    "admin": "node helios/tools/admin-server.cjs",
-    "build": "npm --prefix helios run dist:win -- --publish never",
-    "build:win": "npm --prefix helios run dist:win -- --publish never",
+    "start": "npm --prefix vortex start",
+    "dev": "npm --prefix vortex start",
+    "test:vortex": "npm --prefix vortex test",
+    "admin": "node vortex/tools/admin-server.cjs",
+    "build": "npm --prefix vortex run dist:win -- --publish never",
+    "build:win": "npm --prefix vortex run dist:win -- --publish never",
     "build:linux": "electron-builder --linux",
     "build:mac": "electron-builder --mac",
     "postinstall": "electron-builder install-app-deps"

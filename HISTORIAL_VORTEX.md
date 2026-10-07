@@ -1812,3 +1812,7 @@ El usuario pide revisar los 199 mods actuales del launcher, incluidos catálogos
 - La selección y lectura de archivos locales usaba la revisión antigua del panel tras cambios externos en el borrador. Ahora se refresca antes de enviar cada archivo, se fija el destino al iniciar y se comprueba que la versión seleccionada siga siendo la misma y editable. No se omite la comprobación de conflictos del servidor ni se reintentan sustituciones a ciegas.
 - Archivo: vortex/vortex/admin/admin.js. Comprobación: node --check correcto. Pendiente comprobar la subida del archivo del usuario desde el panel; no se ha añadido ningún archivo en su nombre.
 
+
+### Icono de la pestaña del admin panel — 2026-10-07
+- Se declara el favicon PNG con el vórtice existente de Vortex en admin.html usando /vortex-logo.png. Verificado en el panel activo: declaración presente y recurso HTTP 200 image/png. Recargar la pestaña para que el navegador lo muestre.
+

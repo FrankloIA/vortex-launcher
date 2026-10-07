@@ -50,6 +50,11 @@ Comprobación posterior: API y DNS muestran 209.222.97.103:25622. Se publicó es
 
 ### Coordinación con Claude y próxima acción
 
+Investigación de perfiles personales — ChatGPT, 2026-10-07: el usuario solicita Administrador para su identidad Microsoft y Jugador para los demás, con importación personal de mods/shaders/resourcepacks/configs y conservación tras actualizaciones. Se contrastó el UUID local de Mystwer; no basta el nombre, el correo ni un campo de rol editable. El acceso debe verificar el perfil Minecraft mediante token Microsoft válido, con autorización en cada operación privilegiada fuera del renderer. Si hay almacenamiento remoto, el servicio debe autorizar también cada lectura/escritura. Una aplicación local no puede impedir que el propietario del PC altere sus archivos.
+
+Código revisado: authmanager, index.js, configmanager, settings.js, vortex-design.js, pack-snapshot, official-release, test-release y applyRelease en release-store. Hay importación de shaders por carpeta/arrastre sin roles; la importación drop-in de mods está desactivada. applyRelease conserva seeds modificados, pero reemplaza binarios gestionados y rechaza colisiones con archivos ajenos. Se necesita una capa de archivos personales por identidad separada del manifiesto firmado y del resto de cuentas, con reaplicación transaccional y política explícita para colisiones/dependencias. Pendiente de respuesta del usuario: almacenamiento en este PC o recuperación privada en otros PC. No se concedieron roles ni se modificó el instalador o contenidos durante esta investigación; no afirmar implementación de privilegios o sincronización.
+
+
 Altura de consola — ChatGPT, 2026-10-07: la salida de consola utiliza el espacio disponible hasta el borde inferior de la ventana, reservando el formulario de comandos y el margen del panel. Recalcula al abrir la pestaña y al redimensionar, con mínimo de 340 px para ventanas pequeñas. Fuente: admin/console.js; comprobación de sintaxis. Cambio visual sin operaciones sobre el servidor ni contenido del pack.
 
 

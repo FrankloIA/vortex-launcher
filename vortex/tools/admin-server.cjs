@@ -211,7 +211,7 @@ function startAdmin({ root = path.resolve(__dirname, '../.runtime/pack-admin'), 
                         const file=serverWorkspace.view(body.id).files.find(f=>f.path===body.path);if(!file?.source || file.protection?.protected)throw Error('El archivo del servidor está protegido o sin identidad exacta')
                         const category=file.path.split('/')[0],latest=await providers.latest(file.source.provider,file.source.projectId,category,targetFor(body.id)),data=await providers.download(latest)
                         require('../vortex/local-compatibility.cjs').checkLocal(data,category,targetFor(body.id))
-                        await require('../vortex/catalog-dependencies.cjs').assertDependencies(latest,serverWorkspace.view(body.id).files,metadata,providers,file.path)
+                        await require('../vortex/catalog-dependencies.cjs').assertDependencies(latest,serverWorkspace.view(body.id).files,metadata,providers,file.path,data)
                         const review=category==='mods'?await inspectDestination(data,file.source):null;if(review && (!review.verified || review.destination==='client'))throw Error('Revisa el destino de esta versión antes de actualizar el servidor')
                         result=await serverWorkspace.add(body.id,body.revision,category+'/'+latest.filename,data,file.path,{provider:file.source.provider,projectId:file.source.projectId,fileId:latest.fileId,version:latest.version});break
                     }
@@ -343,8 +343,8 @@ function startAdmin({ root = path.resolve(__dirname, '../.runtime/pack-admin'), 
                         if(path.basename(file.filename) !== file.filename || !({ mods: '.jar', resourcepacks: '.zip', shaderpacks: '.zip' }[body.category]) || path.extname(file.filename).toLowerCase() !== { mods: '.jar', resourcepacks: '.zip', shaderpacks: '.zip' }[body.category]) throw Error('Archivo incompatible')
                         const temp = path.join(root, 'download-' + crypto.randomUUID())
                         const bytes=await providers.download(file),routing=await prepareRouting({...body,filename:file.filename},bytes,{provider:body.provider,projectId:body.projectId})
-                        if(!routing?.verified || routing.destination!=='server') await require('../vortex/catalog-dependencies.cjs').assertDependencies(file,draft.files,metadata,providers,body.replacePath)
-                        if(routing?.verified && ['both','server'].includes(routing.destination)) await require('../vortex/catalog-dependencies.cjs').assertDependencies(file,serverWorkspace.view(body.id).files,metadata,providers,routing.serverReplace)
+                        if(!routing?.verified || routing.destination!=='server') await require('../vortex/catalog-dependencies.cjs').assertDependencies(file,draft.files,metadata,providers,body.replacePath,bytes)
+                        if(routing?.verified && ['both','server'].includes(routing.destination)) await require('../vortex/catalog-dependencies.cjs').assertDependencies(file,serverWorkspace.view(body.id).files,metadata,providers,routing.serverReplace,bytes)
                         fs.writeFileSync(temp, bytes)
                         try {
                             if(routing?.verified && routing.destination==='server') {

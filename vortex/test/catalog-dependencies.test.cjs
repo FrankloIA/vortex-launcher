@@ -2,6 +2,15 @@ const {test}=require('node:test')
 const assert=require('node:assert/strict')
 const {assertDependencies}=require('../vortex/catalog-dependencies.cjs')
 const metadata={get:()=>null},providers={request:async()=>({project_id:'lib'})}
+test('solo omite Botarium obsoleto en el archivo Giselle auditado y con descriptor nuevo',async()=>{
+    const Zip=require('adm-zip'),zip=new Zip()
+    zip.addFile('META-INF/neoforge.mods.toml',Buffer.from('modId="common_storage_lib"'))
+    const release={provider:'curseforge',projectId:714958,fileId:9080559,dependencies:[{modId:704113}]}
+    await assertDependencies(release,[],metadata,providers,undefined,zip.toBuffer())
+    await assert.rejects(assertDependencies({...release,fileId:1},[],metadata,providers,undefined,zip.toBuffer()),/704113/)
+    zip.addFile('META-INF/neoforge.mods.toml',Buffer.from('modId="botarium"'))
+    await assert.rejects(assertDependencies(release,[],metadata,providers,undefined,zip.toBuffer()),/704113/)
+})
 test('CurseForge: permite una dependencia instalada, bloquea ausente y el propio archivo sustituido',async()=>{
     const release={provider:'curseforge',dependencies:[{modId:123}]}
     const files=[{path:'mods/lib.jar',source:{provider:'curseforge',projectId:123}}]

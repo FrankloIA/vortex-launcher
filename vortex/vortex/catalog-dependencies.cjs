@@ -1,10 +1,17 @@
 // Las dependencias del catálogo identifican proyectos (o versiones exactas en Modrinth).
-async function assertDependencies(release, files, metadata, providers, replacePath) {
+async function assertDependencies(release, files, metadata, providers, replacePath, bytes) {
     const sources = files.filter(f => f.path.startsWith('mods/') && f.path !== replacePath)
         .map(f => f.source || metadata.get(f)?.source).filter(Boolean)
     const missing = []
     for (const dependency of release.dependencies || []) {
         let projectId = dependency.projectId ?? dependency.modId ?? dependency.project_id
+        // Giselle Addon 8.5 conserva Botarium en CurseForge aunque su descriptor NeoForge
+        // ya exige Common Storage Lib. Excepción limitada al archivo oficial auditado.
+        if(bytes && release.provider==='curseforge' && String(release.projectId)==='714958' && String(release.fileId)==='9080559' && String(projectId)==='704113') {
+            const zip=new (require('adm-zip'))(bytes)
+            const descriptor=zip.readAsText('META-INF/neoforge.mods.toml')
+            if(/modId\s*=\s*"common_storage_lib"/.test(descriptor) && !/modId\s*=\s*"botarium"/.test(descriptor)) continue
+        }
         if (!projectId && dependency.version_id) {
             const version = await providers.request('modrinth', 'version/' + encodeURIComponent(dependency.version_id))
             projectId = version.project_id

@@ -1838,3 +1838,8 @@ El usuario pide revisar los 199 mods actuales del launcher, incluidos catálogos
 - Causa real de fetch failed en Giselle Addon: unexpected redirect de edge.forgecdn.net. Providers ahora sigue hasta tres redirecciones manuales, validando HTTPS y CDN permitida en cada salto, sin credenciales y con un único límite de tiempo. Conserva validación de tamaño y hashes.
 - Verificada descarga oficial 8.5: 494842 bytes, hashes correctos, sin instalar. Prueba automatizada comprueba redirección oficial, bloqueo de destino externo antes de solicitarlo y límite de redirecciones. Reiniciado solo el admin panel. Pendiente actualización elegida por el usuario.
 
+
+### Botarium obsoleto en Giselle Addon — 2026-10-07
+- CurseForge exige proyecto 704113 (Botarium) para Giselle 8.5, pero META-INF/neoforge.mods.toml del JAR oficial 9080559 declara Common Storage Lib y no Botarium. Añadida excepción limitada al proyecto 714958/archivo 9080559 y descriptor contrastado tras descarga verificada; el resto de dependencias permanece obligatorio. No instalar Botarium para resolver este aviso ni generalizar la excepción a otros archivos.
+- Pruebas verifican alcance de la excepción y rechazo cuando cambia el archivo o declara Botarium. Reiniciado panel, sin actualizar mods automáticamente.
+

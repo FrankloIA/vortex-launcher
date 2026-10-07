@@ -117,6 +117,14 @@ Al cerrar cada tarea registrar aquí: fecha/agente, motivo, archivos o mods afec
 - **Límites:** no probado en una partida. Falta que el usuario lo suba al Admin Panel (borrador, prueba y, solo con su confirmación, publicación oficial). No es un archivo de catálogo: modificación Jarvis, sin actualizaciones automáticas.
 - **Siguiente paso para ChatGPT:** al importarlo, verificar el SHA-256 y marcarlo como Jarvis para que ninguna actualización de catálogo lo sustituya.
 
+### Entrega de Claude — 2026-10-07 (4): Vortex MusicPlayer V11
+
+- **Qué cambió y por qué:** el usuario pidió, tras aprobar un boceto, un interruptor **En bolsillo** (OFF por defecto), un botón **Compartir** (sincronizar radios de jugadores) y un botón **Enlazar** (radios colocadas sincronizadas en varias zonas) en el Vortex Radio, con el diseño idéntico al boceto. Se desarrolló en el repositorio `vortex-musicplayer` (privado, rama `main`, commits 9e8240e y 2fa3906).
+- **Artefacto:** `D:\Vortex Mods\_para-subir-al-panelortex-musicplayer-3.24.4-1.21.1-vortex11.jar`, SHA-256 `6838f1c8bd8b1c57ba9bbc5a2f4f437457aeb523188ad45a114296008a6b9891`. Versión del mod `3.24.4-1.21.1-vortex11` (modId `iammusicplayer`). Es una modificación Jarvis: no se sustituye por catálogos.
+- **Comprobaciones:** compilación; verificación ASM de las 22 clases cambiadas o nuevas; ningún acceso a clases de cliente desde el código de servidor; 15 pruebas de la lógica con radios falsas (todas correctas); lectura completa del jar.
+- **Límites:** no se ha probado en el juego. Necesita el mismo jar en el servidor (lógica) y en los clientes (interfaz); un cliente con la V10 no ve los botones, y un servidor con la V10 ignora las instrucciones nuevas. La sincronía no es al milisegundo y una radio colocada en un chunk sin cargar no suena.
+- **Siguiente paso para ChatGPT:** importar el jar verificando el SHA-256, marcarlo como Jarvis y publicarlo como actualización de pruebas. El despliegue en el servidor y su reinicio requieren confirmación del usuario.
+
 ### Código posterior a la primera recopilación del historial
 
 - 3d59a0b Conservar inventarios y cambios antes de retirar publicaciones antiguas para limitar el almacenamiento de GitHub

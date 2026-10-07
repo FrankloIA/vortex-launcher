@@ -102,11 +102,11 @@ Al cerrar cada tarea registrar aquí: fecha/agente, motivo, archivos o mods afec
 
 - **Decisión del usuario:** un repositorio por mod, privado, y también para los parches a mods de terceros. Sustituye la pregunta abierta «un repositorio por mod o uno común» de la entrega anterior.
 - **Hecho:** 15 repositorios preparados en `D:\Vortex Mods\<repositorio>`, con fuentes, scripts de parche, README (compatibilidad, estado, hash del artefacto) y `.gitignore` que excluye jars. Sin jars de terceros ni credenciales. Creados en `FrankloIA` (privados): `vortex-admin`, `vortex-mobnames`, `vortex-instantrespawn`, `vortex-lavadodge`, `vortex-musicplayer`, `vortex-patch-securitycraft`, `vortex-patch-parcool`, `vortex-patch-enhancedai`, `vortex-patch-majrusz`, `vortex-patch-sift`.
-- **Pendiente por límite de GitHub** («too many repositories, too quickly»): `vortex-sleep`, `vortex-tab`, `vortex-reinforce`, `vortex-worldtime`, `vortex-patch-tombstone`. Están preparados y con commit local en `D:\Vortex Mods`; falta crearlos y subirlos cuando se levante el límite. No se reintentó en bucle.
+- **Completado después del límite de GitHub:** los cinco restantes (`vortex-sleep`, `vortex-tab`, `vortex-reinforce`, `vortex-worldtime`, `vortex-patch-tombstone`) se crearon espaciados. Los 15 repositorios existen, son privados y tienen rama `main` con el commit inicial.
 - **Comprobación contra el servidor:** se compararon los SHA-256 de los jars desplegados con las copias locales. Coinciden VortexAdmin, MobNames, VortexReinforce, VortexLavaDodge, VortexWorldTime (con `VortexWorldTime-v1.3.jar`) y vortexsleep. VortexAetherOnly no tiene fuente ni copia local; solo se anotó su hash desplegado.
 - **Corrección:** el jar desplegado de VortexWorldTime es el mismo que `VortexWorldTime-v1.3.jar` de la carpeta de trabajo, con `plugin.yml` 1.3.0. Antes se anotó que la 1.3.0 no era de Claude; la autoría del cambio de 1.2 a 1.3 queda como no confirmada, y falta comprobar que la fuente compile a ese jar.
 - **Límites:** los repositorios no se han probado desde cero (nadie ha recompilado desde ellos); VortexAdmin y MobNames no se pueden reconstruir solo desde su repositorio porque falta la fuente original. Los repositorios son privados: ChatGPT necesita acceso a la cuenta `FrankloIA`.
-- **Siguiente paso:** terminar de crear los 5 repositorios pendientes y actualizar las filas marcadas «creación pendiente»; después, cada agente trabaja en su rama dentro de cada repositorio y registra commit y hash en `docs/MODS_EN_DESARROLLO.md`.
+- **Siguiente paso:** cada agente trabaja en su rama dentro de cada repositorio y registra commit y hash en `docs/MODS_EN_DESARROLLO.md`.
 
 ### Código posterior a la primera recopilación del historial
 

@@ -55,6 +55,7 @@ async function prepareOfficialRelease(instancesRoot,onProgress=()=>{},options={}
     }
     const vault=require('./mod-vault.cjs'),integrity=require('./instance-integrity.cjs');vault.open(instance);const prior=fs.existsSync(path.join(instance,'.vortex-authority.json'))?JSON.parse(fs.readFileSync(path.join(instance,'.vortex-authority.json'))):null;if(!options.administrator && prior)integrity.scan(instance,prior,feed.publicKey,readBlob)
     const result=applyRelease(instance,envelope,feed.publicKey,readBlob,{preservePersonal:options.administrator===true})
+    require('./resourcepack-options.cjs').restoreEmptySelection(instance,manifest,readBlob)
     require('./mod-policy.cjs').applyOptional(instance);const shaders=require('./shader-policy.cjs');shaders.set(instance,shaders.get(instance))
     fs.writeFileSync(path.join(instance,'.vortex-release.json'),JSON.stringify({version:manifest.version,releaseSha256:release.releaseSha256}))
     fs.writeFileSync(path.join(instance,'.vortex-authority.json'),JSON.stringify(envelope));if(manifest.security?.integrity)fs.writeFileSync(path.join(instance,'.vortex-protected'),'1')

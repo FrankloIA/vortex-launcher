@@ -25,6 +25,7 @@ function prepareTestRelease(instancesRoot, expectedVersion, onProgress = () => {
         onProgress({ percent: total ? Math.min(99, Math.floor(loaded * 100 / total)) : 99 })
         return data
     }, {replaceSeeds:process.env.VORTEX_TEST_MODE==='1' && !options.administrator,preservePersonal:options.administrator===true})
+    require('./resourcepack-options.cjs').restoreEmptySelection(instance,manifest,sha=>fs.readFileSync(path.join(root,'blobs',sha)))
     require('./mod-policy.cjs').applyOptional(instance)
     const shaders = require('./shader-policy.cjs'); shaders.set(instance, shaders.get(instance))
     fs.writeFileSync(authority,JSON.stringify(envelope));if(manifest.security?.integrity)fs.writeFileSync(path.join(instance,'.vortex-protected'),'1')
